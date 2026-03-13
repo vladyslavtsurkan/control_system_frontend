@@ -60,7 +60,7 @@ export function KpiGrid() {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-[200px] w-full rounded-xl" />
+          <Skeleton key={i} className="h-50 w-full rounded-xl" />
         ))}
       </div>
     );
