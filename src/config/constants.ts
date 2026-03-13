@@ -1,0 +1,25 @@
+// Backend URLs — update these for your environment
+export const BACKEND_API_URL =
+  process.env.NEXT_PUBLIC_BACKEND_API_URL ?? "http://localhost:8000";
+
+// WebSocket base URL (ws:// or wss://)
+export const WS_BASE_URL =
+  process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:8000/ws";
+
+// Reconnect settings (exponential back-off)
+export const WS_RECONNECT_BASE_DELAY_MS = 1_000;
+export const WS_RECONNECT_MAX_DELAY_MS = 30_000;
+export const WS_RECONNECT_MULTIPLIER = 2;
+
+// Auth cookie names (set by BFF Route Handlers — httpOnly, never readable by JS)
+export const AUTH_COOKIE_NAME = "iiot_token";
+export const REFRESH_COOKIE_NAME = "iiot_refresh_token";
+// Tenant cookie — stores the active org ID so server-side BFF routes can forward X-Tenant-ID
+export const TENANT_COOKIE_NAME = "iiot_tenant_id";
+
+// Max live alerts kept in Redux state
+export const MAX_LIVE_ALERTS = 100;
+
+// Max data points kept in RTK Query readings cache per sensor
+export const MAX_CHART_POINTS = 2_000;
+
