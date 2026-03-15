@@ -1,4 +1,4 @@
-import type { AlertLifecycleAction, AlertSeverity } from "@/features/alerts/types";
+import type { AlertLifecycleAction, AlertSeverity } from "@/features/alerts";
 
 export interface WsTelemetryEvent {
   type: "telemetry";

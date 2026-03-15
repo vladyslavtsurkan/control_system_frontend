@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Sensor, CreateSensorRequest } from "@/features/sensors/types";
-import type { OpcServer } from "@/features/servers/types";
+import type { OpcServer } from "@/features/servers";
 
 // ─── Form state ───────────────────────────────────────────────────────────────
 

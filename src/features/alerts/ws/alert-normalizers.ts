@@ -3,7 +3,7 @@ import type {
   AlertSeverity,
   LiveAlert,
 } from "@/features/alerts/types";
-import type { Sensor } from "@/features/sensors/types";
+import type { Sensor } from "@/features/sensors";
 import type { PaginatedResponse } from "@/shared/types/pagination";
 
 export function toRecord(value: unknown): Record<string, unknown> {

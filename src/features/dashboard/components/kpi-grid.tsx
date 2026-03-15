@@ -6,7 +6,7 @@ import { useGetSensorsQuery } from "@/store/api";
 import { selectLiveKpis, selectLiveReadingsBySensor } from "@/store/selectors";
 import { KpiCard } from "./kpi-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Sensor, SensorReading } from "@/features/sensors/types";
+import type { Sensor, SensorReading } from "@/features/sensors";
 
 // Uses readings prefetched by getSensors for sparkline and KPI fallback.
 function SensorKpiCard({ sensor }: { sensor: Sensor }) {

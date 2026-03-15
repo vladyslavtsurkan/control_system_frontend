@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/table";
 import { formatTime24 } from "@/lib/date-time";
 import type { SensorAlertRow } from "@/features/sensors/components/sensor-detail-types";
-import type { AlertSeverity } from "@/features/alerts/types";
+import type { AlertSeverity } from "@/features/alerts";
 
 const severityVariant: Record<AlertSeverity, "default" | "secondary" | "destructive" | "outline"> = {
   info: "secondary",

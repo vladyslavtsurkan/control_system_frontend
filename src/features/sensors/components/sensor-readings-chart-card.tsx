@@ -1,6 +1,6 @@
 "use client";
 
-import { TimeSeriesChart } from "@/components/charts/time-series-chart";
+import { TimeSeriesChart } from "@/features/sensors/components/time-series-chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,

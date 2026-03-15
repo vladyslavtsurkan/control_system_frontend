@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { CONDITIONS, thresholdLabel } from "@/features/alerts/components/alert-rule-form-dialog";
 import type { AlertRule, AlertSeverity } from "@/features/alerts/types";
-import type { Sensor } from "@/features/sensors/types";
+import type { Sensor } from "@/features/sensors";
 
 const severityVariant: Record<AlertSeverity, "default" | "secondary" | "destructive" | "outline"> = {
   info: "secondary",

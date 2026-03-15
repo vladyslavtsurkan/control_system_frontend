@@ -18,7 +18,7 @@ import type {
   NoDataThreshold,
   CreateAlertRuleRequest,
 } from "@/features/alerts/types";
-import type { Sensor } from "@/features/sensors/types";
+import type { Sensor } from "@/features/sensors";
 
 // ─── Static config ────────────────────────────────────────────────────────────
 

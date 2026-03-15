@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Sensor } from "@/features/sensors/types";
-import type { OpcServer } from "@/features/servers/types";
+import type { OpcServer } from "@/features/servers";
 
 interface SensorTableProps {
   sensors: Sensor[];

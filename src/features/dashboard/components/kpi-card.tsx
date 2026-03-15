@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { Activity } from "lucide-react";
-import { TimeSeriesChart } from "@/components/charts/time-series-chart";
+import { TimeSeriesChart } from "@/features/sensors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatTime24 } from "@/lib/date-time";
-import type { LiveKpi, SensorReading } from "@/features/sensors/types";
+import type { LiveKpi, SensorReading } from "@/features/sensors";
 
 interface KpiCardProps {
   sensorId: string;

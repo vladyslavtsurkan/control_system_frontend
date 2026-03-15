@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { OpcServer } from "@/features/servers/types";
+import type { OpcServer } from "@/features/servers";
 
 interface SensorsToolbarProps {
   serverFilter: string;
