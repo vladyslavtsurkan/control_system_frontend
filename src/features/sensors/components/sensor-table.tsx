@@ -7,6 +7,7 @@ import { useDeleteSensorMutation } from "@/store/api-slice";
 import { useConfirm } from "@/hooks/use-confirm";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { formatDate24, formatTime24 } from "@/lib/date-time";
 import {
   Table,
   TableBody,
@@ -22,6 +23,16 @@ interface SensorTableProps {
   servers: OpcServer[];
   serverFilter: string;
   onEdit: (sensor: Sensor) => void;
+}
+
+function formatReadingValue(payload: Record<string, unknown>): string {
+  const entries = Object.entries(payload);
+  if (entries.length === 0) return "{}";
+
+  return entries
+    .slice(0, 2)
+    .map(([key, value]) => `${key}: ${String(value)}`)
+    .join(", ");
 }
 
 export function SensorTable({ sensors, servers, serverFilter, onEdit }: SensorTableProps) {
@@ -50,6 +61,7 @@ export function SensorTable({ sensors, servers, serverFilter, onEdit }: SensorTa
             <TableHead>Name</TableHead>
             <TableHead>Node ID</TableHead>
             <TableHead>Units</TableHead>
+            <TableHead>Recent readings</TableHead>
             <TableHead>OPC Server</TableHead>
             <TableHead>Created</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -58,7 +70,7 @@ export function SensorTable({ sensors, servers, serverFilter, onEdit }: SensorTa
         <TableBody>
           {sensors.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+              <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
                 {serverFilter
                   ? "No sensors found for the selected server."
                   : "No sensors found. Click \"Add Sensor\" to get started."}
@@ -87,11 +99,27 @@ export function SensorTable({ sensors, servers, serverFilter, onEdit }: SensorTa
                       <span className="text-xs text-muted-foreground">—</span>
                     )}
                   </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {!s.readings || s.readings.length === 0 ? (
+                      <span>No recent readings</span>
+                    ) : (
+                      <div className="space-y-1">
+                        {s.readings.slice(0, 3).map((reading) => (
+                          <div key={`${reading.sensor_id}-${reading.time}`} className="truncate">
+                            {formatTime24(reading.time, { withSeconds: true })}
+                            {" - "}
+                            {formatReadingValue(reading.payload)}
+                          </div>
+                        ))}
+                        {s.readings.length > 3 ? <div>...</div> : null}
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {server?.name ?? s.opc_server_id}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {new Date(s.created_at).toLocaleDateString()}
+                    {formatDate24(s.created_at)}
                   </TableCell>
                   <TableCell className="text-right">
                     <Link

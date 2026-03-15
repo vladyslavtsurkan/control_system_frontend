@@ -22,6 +22,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
@@ -46,8 +47,7 @@ import { Label } from "@/components/ui/label";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setActiveOrg, setUser } from "@/store/auth-slice";
 import { useGetOrganizationsQuery, useUpdateMeMutation } from "@/store/api-slice";
-import { selectUser, selectActiveOrgId } from "@/store/selectors";
-import { selectWsStatus } from "@/store/selectors";
+import { selectUser, selectActiveOrgId, selectWsStatus, selectActiveAlertCount } from "@/store/selectors";
 import { useLogout } from "@/store/use-logout";
 import { toast } from "sonner";
 import type { OrganizationWithRole } from "@/types/models";
@@ -72,6 +72,7 @@ export function AppSidebar() {
   const user = useAppSelector(selectUser);
   const activeOrgId = useAppSelector(selectActiveOrgId);
   const wsStatus = useAppSelector(selectWsStatus);
+  const activeAlertCount = useAppSelector(selectActiveAlertCount);
 
   const { data: orgsData } = useGetOrganizationsQuery();
   const orgs = orgsData?.items ?? [];
@@ -226,9 +227,19 @@ export function AppSidebar() {
                   tooltip={label}
                   render={<Link href={href} />}
                 >
-                  <Icon className="size-4" />
+                  <div className="relative">
+                    <Icon className="size-4" />
+                    {href === "/" && activeAlertCount > 0 ? (
+                      <span className="absolute -top-1 -right-1 inline-block size-2 rounded-full bg-red-500" />
+                    ) : null}
+                  </div>
                   <span>{label}</span>
                 </SidebarMenuButton>
+                {href === "/" && activeAlertCount > 0 ? (
+                  <SidebarMenuBadge className="bg-red-500/15 text-red-700 dark:text-red-300">
+                    {activeAlertCount > 99 ? "99+" : activeAlertCount}
+                  </SidebarMenuBadge>
+                ) : null}
               </SidebarMenuItem>
             ))}
           </SidebarMenu>

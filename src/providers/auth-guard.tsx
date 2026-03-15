@@ -26,22 +26,44 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const authStatus = useAppSelector(selectAuthStatus);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function bootstrap() {
       dispatch(setAuthLoading());
       try {
         // 1. Verify access token (BFF reads httpOnly cookie)
-        const meRes = await fetch("/api/auth/me");
+        const meRes = await fetch("/api/auth/me", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
         if (!meRes.ok) {
-          router.replace("/login");
+          if (!controller.signal.aborted) {
+            router.replace("/login");
+          }
           return;
         }
+
+        if (controller.signal.aborted) {
+          return;
+        }
+
         const user: User = await meRes.json();
+        if (controller.signal.aborted) {
+          return;
+        }
         dispatch(setUser(user));
 
         // 2. Load orgs and activate the last-used one (from cookie) or the first
-        const orgsRes = await fetch("/api/proxy/v1/organizations/");
+        const orgsRes = await fetch("/api/proxy/v1/organizations/", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
         if (orgsRes.ok) {
           const orgs: PaginatedResponse<OrganizationWithRole> = await orgsRes.json();
+          if (controller.signal.aborted) {
+            return;
+          }
+
           if (orgs.items.length > 0) {
             const persistedId = getPersistedTenantId();
             const match = persistedId && orgs.items.find((o) => o.id === persistedId);
@@ -53,12 +75,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         // 3. Open WebSocket connection
         dispatch(wsConnect());
       } catch {
-        router.replace("/login");
+        if (!controller.signal.aborted) {
+          router.replace("/login");
+        }
       }
     }
     bootstrap();
 
     return () => {
+      controller.abort();
       dispatch(wsDisconnect());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

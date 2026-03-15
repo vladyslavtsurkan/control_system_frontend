@@ -9,13 +9,14 @@ export const selectActiveOrgId = (state: RootState) => state.auth.activeOrgId;
 // ─── WebSocket selectors ─────────────────────────────────────────────────────
 export const selectWsStatus = (state: RootState) => state.ws.connectionStatus;
 export const selectLiveKpis = (state: RootState) => state.ws.liveKpis;
+export const selectLiveReadingsBySensor = (state: RootState) => state.ws.liveReadingsBySensor;
 export const selectLiveAlerts = (state: RootState) => state.ws.liveAlerts;
 export const selectResolvedLiveAlerts = (state: RootState) => state.ws.resolvedAlerts;
 export const selectWsError = (state: RootState) => state.ws.lastError;
 
 export const selectActiveAlertCount = createSelector(
   selectLiveAlerts,
-  (alerts) => alerts.length,
+  (alerts) => alerts.filter((alert) => alert.status === "active").length,
 );
 
 export const selectResolvedAlertCount = createSelector(
@@ -25,3 +26,7 @@ export const selectResolvedAlertCount = createSelector(
 
 export const selectLiveKpiForSensor = (sensorId: string) =>
   createSelector(selectLiveKpis, (kpis) => kpis[sensorId] ?? null);
+
+export const selectLiveReadingsForSensor = (sensorId: string) =>
+  createSelector(selectLiveReadingsBySensor, (readings) => readings[sensorId] ?? []);
+

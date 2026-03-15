@@ -91,6 +91,10 @@ export function ServerFormDialog({ open, onOpenChange, editTarget }: ServerFormD
   }
 
   const showCredentials = form.authentication_method === "username";
+  const selectedSecurityPolicyLabel =
+    SECURITY_POLICIES.find((p) => p.value === form.security_policy)?.label ?? "";
+  const selectedAuthMethodLabel =
+    AUTH_METHODS.find((m) => m.value === form.authentication_method)?.label ?? "";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -115,14 +119,22 @@ export function ServerFormDialog({ open, onOpenChange, editTarget }: ServerFormD
             <div className="space-y-2">
               <Label>Security Policy</Label>
               <Select value={form.security_policy} onValueChange={(v) => setForm((f) => ({ ...f, security_policy: v as SecurityPolicy }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select security policy...">
+                    {selectedSecurityPolicyLabel || undefined}
+                  </SelectValue>
+                </SelectTrigger>
                 <SelectContent>{SECURITY_POLICIES.map((p) => (<SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>))}</SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label>Authentication</Label>
               <Select value={form.authentication_method} onValueChange={(v) => setForm((f) => ({ ...f, authentication_method: v as AuthMethod }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select authentication...">
+                    {selectedAuthMethodLabel || undefined}
+                  </SelectValue>
+                </SelectTrigger>
                 <SelectContent>{AUTH_METHODS.map((m) => (<SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>))}</SelectContent>
               </Select>
             </div>

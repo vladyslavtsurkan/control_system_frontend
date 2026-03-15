@@ -17,6 +17,7 @@ import type {
   GetReadingsParams,
   ReadingResponse,
   PaginatedResponse,
+  ItemsResponse,
   AlertSeverity,
   Sensor,
 } from "@/types/models";
@@ -40,6 +41,10 @@ function toNonEmptyString(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
+}
+
+function isAuthExpiredStatus(status: number): boolean {
+  return status === 401 || status === 403;
 }
 
 function toRecord(value: unknown): Record<string, unknown> {
@@ -196,12 +201,24 @@ function findCachedSensorName(
   if (!sensorId || sensorId === "unknown-sensor") return null;
 
   for (const entry of Object.values(apiQueries)) {
-    if (entry?.endpointName !== "getSensors") continue;
+    if (!entry?.endpointName) {
+      continue;
+    }
 
-    const data = entry.data as PaginatedResponse<Sensor> | undefined;
-    const sensorName = data?.items?.find((sensor) => sensor.id === sensorId)?.name;
-    if (sensorName) {
-      return sensorName;
+    if (entry.endpointName === "getSensors") {
+      const data = entry.data as PaginatedResponse<Sensor> | undefined;
+      const sensorName = data?.items?.find((sensor) => sensor.id === sensorId)?.name;
+      if (sensorName) {
+        return sensorName;
+      }
+      continue;
+    }
+
+    if (entry.endpointName === "getSensor") {
+      const sensor = entry.data as Sensor | undefined;
+      if (sensor?.id === sensorId && sensor.name) {
+        return sensor.name;
+      }
     }
   }
 
@@ -256,7 +273,8 @@ export const wsMiddleware: Middleware = (storeApi) => {
           return;
         }
 
-        const errorCode = ticketRes.status === 401 ? "AUTH_EXPIRED" : "TICKET_FETCH_FAILED";
+        const authExpired = isAuthExpiredStatus(ticketRes.status);
+        const errorCode = authExpired ? "AUTH_EXPIRED" : "TICKET_FETCH_FAILED";
 
         storeApi.dispatch(
           setWsError({
@@ -271,11 +289,30 @@ export const wsMiddleware: Middleware = (storeApi) => {
         });
 
         storeApi.dispatch(setConnectionStatus("error"));
+        if (authExpired) {
+          // Token/cookie is no longer valid; avoid infinite reconnect spam.
+          shouldReconnect = false;
+          return;
+        }
+
         if (shouldReconnect) scheduleReconnect();
         return;
       }
 
-      const { ticket } = (await ticketRes.json()) as { ticket: string };
+      const ticketPayload = (await ticketRes.json().catch(() => ({}))) as { ticket?: unknown };
+      const ticket = toNonEmptyString(ticketPayload.ticket);
+      if (!ticket) {
+        storeApi.dispatch(setConnectionStatus("error"));
+        storeApi.dispatch(
+          setWsError({
+            code: "TICKET_FETCH_FAILED",
+            message: "Ticket endpoint returned an invalid payload",
+          }),
+        );
+        if (shouldReconnect) scheduleReconnect();
+        return;
+      }
+
       if (!shouldReconnect || connectionAttemptId !== activeConnectionAttemptId) {
         return;
       }
@@ -315,13 +352,25 @@ export const wsMiddleware: Middleware = (storeApi) => {
         );
       };
 
-      nextSocket.onclose = () => {
+      nextSocket.onclose = (event: CloseEvent) => {
         if (connectionAttemptId !== activeConnectionAttemptId || socket !== nextSocket) {
           return;
         }
 
         storeApi.dispatch(setConnectionStatus("disconnected"));
         socket = null;
+
+        if (event.code === 1008 || event.code === 4001) {
+          shouldReconnect = false;
+          storeApi.dispatch(
+            setWsError({
+              code: "AUTH_EXPIRED",
+              message: "WebSocket authorization expired",
+            }),
+          );
+          return;
+        }
+
         if (shouldReconnect) scheduleReconnect();
       };
     } catch (err) {
@@ -376,6 +425,9 @@ export const wsMiddleware: Middleware = (storeApi) => {
       socket = null;
       currentSocket.close(1000, "Client disconnect");
     }
+
+    recentAlertFingerprints.clear();
+    recentTelemetryFingerprints.clear();
 
     storeApi.dispatch(setConnectionStatus("idle"));
   }
@@ -440,7 +492,21 @@ export const wsMiddleware: Middleware = (storeApi) => {
       if (entry?.endpointName !== "getReadings") continue;
 
       const arg = entry.originalArgs as GetReadingsParams | undefined;
-      if (arg?.sensor_id !== sensorId) continue;
+      if (arg?.sensorId !== sensorId) continue;
+      // Keep closed time ranges stable; only stream into open-ended queries.
+      if (arg?.endTime) continue;
+
+      const readingTimeMs = Date.parse(time);
+      if (!Number.isFinite(readingTimeMs)) {
+        continue;
+      }
+
+      if (arg?.startTime) {
+        const startMs = Date.parse(arg.startTime);
+        if (Number.isFinite(startMs) && readingTimeMs < startMs) {
+          continue;
+        }
+      }
 
       const newReading: ReadingResponse = {
         sensor_id: sensorId,
@@ -453,7 +519,7 @@ export const wsMiddleware: Middleware = (storeApi) => {
         api.util.updateQueryData(
           "getReadings",
           arg,
-          (draft: PaginatedResponse<ReadingResponse>) => {
+          (draft: ItemsResponse<ReadingResponse>) => {
             const existingIndex = draft.items.findIndex(
               (item) => item.time === newReading.time,
             );
@@ -461,13 +527,16 @@ export const wsMiddleware: Middleware = (storeApi) => {
             if (existingIndex >= 0) {
               draft.items[existingIndex] = newReading;
             } else {
+              // Backend contract is DESC (newest first); insert without full-array sort.
+              const first = draft.items[0];
               const last = draft.items[draft.items.length - 1];
-              // Fast path: telemetry is usually ordered, so append and avoid full sort.
-              if (!last || Date.parse(last.time) <= Date.parse(newReading.time)) {
+              if (!first || Date.parse(first.time) <= readingTimeMs) {
+                draft.items.unshift(newReading);
+              } else if (last && Date.parse(last.time) >= readingTimeMs) {
                 draft.items.push(newReading);
               } else {
                 const insertAt = draft.items.findIndex(
-                  (item) => Date.parse(item.time) > Date.parse(newReading.time),
+                  (item) => Date.parse(item.time) < readingTimeMs,
                 );
                 if (insertAt === -1) {
                   draft.items.push(newReading);
@@ -475,12 +544,10 @@ export const wsMiddleware: Middleware = (storeApi) => {
                   draft.items.splice(insertAt, 0, newReading);
                 }
               }
-              draft.count += 1;
             }
 
-
             if (draft.items.length > MAX_CHART_POINTS) {
-              draft.items.splice(0, draft.items.length - MAX_CHART_POINTS);
+              draft.items.splice(MAX_CHART_POINTS);
             }
           }
         )
@@ -491,12 +558,16 @@ export const wsMiddleware: Middleware = (storeApi) => {
   function handleAlert(event: WsAlertEvent, apiStore: MiddlewareAPI) {
     const root = toRecord(event);
     const nested = toRecord(root.data ?? root.payload);
+    const rootRule = toRecord(root.rule);
+    const nestedRule = toRecord(nested.rule);
 
     const normalizedRuleId =
       toNonEmptyString(root.rule_id) ??
       toNonEmptyString(root.ruleId) ??
       toNonEmptyString(nested.rule_id) ??
       toNonEmptyString(nested.ruleId) ??
+      toNonEmptyString(rootRule.id) ??
+      toNonEmptyString(nestedRule.id) ??
       "unknown-rule";
 
     const normalizedSensorId =

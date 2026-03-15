@@ -20,6 +20,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import { formatDateTime24 } from "@/lib/date-time";
 import type { OpcServer, ApiKeyCreateResponse } from "@/types/models";
 
 interface ApiKeyDialogProps {
@@ -111,13 +112,13 @@ export function ApiKeyDialog({ server, open, onOpenChange }: ApiKeyDialogProps) 
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground w-24 shrink-0">Created</span>
-                  <span className="text-xs">{new Date(keyInfo.created_at).toLocaleString()}</span>
+                  <span className="text-xs">{formatDateTime24(keyInfo.created_at)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground w-24 shrink-0">Last used</span>
                   <span className="text-xs">
                     {keyInfo.last_used_at
-                      ? new Date(keyInfo.last_used_at).toLocaleString()
+                      ? formatDateTime24(keyInfo.last_used_at)
                       : "Never"}
                   </span>
                 </div>

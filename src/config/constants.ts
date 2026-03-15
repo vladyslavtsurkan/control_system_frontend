@@ -23,3 +23,10 @@ export const MAX_LIVE_ALERTS = 100;
 // Max data points kept in RTK Query readings cache per sensor
 export const MAX_CHART_POINTS = 2_000;
 
+// Dashboard sparkline keeps live websocket points within this time window.
+export const DASHBOARD_LIVE_KPI_WINDOW_MS = 15 * 60 * 1000;
+
+// Dashboard list page sizes (UI defaults) and safe fallback when response metadata is missing.
+export const LIST_PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
+export const LIST_PAGE_SIZE_FALLBACK = 10;
+

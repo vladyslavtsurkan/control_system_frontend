@@ -5,6 +5,7 @@ import { Activity } from "lucide-react";
 import { TimeSeriesChart } from "@/components/charts/time-series-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatTime24 } from "@/lib/date-time";
 import type { LiveKpi, SensorReading } from "@/types/models";
 
 interface KpiCardProps {
@@ -45,11 +46,7 @@ export function KpiCard({ sensorId, sensorName, units, kpi, readings }: KpiCardP
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Last updated:{" "}
-                  {new Date(kpi.time).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })}
+                  {formatTime24(kpi.time, { withSeconds: true })}
                 </p>
               </>
             ) : (

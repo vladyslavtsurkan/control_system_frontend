@@ -73,6 +73,8 @@ export function SensorFormDialog({
       : { ...emptyForm, opc_server_id: defaultServerId },
   );
 
+  const selectedServerName = servers.find((srv) => srv.id === form.opc_server_id)?.name ?? "";
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
@@ -120,7 +122,9 @@ export function SensorFormDialog({
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select server…" />
+                  <SelectValue placeholder="Select OPC UA server…">
+                    {selectedServerName || undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {servers.map((srv) => (

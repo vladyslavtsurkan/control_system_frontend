@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { memo, useMemo, useState } from "react";
 import { useTheme } from "next-themes";
 import type { EChartsOption } from "echarts";
+import { formatTime24 } from "@/lib/date-time";
 import type { SensorReading } from "@/types/models";
 
 // Lazy-load to avoid SSR issues — ECharts accesses window/document at init time
@@ -21,6 +22,80 @@ interface TimeSeriesChartProps {
 interface ZoomWindow {
   start: number;
   end: number;
+}
+
+type ChartPoint = [number, number | null];
+type DensePoint = [number, number];
+
+const GAP_MULTIPLIER = 4;
+const MIN_GAP_MS = 15 * 60 * 1000;
+const DEFAULT_ZOOM_WINDOW_MS = 3 * 60 * 60 * 1000;
+
+// Keep mini-charts readable even when values are nearly flat.
+function getPaddedBounds(points: DensePoint[], paddingRatio = 0.08): { min: number; max: number } | null {
+  if (points.length === 0) return null;
+
+  let min = Number.POSITIVE_INFINITY;
+  let max = Number.NEGATIVE_INFINITY;
+
+  for (const [, value] of points) {
+    if (value < min) min = value;
+    if (value > max) max = value;
+  }
+
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
+
+  if (min === max) {
+    const base = Math.abs(min);
+    const pad = Math.max(base * 0.04, 0.1);
+    return { min: min - pad, max: max + pad };
+  }
+
+  const span = max - min;
+  const pad = span * paddingRatio;
+  return { min: min - pad, max: max + pad };
+}
+
+function median(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid];
+}
+
+function insertGapBreaks(points: [number, number][]): ChartPoint[] {
+  if (points.length < 2) return points;
+
+  const deltas: number[] = [];
+  for (let i = 1; i < points.length; i += 1) {
+    const delta = points[i][0] - points[i - 1][0];
+    if (delta > 0) deltas.push(delta);
+  }
+
+  const medianDelta = median(deltas);
+  const gapThreshold = Math.max(medianDelta * GAP_MULTIPLIER, MIN_GAP_MS);
+
+  if (!Number.isFinite(gapThreshold) || gapThreshold <= 0) return points;
+
+  const withGaps: ChartPoint[] = [points[0]];
+
+  for (let i = 1; i < points.length; i += 1) {
+    const prev = points[i - 1];
+    const current = points[i];
+    const delta = current[0] - prev[0];
+
+    if (delta > gapThreshold) {
+      const rawMidpoint = prev[0] + Math.floor(delta / 2);
+      const midpoint = Math.min(current[0] - 1, Math.max(prev[0] + 1, rawMidpoint));
+      withGaps.push([midpoint, null]);
+    }
+
+    withGaps.push(current);
+  }
+
+  return withGaps;
 }
 
 function toUnixMs(value: string): number | null {
@@ -56,15 +131,15 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
 
   const [zoomWindow, setZoomWindow] = useState<ZoomWindow | null>(null);
 
-  const seriesData = useMemo<[number, number][]>(() => {
+  const dedupedData = useMemo<DensePoint[]>(() => {
     const normalized = data
       .map((d) => {
         const time = toUnixMs(d.time);
         const value = d.value;
         if (time === null || !Number.isFinite(value)) return null;
-        return [time, value] as [number, number];
+        return [time, value] as DensePoint;
       })
-      .filter((point): point is [number, number] => point !== null)
+      .filter((point): point is DensePoint => point !== null)
       .sort((a, b) => a[0] - b[0]);
 
     // Collapse same-timestamp points; keep the newest value for that timestamp.
@@ -76,10 +151,44 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
     return Array.from(byTimestamp.entries()).sort((a, b) => a[0] - b[0]);
   }, [data]);
 
+  const timeSeriesData = useMemo<ChartPoint[]>(() => insertGapBreaks(dedupedData), [dedupedData]);
+
+  const sparklineSeriesData = useMemo<DensePoint[]>(
+    // Sparklines should show trend density; use sequential X to avoid huge blank time gaps.
+    () => dedupedData.map(([, value], index) => [index, value]),
+    [dedupedData],
+  );
+
+  const sparklineBounds = useMemo(
+    () => getPaddedBounds(dedupedData),
+    [dedupedData],
+  );
+
+  const fullChartBounds = useMemo(
+    () => getPaddedBounds(dedupedData),
+    [dedupedData],
+  );
+
   const defaultZoom = useMemo<ZoomWindow>(() => {
-    const start = Math.max(0, 100 - (500 / Math.max(seriesData.length, 1)) * 100);
-    return { start, end: 100 };
-  }, [seriesData.length]);
+    if (dedupedData.length === 0) {
+      return { start: 0, end: 100 };
+    }
+
+    const first = dedupedData[0][0];
+    const last = dedupedData[dedupedData.length - 1][0];
+    const span = last - first;
+    if (span <= 0) {
+      return { start: 0, end: 100 };
+    }
+
+    const windowStart = Math.max(first, last - DEFAULT_ZOOM_WINDOW_MS);
+    const startPercent = ((windowStart - first) / span) * 100;
+
+    return {
+      start: Math.max(0, Math.min(100, startPercent)),
+      end: 100,
+    };
+  }, [dedupedData]);
 
   const activeZoom = zoomWindow ?? defaultZoom;
 
@@ -108,8 +217,19 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
           backgroundColor: "transparent",
           animation: false,
           grid: { left: 0, right: 0, top: 2, bottom: 2 },
-          xAxis: { type: "time", show: false },
-          yAxis: { type: "value", show: false },
+          xAxis: {
+            type: "value",
+            show: false,
+            min: "dataMin",
+            max: "dataMax",
+          },
+          yAxis: {
+            type: "value",
+            show: false,
+            scale: true,
+            min: sparklineBounds?.min,
+            max: sparklineBounds?.max,
+          },
           series: [
             {
               type: "line",
@@ -118,7 +238,8 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
               sampling: "lttb",
               lineStyle: { width: 1.5, color: palette.line },
               areaStyle: { opacity: 1, color: palette.area },
-              data: seriesData,
+              connectNulls: false,
+              data: sparklineSeriesData,
             },
           ],
         };
@@ -131,20 +252,24 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
         grid: { left: 56, right: 24, top: 32, bottom: 56 },
         tooltip: {
           trigger: "axis",
+          renderMode: "richText",
           axisPointer: { type: "cross", snap: true },
           backgroundColor: palette.tooltipBg,
           borderColor: palette.tooltipBorder,
           borderWidth: 1,
           textStyle: { color: palette.tooltipText },
           formatter: (params: unknown) => {
-            const p = (params as { value: [string, number] }[])[0];
-            if (!p) return "";
-            const time = new Date(p.value[0]).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            });
-            return `<b>${time}</b><br/>${sensorName}: <b>${p.value[1].toFixed(3)} ${unit}</b>`;
+            const points = Array.isArray(params) ? params : [];
+            const point = points.find((entry) => {
+              const value = (entry as { value?: unknown }).value;
+              return Array.isArray(value)
+                && typeof value[1] === "number"
+                && Number.isFinite(value[1]);
+            }) as { value: [number, number] } | undefined;
+
+            if (!point) return "";
+            const time = formatTime24(point.value[0], { withSeconds: true });
+            return `${time}\n${sensorName}: ${point.value[1].toFixed(3)} ${unit}`;
           },
         },
         toolbox: {
@@ -178,11 +303,7 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
           splitLine: { show: false },
           axisLabel: {
             color: palette.axis,
-            formatter: (val: number) =>
-              new Date(val).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
+            formatter: (val: number) => formatTime24(val),
           },
         },
         yAxis: {
@@ -193,6 +314,9 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
           axisLine: { show: true, lineStyle: { color: palette.axis } },
           axisLabel: { color: palette.axis },
           splitLine: { lineStyle: { type: "dashed", color: palette.split } },
+          scale: true,
+          min: fullChartBounds?.min,
+          max: fullChartBounds?.max,
         },
         series: [
           {
@@ -204,19 +328,33 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
             lineStyle: { width: 1.7, color: palette.line },
             areaStyle: { opacity: 1, color: palette.area },
             emphasis: { focus: "series" },
-            data: seriesData,
+            connectNulls: false,
+            data: timeSeriesData,
           },
         ],
       };
     },
-    [activeZoom.end, activeZoom.start, palette, sensorName, seriesData, sparkline, unit],
+    [
+      activeZoom.end,
+      activeZoom.start,
+      palette,
+      sensorName,
+      sparkline,
+      sparklineBounds?.max,
+      sparklineBounds?.min,
+      sparklineSeriesData,
+      timeSeriesData,
+      unit,
+      fullChartBounds?.max,
+      fullChartBounds?.min,
+    ],
   );
 
   return (
     <ReactECharts
       option={option}
       style={{ height, width: "100%" }}
-      notMerge={false}  // merge — enables incremental dataset updates
+      notMerge={false}  // merge — more stable under frequent websocket updates
       lazyUpdate={true} // batch DOM repaints — critical for high-frequency IIoT data
       theme={isDark ? "dark" : undefined}
       onEvents={chartEvents}

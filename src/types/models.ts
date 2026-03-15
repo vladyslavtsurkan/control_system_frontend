@@ -124,8 +124,23 @@ export type UserRoleInOrg = "owner" | "admin" | "member";
  */
 export interface PaginatedResponse<T> {
   count: number;
+  page?: number | null;
   per_page: number | null;
   total_pages: number | null;
+  items: T[];
+}
+
+/** Common query params for backend pagination endpoints. */
+export interface PaginationQueryParams {
+  offset?: number;
+  limit?: number;
+}
+
+/**
+ * ItemsResponse<T> — non-paginated list shape:
+ * { items }
+ */
+export interface ItemsResponse<T> {
   items: T[];
 }
 
@@ -241,6 +256,16 @@ export interface Sensor {
   description: string | null;
   node_id: string;
   units: string | null;
+  readings?: ReadingResponse[] | null;
+}
+
+/** Query params for GET /api/v1/sensors/ */
+export interface GetSensorsParams {
+  opcServerId?: string;
+  offset?: number;
+  limit?: number;
+  prefetchReadings?: boolean;
+  prefetchWindowMinutes?: number;
 }
 
 /** SensorCreateRequest */
@@ -275,9 +300,10 @@ export interface ReadingResponse {
 
 /** Query params for GET /api/v1/readings/ */
 export interface GetReadingsParams {
-  sensor_id: string;
-  offset?: number;
-  limit?: number;
+  sensorId: string;
+  startTime?: string;
+  endTime?: string;
+  sampleEvery?: number;
 }
 
 /**
@@ -295,18 +321,29 @@ export interface GetSensorReadingsParams {
   sensorId: string;
   from?: string;
   to?: string;
-  limit?: number;
+  sampleEvery?: number;
 }
 
 // ─── Triggered Alerts ─────────────────────────────────────────────────────────
 
 /** AlertResponse — GET /api/v1/alerts/ */
+export interface AlertRuleSummary {
+  id: string;
+  created_at: string; // ISO-8601
+  sensor_id: string;
+  name: string;
+  severity: AlertSeverity;
+  condition: AlertCondition;
+  is_active: boolean;
+}
+
 export interface Alert {
   id: string;
   created_at: string;                  // ISO-8601 (when triggered)
   updated_at?: string;                 // ISO-8601 (not guaranteed by current REST schema)
   sensor_id: string;
-  rule_id: string | null;
+  rule_id?: string | null;
+  rule?: AlertRuleSummary | null;
   message: string;
   triggered_value: Record<string, unknown>;
   is_acknowledged: boolean;
@@ -318,6 +355,11 @@ export interface GetAlertsParams {
   sensor_id?: string;
   offset?: number;
   limit?: number;
+}
+
+/** Query params for GET /api/v1/alert-rules/ */
+export interface GetAlertRulesParams extends PaginationQueryParams {
+  sensorId?: string;
 }
 
 // ─── Alert Rules ──────────────────────────────────────────────────────────────

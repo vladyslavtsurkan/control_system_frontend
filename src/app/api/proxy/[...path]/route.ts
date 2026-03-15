@@ -34,6 +34,7 @@ async function handler(
   // we pass it on. Text is re-encoded to UTF-8 bytes by the downstream fetch.
   const HAS_BODY_METHODS = new Set(["POST", "PUT", "PATCH"]);
   let bodyText: string | undefined;
+  const contentType = req.headers.get("content-type");
   if (HAS_BODY_METHODS.has(req.method)) {
     try {
       bodyText = await req.text();
@@ -45,8 +46,8 @@ async function handler(
   const backendRes = await fetch(backendUrl, {
     method: req.method,
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      ...(contentType ? { "Content-Type": contentType } : {}),
       ...(tenantId ? { "X-Tenant-ID": tenantId } : {}),
     },
     // Only attach body when there is actual content — empty string body on
@@ -59,12 +60,19 @@ async function handler(
     return new NextResponse(null, { status: 204 });
   }
 
-  const contentType = backendRes.headers.get("content-type") ?? "";
-  const responseBody = contentType.includes("application/json")
+  const responseContentType = backendRes.headers.get("content-type") ?? "";
+  const responseBody = responseContentType.includes("application/json")
     ? await backendRes.json()
     : await backendRes.text();
 
-  return NextResponse.json(responseBody, { status: backendRes.status });
+  if (responseContentType.includes("application/json")) {
+    return NextResponse.json(responseBody, { status: backendRes.status });
+  }
+
+  return new NextResponse(typeof responseBody === "string" ? responseBody : String(responseBody), {
+    status: backendRes.status,
+    headers: responseContentType ? { "content-type": responseContentType } : undefined,
+  });
 }
 
 export const GET = handler;

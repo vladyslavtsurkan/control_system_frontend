@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { clearLiveAlerts } from "@/store/ws-slice";
 import { selectLiveAlerts } from "@/store/selectors";
+import { useGetSensorsQuery } from "@/store/api-slice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
+import { formatTime24 } from "@/lib/date-time";
 import type { AlertSeverity } from "@/types/models";
 
 const severityVariant: Record<
@@ -31,6 +33,26 @@ const severityVariant: Record<
 export function ActiveAlertsTable() {
   const dispatch = useAppDispatch();
   const alerts = useAppSelector(selectLiveAlerts);
+  const { data: sensorsData } = useGetSensorsQuery({ limit: 100, offset: 0 });
+
+  const sensorNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const sensor of sensorsData?.items ?? []) {
+      map.set(sensor.id, sensor.name);
+    }
+    return map;
+  }, [sensorsData]);
+
+  const getDisplaySensorName = useMemo(
+    () => (sensorId: string, sensorName: string) => {
+      if (sensorName && sensorName !== sensorId) {
+        return sensorName;
+      }
+      return sensorNameById.get(sensorId) ?? sensorName ?? sensorId;
+    },
+    [sensorNameById],
+  );
+
   const rows = useMemo(
     () =>
       [...alerts].sort((a, b) => {
@@ -85,7 +107,7 @@ export function ActiveAlertsTable() {
                     </Badge>
                   </TableCell>
                   <TableCell className="font-medium">
-                    {alert.sensor_name}
+                    {getDisplaySensorName(alert.sensor_id, alert.sensor_name)}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {alert.message}
@@ -96,7 +118,7 @@ export function ActiveAlertsTable() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right text-xs text-muted-foreground">
-                    {new Date(alert.updated_at).toLocaleTimeString()}
+                    {formatTime24(alert.updated_at)}
                   </TableCell>
                 </TableRow>
               ))}

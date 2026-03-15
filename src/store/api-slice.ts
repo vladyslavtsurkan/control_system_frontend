@@ -13,22 +13,26 @@ import type {
   ApiKeyCreateResponse,
   ApiKeyInfoResponse,
   Sensor,
+  GetSensorsParams,
   CreateSensorRequest,
   UpdateSensorRequest,
   ReadingResponse,
   GetReadingsParams,
   Alert,
   GetAlertsParams,
+  GetAlertRulesParams,
   AlertRule,
   CreateAlertRuleRequest,
   UpdateAlertRuleRequest,
   WsTicketResponse,
   PaginatedResponse,
+  ItemsResponse,
+  UserRoleInOrg,
+  PaginationQueryParams,
 } from "@/types/models";
 
 // ─── Tag types for cache invalidation ────────────────────────────────────────
 const TAGS = ["Me", "Orgs", "Servers", "Sensors", "Readings", "Alerts", "AlertRules"] as const;
-type TagType = (typeof TAGS)[number];
 
 // ─── RTK Query API Slice ──────────────────────────────────────────────────────
 // baseUrl → Next.js BFF proxy (same-origin). The proxy reads the httpOnly cookie
@@ -45,7 +49,7 @@ export const api = createApi({
       return headers;
     },
   }),
-  tagTypes: TAGS as unknown as TagType[],
+  tagTypes: [...TAGS],
   endpoints: (builder) => ({
 
     // ── Auth / User ──────────────────────────────────────────────────────────
@@ -60,8 +64,14 @@ export const api = createApi({
     }),
 
     // ── Organizations ────────────────────────────────────────────────────────
-    getOrganizations: builder.query<PaginatedResponse<OrganizationWithRole>, void>({
-      query: () => "/v1/organizations/",
+    getOrganizations: builder.query<PaginatedResponse<OrganizationWithRole>, PaginationQueryParams | void>({
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args?.offset != null) params.set("offset", String(args.offset));
+        if (args?.limit != null) params.set("limit", String(args.limit));
+        const qs = params.toString();
+        return `/v1/organizations/${qs ? `?${qs}` : ""}`;
+      },
       providesTags: (result) =>
         result
           ? [
@@ -112,7 +122,7 @@ export const api = createApi({
       invalidatesTags: (_r, _e, { orgId }) => [{ type: "Orgs", id: `MEMBERS-${orgId}` }],
     }),
 
-    changeOrganizationMemberRole: builder.mutation<void, { orgId: string; userId: string; role: string }>({
+    changeOrganizationMemberRole: builder.mutation<void, { orgId: string; userId: string; role: UserRoleInOrg }>({
       query: ({ orgId, userId, role }) => ({
         url: `/v1/organizations/${orgId}/members/${userId}/role`,
         method: "PATCH",
@@ -125,8 +135,14 @@ export const api = createApi({
     }),
 
     // ── OPC UA Servers ───────────────────────────────────────────────────────
-    getServers: builder.query<PaginatedResponse<OpcServer>, void>({
-      query: () => "/v1/opc-servers/",
+    getServers: builder.query<PaginatedResponse<OpcServer>, PaginationQueryParams | void>({
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args?.offset != null) params.set("offset", String(args.offset));
+        if (args?.limit != null) params.set("limit", String(args.limit));
+        const qs = params.toString();
+        return `/v1/opc-servers/${qs ? `?${qs}` : ""}`;
+      },
       providesTags: (result) =>
         result
           ? [
@@ -179,22 +195,36 @@ export const api = createApi({
     }),
 
     // ── Sensors ──────────────────────────────────────────────────────────────
-    getSensors: builder.query<PaginatedResponse<Sensor>, string | void>({
-      query: (opcServerId) =>
-        opcServerId
-          ? `/v1/sensors/?opc_server_id=${opcServerId}&limit=100`
-          : "/v1/sensors/?limit=100",
-      providesTags: (result, _e, opcServerId) =>
+    getSensors: builder.query<PaginatedResponse<Sensor>, GetSensorsParams | void>({
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args?.opcServerId) params.set("opc_server_id", args.opcServerId);
+        params.set("offset", String(args?.offset ?? 0));
+        params.set("limit", String(args?.limit ?? 100));
+        if (args?.prefetchReadings != null) {
+          params.set("prefetch_readings", String(args.prefetchReadings));
+        }
+        if (args?.prefetchWindowMinutes != null) {
+          params.set("prefetch_window_minutes", String(args.prefetchWindowMinutes));
+        }
+        return `/v1/sensors/?${params.toString()}`;
+      },
+      providesTags: (result, _e, args) =>
         result
           ? [
               ...result.items.map(({ id }) => ({ type: "Sensors" as const, id })),
               { type: "Sensors", id: "LIST" },
-              ...(opcServerId ? [{ type: "Sensors" as const, id: `LIST-${opcServerId}` }] : []),
+              ...(args?.opcServerId ? [{ type: "Sensors" as const, id: `LIST-${args.opcServerId}` }] : []),
             ]
           : [
               { type: "Sensors", id: "LIST" },
-              ...(opcServerId ? [{ type: "Sensors" as const, id: `LIST-${opcServerId}` }] : []),
+              ...(args?.opcServerId ? [{ type: "Sensors" as const, id: `LIST-${args.opcServerId}` }] : []),
             ],
+    }),
+
+    getSensor: builder.query<Sensor, string>({
+      query: (sensorId) => `/v1/sensors/${sensorId}`,
+      providesTags: (_r, _e, sensorId) => [{ type: "Sensors", id: sensorId }],
     }),
 
     createSensor: builder.mutation<Sensor, CreateSensorRequest>({
@@ -216,16 +246,15 @@ export const api = createApi({
     }),
 
     // ── Readings ─────────────────────────────────────────────────────────────
-    getReadings: builder.query<PaginatedResponse<ReadingResponse>, GetReadingsParams>({
-      query: ({ sensor_id, offset = 0, limit = 1000 }) => {
-        const params = new URLSearchParams({
-          sensor_id,
-          offset: String(offset),
-          limit: String(limit),
-        });
+    getReadings: builder.query<ItemsResponse<ReadingResponse>, GetReadingsParams>({
+      query: ({ sensorId, startTime, endTime, sampleEvery }) => {
+        const params = new URLSearchParams({ sensor_id: sensorId });
+        if (startTime) params.set("start_time", startTime);
+        if (endTime) params.set("end_time", endTime);
+        if (sampleEvery != null) params.set("sample_every", String(sampleEvery));
         return `/v1/readings/?${params.toString()}`;
       },
-      providesTags: (_r, _e, { sensor_id }) => [{ type: "Readings", id: sensor_id }],
+      providesTags: (_r, _e, { sensorId }) => [{ type: "Readings", id: sensorId }],
     }),
 
     // ── Triggered Alerts ─────────────────────────────────────────────────────
@@ -238,6 +267,13 @@ export const api = createApi({
         const qs = params.toString();
         return `/v1/alerts/${qs ? `?${qs}` : ""}`;
       },
+      transformResponse: (response: PaginatedResponse<Alert>): PaginatedResponse<Alert> => ({
+        ...response,
+        items: response.items.map((alert) => ({
+          ...alert,
+          rule_id: alert.rule?.id ?? null,
+        })),
+      }),
       providesTags: (result) =>
         result
           ? [
@@ -258,9 +294,15 @@ export const api = createApi({
     }),
 
     // ── Alert Rules ──────────────────────────────────────────────────────────
-    getAlertRules: builder.query<PaginatedResponse<AlertRule>, string | void>({
-      query: (sensorId) =>
-        sensorId ? `/v1/alert-rules/?sensor_id=${sensorId}` : "/v1/alert-rules/",
+    getAlertRules: builder.query<PaginatedResponse<AlertRule>, GetAlertRulesParams | void>({
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args?.sensorId) params.set("sensor_id", args.sensorId);
+        if (args?.offset != null) params.set("offset", String(args.offset));
+        if (args?.limit != null) params.set("limit", String(args.limit));
+        const qs = params.toString();
+        return `/v1/alert-rules/${qs ? `?${qs}` : ""}`;
+      },
       providesTags: (result) =>
         result
           ? [
@@ -312,6 +354,7 @@ export const {
   useCreateOrRotateApiKeyMutation,
   useRevokeApiKeyMutation,
   useGetSensorsQuery,
+  useGetSensorQuery,
   useCreateSensorMutation,
   useUpdateSensorMutation,
   useDeleteSensorMutation,

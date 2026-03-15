@@ -19,6 +19,10 @@ const ROLE_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
 };
 const ROLES: UserRoleInOrg[] = ["owner", "admin", "member"];
 
+function isUserRoleInOrg(value: unknown): value is UserRoleInOrg {
+  return typeof value === "string" && ROLES.includes(value as UserRoleInOrg);
+}
+
 interface MembersDialogProps {
   org: OrganizationWithRole;
   open: boolean;
@@ -55,7 +59,7 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
     catch { toast.error("Failed to remove member."); }
   }
 
-  async function handleRoleChange(userId: string, role: string) {
+  async function handleRoleChange(userId: string, role: UserRoleInOrg) {
     try { await changeRole({ orgId: org.id, userId, role }).unwrap(); toast.success("Role updated."); }
     catch { toast.error("Failed to change role."); }
   }
@@ -88,7 +92,14 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
                     </TableCell>
                     <TableCell>
                       {isOwner && m.role !== "owner" ? (
-                        <Select value={m.role} onValueChange={(v) => handleRoleChange(m.id, v ?? m.role)}>
+                        <Select
+                          value={m.role}
+                          onValueChange={(v) => {
+                            if (isUserRoleInOrg(v)) {
+                              void handleRoleChange(m.id, v);
+                            }
+                          }}
+                        >
                           <SelectTrigger className="h-7 w-28 text-xs"><SelectValue>{m.role}</SelectValue></SelectTrigger>
                           <SelectContent>{ROLES.map((r) => (<SelectItem key={r} value={r}>{r}</SelectItem>))}</SelectContent>
                         </Select>
