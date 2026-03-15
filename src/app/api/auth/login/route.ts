@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { BACKEND_API_URL, AUTH_COOKIE_NAME, REFRESH_COOKIE_NAME } from "@/config/constants";
-import type { LoginResponse } from "@/types/models";
+import type { LoginResponse } from "@/features/auth/types";
 
 export async function POST(req: NextRequest) {
   // Body must be { email, password } — matches backend LoginRequest

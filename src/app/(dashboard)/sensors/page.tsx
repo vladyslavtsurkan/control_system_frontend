@@ -1,4 +1,4 @@
-import SensorsPageClient from "./page-client";
+import SensorsPageClient from "@/features/sensors/components/sensors-page-client";
 import {
   getFirstSearchParamValue,
   parsePageSizeParam,

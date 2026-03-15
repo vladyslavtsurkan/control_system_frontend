@@ -1,4 +1,4 @@
-import OrganizationsPageClient from "./page-client";
+import OrganizationsPageClient from "@/features/organizations/components/organizations-page-client";
 import {
   getFirstSearchParamValue,
   parsePageSizeParam,

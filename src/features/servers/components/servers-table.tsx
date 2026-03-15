@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate24 } from "@/lib/date-time";
-import type { OpcServer } from "@/types/models";
+import type { OpcServer } from "@/features/servers/types";
 
 interface ServersTableProps {
   servers: OpcServer[];

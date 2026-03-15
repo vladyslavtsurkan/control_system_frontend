@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { clearLiveAlerts } from "@/store/ws-slice";
 import { selectLiveAlerts } from "@/store/selectors";
-import { useGetSensorsQuery } from "@/store/api-slice";
+import { useGetSensorsQuery } from "@/store/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
 import { formatTime24 } from "@/lib/date-time";
-import type { AlertSeverity } from "@/types/models";
+import type { AlertSeverity } from "@/features/alerts/types";
 
 const severityVariant: Record<
   AlertSeverity,
@@ -129,3 +129,4 @@ export function ActiveAlertsTable() {
     </Card>
   );
 }
+

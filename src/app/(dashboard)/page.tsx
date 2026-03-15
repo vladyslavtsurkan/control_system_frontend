@@ -1,5 +1,5 @@
-import { KpiGrid } from "@/components/dashboard/kpi-grid";
-import { ActiveAlertsTable } from "@/components/dashboard/active-alerts-table";
+import { KpiGrid } from "@/features/dashboard/components/kpi-grid";
+import { ActiveAlertsTable } from "@/features/alerts/components/active-alerts-table";
 
 export default function DashboardPage() {
   return (

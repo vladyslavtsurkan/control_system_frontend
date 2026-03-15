@@ -5,7 +5,7 @@ import { memo, useMemo, useState } from "react";
 import { useTheme } from "next-themes";
 import type { EChartsOption } from "echarts";
 import { formatTime24 } from "@/lib/date-time";
-import type { SensorReading } from "@/types/models";
+import type { SensorReading } from "@/features/sensors/types";
 
 // Lazy-load to avoid SSR issues — ECharts accesses window/document at init time
 const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false });

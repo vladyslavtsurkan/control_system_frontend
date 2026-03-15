@@ -1,4 +1,5 @@
-import type { AlertSeverity, SensorReading } from "@/types/models";
+import type { AlertSeverity } from "@/features/alerts/types";
+import type { SensorReading } from "@/features/sensors/types";
 
 export interface EditSensorFormState {
   name: string;

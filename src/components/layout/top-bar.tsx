@@ -14,7 +14,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { useAppSelector } from "@/store/hooks";
 import { selectUser } from "@/store/selectors";
-import { useLogout } from "@/store/use-logout";
+import { useLogout } from "@/features/auth/hooks/use-logout";
 
 export function TopBar() {
   const { theme, setTheme } = useTheme();

@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { SensorReading } from "@/types/models";
+import type { SensorReading } from "@/features/sensors/types";
 
 interface SensorReadingsChartCardProps {
   isLoading: boolean;

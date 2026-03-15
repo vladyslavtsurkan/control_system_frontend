@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { useAddOrganizationMemberMutation, useRemoveOrganizationMemberMutation, useChangeOrganizationMemberRoleMutation, useGetOrganizationMembersQuery } from "@/store/api-slice";
+import { useAddOrganizationMemberMutation, useRemoveOrganizationMemberMutation, useChangeOrganizationMemberRoleMutation, useGetOrganizationMembersQuery } from "@/store/api";
 import { useConfirm } from "@/hooks/use-confirm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UserMinus, UserPlus } from "lucide-react";
-import type { OrganizationWithRole, UserRoleInOrg } from "@/types/models";
+import type { OrganizationWithRole, UserRoleInOrg } from "@/features/organizations/types";
 
 const ROLE_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
   owner: "default", admin: "secondary", member: "outline",

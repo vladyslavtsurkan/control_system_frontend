@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { toast } from "sonner";
 import { Pencil, Trash2, ExternalLink } from "lucide-react";
-import { useDeleteSensorMutation } from "@/store/api-slice";
+import { useDeleteSensorMutation } from "@/store/api";
 import { useConfirm } from "@/hooks/use-confirm";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Sensor, OpcServer } from "@/types/models";
+import type { Sensor } from "@/features/sensors/types";
+import type { OpcServer } from "@/features/servers/types";
 
 interface SensorTableProps {
   sensors: Sensor[];

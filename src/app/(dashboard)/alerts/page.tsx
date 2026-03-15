@@ -1,4 +1,4 @@
-import AlertsPageClient from "./page-client";
+import AlertsPageClient from "@/features/alerts/components/alerts-page-client";
 import {
   getFirstSearchParamValue,
   parsePageSizeParam,

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { Sensor } from "@/types/models";
+import type { Sensor } from "@/features/sensors/types";
 
 interface SensorDetailHeaderProps {
   sensor?: Sensor;

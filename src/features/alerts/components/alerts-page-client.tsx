@@ -6,7 +6,7 @@ import {
   useDeleteAlertRuleMutation,
   useGetAlertRulesQuery,
   useGetSensorsQuery,
-} from "@/store/api-slice";
+} from "@/store/api";
 import { ListPaginationFooter } from "@/components/ui/list-pagination";
 import { AlertRuleFormDialog } from "@/features/alerts/components/alert-rule-form-dialog";
 import { AlertsActionBar } from "@/features/alerts/components/alerts-action-bar";
@@ -15,7 +15,7 @@ import { AlertsTable } from "@/features/alerts/components/alerts-table";
 import { useConfirm } from "@/hooks/use-confirm";
 import { getOffsetLimitPaginationMeta, useOffsetLimitPagination } from "@/hooks/use-offset-limit-pagination";
 import { LIST_PAGE_SIZE_FALLBACK, LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
-import type { AlertRule } from "@/types/models";
+import type { AlertRule } from "@/features/alerts/types";
 
 interface AlertsPageClientProps {
   initialPage: number;
@@ -120,4 +120,8 @@ export default function AlertsPageClient({
     </div>
   );
 }
+
+
+
+
 

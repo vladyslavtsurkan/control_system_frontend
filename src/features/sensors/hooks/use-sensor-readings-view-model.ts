@@ -1,6 +1,6 @@
 import { useSensorReadingsChartViewModel } from "./use-sensor-readings-chart-view-model";
 import { useSensorReadingsQueryArgs } from "./use-sensor-readings-query-args";
-import type { ReadingResponse } from "@/types/models";
+import type { ReadingResponse } from "@/features/sensors/types";
 
 interface UseSensorReadingsViewModelParams {
   sensorId: string;

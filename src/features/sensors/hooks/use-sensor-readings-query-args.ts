@@ -1,4 +1,5 @@
-import { skipToken } from "@reduxjs/toolkit/query";
+import { skipToken } from "@reduxjs/toolkit/query/react";
+import type { GetReadingsParams } from "@/features/sensors/types";
 
 interface UseSensorReadingsQueryArgsParams {
   sensorId: string;
@@ -15,7 +16,7 @@ export function useSensorReadingsQueryArgs({
   sampleEvery,
   rangeError,
 }: UseSensorReadingsQueryArgsParams) {
-  const readingsArgs =
+  const readingsArgs: GetReadingsParams | typeof skipToken =
     rangeError || startTimeIso === null || endTimeIso === null
       ? skipToken
       : {

@@ -7,7 +7,7 @@ import {
   useGetApiKeysQuery,
   useCreateOrRotateApiKeyMutation,
   useRevokeApiKeyMutation,
-} from "@/store/api-slice";
+} from "@/store/api";
 import { useConfirm } from "@/hooks/use-confirm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { formatDateTime24 } from "@/lib/date-time";
-import type { OpcServer, ApiKeyCreateResponse } from "@/types/models";
+import type { OpcServer, ApiKeyCreateResponse } from "@/features/servers/types";
 
 interface ApiKeyDialogProps {
   server: OpcServer;

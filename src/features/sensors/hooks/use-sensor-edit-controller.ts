@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { useUpdateSensorMutation } from "@/store/api-slice";
+import { useUpdateSensorMutation } from "@/store/api";
 import type { EditSensorFormState } from "@/features/sensors/components";
-import type { Sensor } from "@/types/models";
+import type { Sensor } from "@/features/sensors/types";
 
 interface UseSensorEditControllerParams {
   sensorId: string;

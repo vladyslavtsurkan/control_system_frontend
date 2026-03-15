@@ -1,5 +1,6 @@
 import { createAction, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { LiveAlert, LiveKpi, SensorReading } from "@/types/models";
+import type { LiveAlert } from "@/features/alerts/types";
+import type { LiveKpi, SensorReading } from "@/features/sensors/types";
 import { DASHBOARD_LIVE_KPI_WINDOW_MS, MAX_LIVE_ALERTS } from "@/config/constants";
 
 // ─── Public actions consumed by the WS middleware ────────────────────────────

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { SensorReadingsStatsData } from "@/features/sensors/components";
-import type { ReadingResponse, SensorReading } from "@/types/models";
+import type { ReadingResponse, SensorReading } from "@/features/sensors/types";
 
 interface UseSensorReadingsChartViewModelParams {
   sensorId: string;

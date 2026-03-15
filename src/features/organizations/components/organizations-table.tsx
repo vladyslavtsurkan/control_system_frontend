@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate24 } from "@/lib/date-time";
-import type { OrganizationWithRole } from "@/types/models";
+import type { OrganizationWithRole } from "@/features/organizations/types";
 
 const ROLE_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
   owner: "default",

@@ -4,7 +4,8 @@ import {
   useGetSensorQuery,
   useGetReadingsQuery,
   useGetAlertsQuery,
-} from "@/store/api-slice";
+} from "@/store/api";
+import { skipToken } from "@reduxjs/toolkit/query/react";
 import { useAppSelector } from "@/store/hooks";
 import { selectLiveAlerts } from "@/store/selectors";
 import { getOffsetLimitPaginationMeta, useOffsetLimitPagination } from "@/hooks/use-offset-limit-pagination";
@@ -85,7 +86,7 @@ export default function SensorPageClient({
   });
 
   const { data: readingsPage, isLoading: readingsLoading } =
-    useGetReadingsQuery(readingsArgs);
+    useGetReadingsQuery(readingsArgs as Parameters<typeof useGetReadingsQuery>[0] | typeof skipToken);
 
   const {
     data: alertsPage,
@@ -221,4 +222,7 @@ export default function SensorPageClient({
     </div>
   );
 }
+
+
+
 

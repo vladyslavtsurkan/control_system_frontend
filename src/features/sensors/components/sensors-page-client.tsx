@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useGetSensorsQuery, useGetServersQuery } from "@/store/api-slice";
+import { useGetSensorsQuery, useGetServersQuery } from "@/store/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ListPaginationFooter } from "@/components/ui/list-pagination";
 import { SensorTable } from "@/features/sensors/components/sensor-table";
@@ -11,7 +11,7 @@ import { SensorsListControls } from "@/features/sensors/components/sensors-list-
 import { SensorsToolbar } from "@/features/sensors/components/sensors-toolbar";
 import { getOffsetLimitPaginationMeta, useOffsetLimitPagination } from "@/hooks/use-offset-limit-pagination";
 import { LIST_PAGE_SIZE_FALLBACK, LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
-import type { Sensor } from "@/types/models";
+import type { Sensor } from "@/features/sensors/types";
 
 interface SensorsPageClientProps {
   initialPage: number;
@@ -132,4 +132,6 @@ export default function SensorsPageClient({
     </div>
   );
 }
+
+
 

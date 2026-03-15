@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import type { User } from "@/types/models";
+import type { User } from "@/features/auth/types";
 
 export default function LoginPageClient() {
   const dispatch = useAppDispatch();
@@ -114,4 +114,5 @@ export default function LoginPageClient() {
     </Card>
   );
 }
+
 

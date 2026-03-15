@@ -2,14 +2,17 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { useCreateOrganizationMutation, useUpdateOrganizationMutation } from "@/store/api-slice";
+import { useCreateOrganizationMutation, useUpdateOrganizationMutation } from "@/store/api";
 import { setActiveOrg } from "@/store/auth-slice";
 import { useAppDispatch } from "@/store/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import type { CreateOrganizationRequest, OrganizationWithRole } from "@/types/models";
+import type {
+  CreateOrganizationRequest,
+  OrganizationWithRole,
+} from "@/features/organizations/types";
 
 interface OrganizationFormDialogProps {
   open: boolean;

@@ -2,17 +2,23 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { useCreateAlertRuleMutation, useUpdateAlertRuleMutation } from "@/store/api-slice";
+import { useCreateAlertRuleMutation, useUpdateAlertRuleMutation } from "@/store/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type {
-  AlertRule, AlertCondition, AlertSeverity, Threshold,
-  SingleValueThreshold, RangeThreshold, NoDataThreshold,
-  CreateAlertRuleRequest, Sensor,
-} from "@/types/models";
+  AlertRule,
+  AlertCondition,
+  AlertSeverity,
+  Threshold,
+  SingleValueThreshold,
+  RangeThreshold,
+  NoDataThreshold,
+  CreateAlertRuleRequest,
+} from "@/features/alerts/types";
+import type { Sensor } from "@/features/sensors/types";
 
 // ─── Static config ────────────────────────────────────────────────────────────
 

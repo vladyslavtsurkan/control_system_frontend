@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import {
   useAcknowledgeAlertMutation,
   useDeleteSensorMutation,
-} from "@/store/api-slice";
+} from "@/store/api";
 import { useConfirm } from "@/hooks/use-confirm";
 
 interface UseSensorDetailActionsParams {

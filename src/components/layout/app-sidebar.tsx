@@ -46,11 +46,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setActiveOrg, setUser } from "@/store/auth-slice";
-import { useGetOrganizationsQuery, useUpdateMeMutation } from "@/store/api-slice";
+import { useGetOrganizationsQuery, useUpdateMeMutation } from "@/store/api";
 import { selectUser, selectActiveOrgId, selectWsStatus, selectActiveAlertCount } from "@/store/selectors";
-import { useLogout } from "@/store/use-logout";
+import { useLogout } from "@/features/auth/hooks/use-logout";
 import { toast } from "sonner";
-import type { OrganizationWithRole } from "@/types/models";
+import type { OrganizationWithRole } from "@/features/organizations/types";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },

@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { OpcServer } from "@/types/models";
+import type { OpcServer } from "@/features/servers/types";
 
 interface SensorsToolbarProps {
   serverFilter: string;
@@ -37,7 +37,7 @@ export function SensorsToolbar({
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      <Select value={serverFilter} onValueChange={onServerFilterChange}>
+      <Select value={serverFilter} onValueChange={(value) => onServerFilterChange(value ?? "")}>
         <SelectTrigger className="w-48">
           <SelectValue>{serverFilter ? (selectedServerName ?? "All servers") : "All servers"}</SelectValue>
         </SelectTrigger>

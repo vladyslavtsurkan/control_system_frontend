@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { User, OrganizationWithRole } from "@/types/models";
+import type { User } from "@/features/auth/types";
+import type { OrganizationWithRole } from "@/features/organizations/types";
 
 const TENANT_COOKIE = "iiot_tenant_id";
 

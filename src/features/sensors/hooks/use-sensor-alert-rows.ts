@@ -1,6 +1,6 @@
 import {useMemo} from "react";
 import type {SensorAlertRow} from "@/features/sensors/components";
-import type {Alert, LiveAlert} from "@/types/models";
+import type { Alert, LiveAlert } from "@/features/alerts/types";
 
 interface UseSensorAlertRowsParams {
   sensorId: string;

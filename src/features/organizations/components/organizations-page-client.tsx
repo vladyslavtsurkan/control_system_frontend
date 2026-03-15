@@ -6,7 +6,7 @@ import {
   useDeleteOrganizationMutation,
   useGetOrganizationsQuery,
   useLeaveOrganizationMutation,
-} from "@/store/api-slice";
+} from "@/store/api";
 import { useAppSelector } from "@/store/hooks";
 import { selectActiveOrgId } from "@/store/selectors";
 import { ListPaginationFooter } from "@/components/ui/list-pagination";
@@ -18,7 +18,7 @@ import { OrganizationsTable } from "@/features/organizations/components/organiza
 import { useConfirm } from "@/hooks/use-confirm";
 import { getOffsetLimitPaginationMeta, useOffsetLimitPagination } from "@/hooks/use-offset-limit-pagination";
 import { LIST_PAGE_SIZE_FALLBACK, LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
-import type { OrganizationWithRole } from "@/types/models";
+import type { OrganizationWithRole } from "@/features/organizations/types";
 
 interface OrganizationsPageClientProps {
   initialPage: number;
@@ -158,4 +158,8 @@ export default function OrganizationsPageClient({
     </div>
   );
 }
+
+
+
+
 

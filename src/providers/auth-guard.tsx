@@ -6,7 +6,9 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { wsConnect, wsDisconnect } from "@/store/ws-slice";
 import { setUser, setAuthLoading, initActiveOrg } from "@/store/auth-slice";
 import { selectAuthStatus } from "@/store/selectors";
-import type { User, OrganizationWithRole, PaginatedResponse } from "@/types/models";
+import type { User } from "@/features/auth/types";
+import type { OrganizationWithRole } from "@/features/organizations/types";
+import type { PaginatedResponse } from "@/shared/types/pagination";
 
 /** Read the persisted tenant cookie (written by setActiveOrg). */
 function getPersistedTenantId(): string | null {

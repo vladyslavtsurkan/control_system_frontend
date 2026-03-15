@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   useCreateSensorMutation,
   useUpdateSensorMutation,
-} from "@/store/api-slice";
+} from "@/store/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,7 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Sensor, OpcServer, CreateSensorRequest } from "@/types/models";
+import type { Sensor, CreateSensorRequest } from "@/features/sensors/types";
+import type { OpcServer } from "@/features/servers/types";
 
 // ─── Form state ───────────────────────────────────────────────────────────────
 

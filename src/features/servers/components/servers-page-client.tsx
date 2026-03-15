@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { useGetServersQuery, useDeleteServerMutation } from "@/store/api-slice";
+import { useGetServersQuery, useDeleteServerMutation } from "@/store/api";
 import { ListPaginationFooter } from "@/components/ui/list-pagination";
 import { ServerFormDialog } from "@/features/servers/components/server-form-dialog";
 import { ApiKeyDialog } from "@/features/servers/components/api-key-dialog";
@@ -12,7 +12,7 @@ import { ServersTable } from "@/features/servers/components/servers-table";
 import { useConfirm } from "@/hooks/use-confirm";
 import { getOffsetLimitPaginationMeta, useOffsetLimitPagination } from "@/hooks/use-offset-limit-pagination";
 import { LIST_PAGE_SIZE_FALLBACK, LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
-import type { OpcServer } from "@/types/models";
+import type { OpcServer } from "@/features/servers/types";
 
 interface ServersPageClientProps {
   initialPage: number;
@@ -127,4 +127,6 @@ export default function ServersPageClient({
     </div>
   );
 }
+
+
 

@@ -6,7 +6,7 @@ import { TimeSeriesChart } from "@/components/charts/time-series-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatTime24 } from "@/lib/date-time";
-import type { LiveKpi, SensorReading } from "@/types/models";
+import type { LiveKpi, SensorReading } from "@/features/sensors/types";
 
 interface KpiCardProps {
   sensorId: string;
@@ -84,3 +84,4 @@ export function KpiCard({ sensorId, sensorName, units, kpi, readings }: KpiCardP
     </Link>
   );
 }
+

@@ -1,4 +1,4 @@
-import ServersPageClient from "./page-client";
+import ServersPageClient from "@/features/servers/components/servers-page-client";
 import {
   getFirstSearchParamValue,
   parsePageSizeParam,
