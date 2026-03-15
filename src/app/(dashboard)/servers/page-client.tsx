@@ -49,18 +49,30 @@ export default function ServersPageClient({
     fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
   });
 
-  function openCreate() { setEditTarget(null); setDialogOpen(true); }
-  function openEdit(server: OpcServer) { setEditTarget(server); setDialogOpen(true); }
+  function openCreate() {
+    setEditTarget(null);
+    setDialogOpen(true);
+  }
+
+  function openEdit(server: OpcServer) {
+    setEditTarget(server);
+    setDialogOpen(true);
+  }
 
   async function handleDelete(id: string, name: string) {
     if (!await confirm({
       description: `Delete server "${name}"?`,
       destructive: true,
-    })) return;
+    })) {
+      return;
+    }
+
     try {
       await deleteServer(id).unwrap();
       toast.success("Server deleted.");
-    } catch { toast.error("Delete failed."); }
+    } catch {
+      toast.error("Delete failed.");
+    }
   }
 
   return (
@@ -92,8 +104,25 @@ export default function ServersPageClient({
         onNext={pagination.goNext}
       />
 
-      <ServerFormDialog key={editTarget?.id ?? "new"} open={dialogOpen} onOpenChange={setDialogOpen} editTarget={editTarget} />
-      {apiKeyServer && <ApiKeyDialog server={apiKeyServer} open={!!apiKeyServer} onOpenChange={(open) => { if (!open) setApiKeyServer(null); }} />}
+      <ServerFormDialog
+        key={editTarget?.id ?? "new"}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        editTarget={editTarget}
+      />
+
+      {apiKeyServer && (
+        <ApiKeyDialog
+          server={apiKeyServer}
+          open={!!apiKeyServer}
+          onOpenChange={(open) => {
+            if (!open) {
+              setApiKeyServer(null);
+            }
+          }}
+        />
+      )}
+
       <ConfirmDialog />
     </div>
   );

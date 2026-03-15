@@ -1,11 +1,8 @@
 "use client";
 
-import {
-  ListPageSizeSelect,
-  ListResultsSummary,
-} from "@/components/ui/list-pagination";
+import { ListPageSizeSelect, ListResultsSummary } from "@/components/ui/list-pagination";
 
-interface ServersListControlsProps {
+interface OrganizationsListControlsProps {
   shownCount: number;
   totalCount: number;
   pageSize: number;
@@ -13,18 +10,18 @@ interface ServersListControlsProps {
   onPageSizeChange: (next: number) => void;
 }
 
-export function ServersListControls({
+export function OrganizationsListControls({
   shownCount,
   totalCount,
   pageSize,
   pageSizeOptions,
   onPageSizeChange,
-}: ServersListControlsProps) {
+}: OrganizationsListControlsProps) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <ListResultsSummary shownCount={shownCount} totalCount={totalCount} noun="servers" />
+      <ListResultsSummary shownCount={shownCount} totalCount={totalCount} noun="organizations" />
       <ListPageSizeSelect
-        id="servers-page-size"
+        id="organizations-page-size"
         value={pageSize}
         options={pageSizeOptions}
         onChange={onPageSizeChange}

@@ -1,25 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { PlusCircle, RefreshCw } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useGetSensorsQuery, useGetServersQuery } from "@/store/api-slice";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  ListPageSizeSelect,
-  ListPaginationFooter,
-  ListResultsSummary,
-} from "@/components/ui/list-pagination";
+import { ListPaginationFooter } from "@/components/ui/list-pagination";
 import { SensorTable } from "@/features/sensors/components/sensor-table";
 import { SensorFormDialog } from "@/features/sensors/components/sensor-form-dialog";
+import { SensorsListControls } from "@/features/sensors/components/sensors-list-controls";
+import { SensorsToolbar } from "@/features/sensors/components/sensors-toolbar";
 import { getOffsetLimitPaginationMeta, useOffsetLimitPagination } from "@/hooks/use-offset-limit-pagination";
 import { LIST_PAGE_SIZE_FALLBACK, LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
 import type { Sensor } from "@/types/models";
@@ -44,12 +33,15 @@ export default function SensorsPageClient({
     initialPage,
   });
 
-  const { data, isLoading, refetch } = useGetSensorsQuery({
-    opcServerId: serverFilter || undefined,
-    ...pagination.queryArgs,
-  }, {
-    refetchOnMountOrArgChange: true,
-  });
+  const { data, isLoading, refetch } = useGetSensorsQuery(
+    {
+      opcServerId: serverFilter || undefined,
+      ...pagination.queryArgs,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
   const { data: serversData } = useGetServersQuery();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -77,58 +69,31 @@ export default function SensorsPageClient({
     setDialogOpen(true);
   }
 
+  function handleServerFilterChange(nextValue: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextValue) {
+      params.set("server_id", nextValue);
+    } else {
+      params.delete("server_id");
+    }
+    params.set("page", "1");
+    params.set("per_page", String(pagination.perPage));
+    const next = params.toString();
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-end gap-2">
-          <Select
-            value={serverFilter}
-            onValueChange={(v) => {
-              const params = new URLSearchParams(searchParams.toString());
-              const nextValue = v ?? "";
-              if (nextValue) {
-                params.set("server_id", nextValue);
-              } else {
-                params.delete("server_id");
-              }
-              params.set("page", "1");
-              params.set("per_page", String(pagination.perPage));
-              const next = params.toString();
-              router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
-            }}
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue>
-                {serverFilter
-                  ? (servers.find((srv) => srv.id === serverFilter)?.name ?? "All servers")
-                  : "All servers"}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All servers</SelectItem>
-              {servers.map((srv) => (
-                <SelectItem key={srv.id} value={srv.id}>
-                  {srv.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <ListPageSizeSelect
-            id="sensors-page-size"
-              value={pagination.perPage}
-            options={LIST_PAGE_SIZE_OPTIONS}
-            onChange={pagination.setLimitAndReset}
-            wrapperClassName="flex items-center gap-2 rounded-md border px-3 py-1.5"
-          />
-
-          <Button variant="outline" size="icon" onClick={() => refetch()} aria-label="Refresh">
-            <RefreshCw className="size-4" />
-          </Button>
-          <Button onClick={openCreate}>
-            <PlusCircle className="mr-2 size-4" />
-            Add Sensor
-          </Button>
-      </div>
+      <SensorsToolbar
+        serverFilter={serverFilter}
+        servers={servers}
+        pageSize={pagination.perPage}
+        pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+        onServerFilterChange={handleServerFilterChange}
+        onPageSizeChange={pagination.setLimitAndReset}
+        onRefresh={refetch}
+        onCreate={openCreate}
+      />
 
       {isLoading ? (
         <div className="space-y-2">
@@ -145,7 +110,7 @@ export default function SensorsPageClient({
         />
       )}
 
-      <ListResultsSummary shownCount={sensors.length} totalCount={totalCount} noun="sensors" />
+      <SensorsListControls shownCount={sensors.length} totalCount={totalCount} />
 
       <ListPaginationFooter
         currentPage={currentPage}
