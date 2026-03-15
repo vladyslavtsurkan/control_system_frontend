@@ -26,8 +26,10 @@ import {
   WS_RECONNECT_BASE_DELAY_MS,
   WS_RECONNECT_MAX_DELAY_MS,
   WS_RECONNECT_MULTIPLIER,
-  MAX_CHART_POINTS,
 } from "@/config/constants";
+
+const LIVE_READING_END_SKEW_TOLERANCE_MS = 5_000;
+const MAX_WS_READINGS_GUARD_POINTS = 50_000;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -192,6 +194,21 @@ function buildAlertFingerprint(alert: LiveAlert): string {
     alert.triggered_at,
     stableSerialize(alert.triggered_value),
   ].join("|");
+}
+
+function parseIsoMs(value?: string): number | null {
+  if (!value) return null;
+  const ms = Date.parse(value);
+  return Number.isFinite(ms) ? ms : null;
+}
+
+function resolveWindowBounds(
+  arg: GetReadingsParams,
+  nowMs: number,
+): { startMs: number | null; endMs: number | null } {
+  const startMs = parseIsoMs(arg.startTime);
+  const endMs = parseIsoMs(arg.endTime) ?? nowMs;
+  return { startMs, endMs };
 }
 
 function findCachedSensorName(
@@ -496,16 +513,15 @@ export const wsMiddleware: Middleware = (storeApi) => {
       // Keep closed time ranges stable; only stream into open-ended queries.
       if (arg?.endTime) continue;
 
-      const readingTimeMs = Date.parse(time);
-      if (!Number.isFinite(readingTimeMs)) {
+      const readingTimeMs = parseIsoMs(time);
+      if (readingTimeMs === null) {
         continue;
       }
 
-      if (arg?.startTime) {
-        const startMs = Date.parse(arg.startTime);
-        if (Number.isFinite(startMs) && readingTimeMs < startMs) {
-          continue;
-        }
+      const nowMs = Date.now();
+      const { startMs } = resolveWindowBounds(arg, nowMs);
+      if (startMs !== null && readingTimeMs < startMs) {
+        continue;
       }
 
       const newReading: ReadingResponse = {
@@ -520,6 +536,10 @@ export const wsMiddleware: Middleware = (storeApi) => {
           "getReadings",
           arg,
           (draft: ItemsResponse<ReadingResponse>) => {
+            const patchNowMs = Date.now();
+            const { startMs: windowStartMs, endMs } = resolveWindowBounds(arg, patchNowMs);
+            const windowEndMs = endMs === null ? null : Math.max(endMs, readingTimeMs) + LIVE_READING_END_SKEW_TOLERANCE_MS;
+
             const existingIndex = draft.items.findIndex(
               (item) => item.time === newReading.time,
             );
@@ -546,8 +566,18 @@ export const wsMiddleware: Middleware = (storeApi) => {
               }
             }
 
-            if (draft.items.length > MAX_CHART_POINTS) {
-              draft.items.splice(MAX_CHART_POINTS);
+            draft.items = draft.items.filter((item) => {
+              const itemMs = parseIsoMs(item.time);
+              return (
+                itemMs !== null &&
+                (windowStartMs === null || itemMs >= windowStartMs) &&
+                (windowEndMs === null || itemMs <= windowEndMs)
+              );
+            });
+
+            // Emergency cap only: time-window filtering is the primary retention policy.
+            if (draft.items.length > MAX_WS_READINGS_GUARD_POINTS) {
+              draft.items.splice(MAX_WS_READINGS_GUARD_POINTS);
             }
           }
         )

@@ -93,7 +93,7 @@ const RANGE_PRESETS = [
   { key: "24h", label: "Last 24h", ms: 24 * 60 * 60 * 1000 },
 ] as const;
 
-const MAX_READINGS_WINDOW_HOURS = 36;
+const MAX_READINGS_WINDOW_HOURS = 25;
 const MAX_READINGS_WINDOW_MS = MAX_READINGS_WINDOW_HOURS * 60 * 60 * 1000;
 
 type RangePresetKey = (typeof RANGE_PRESETS)[number]["key"] | "custom";
@@ -830,7 +830,7 @@ export default function SensorPageClient({
                         {row.message}
                       </TableCell>
                       <TableCell className="text-right text-xs text-muted-foreground">
-                        {formatTime24(row.updatedAt)}
+                        {formatTime24(row.updatedAt, {withSeconds: true})}
                       </TableCell>
                       <TableCell className="text-right">
                         {canAcknowledge ? (

@@ -303,7 +303,7 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
           splitLine: { show: false },
           axisLabel: {
             color: palette.axis,
-            formatter: (val: number) => formatTime24(val),
+            formatter: (val: number) => formatTime24(val, {withSeconds: true}),
           },
         },
         yAxis: {

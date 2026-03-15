@@ -118,7 +118,7 @@ export function ActiveAlertsTable() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right text-xs text-muted-foreground">
-                    {formatTime24(alert.updated_at)}
+                    {formatTime24(alert.updated_at, {withSeconds: true})}
                   </TableCell>
                 </TableRow>
               ))}
