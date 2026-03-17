@@ -2,9 +2,11 @@ export { TimeSeriesChart } from "@/features/sensors/components/time-series-chart
 
 export type {
   Sensor,
+  SensorDataType,
   SensorReading,
   LiveKpi,
-  ReadingResponse,
+  BucketInterval,
+  ReadingsBucketedResponse,
   GetSensorsParams,
   CreateSensorRequest,
   UpdateSensorRequest,

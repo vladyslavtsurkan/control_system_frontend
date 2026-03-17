@@ -24,7 +24,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Sensor, CreateSensorRequest } from "@/features/sensors/types";
+import type {
+  Sensor,
+  SensorDataType,
+  CreateSensorRequest,
+} from "@/features/sensors/types";
 import type { OpcServer } from "@/features/servers";
 
 // ─── Form state ───────────────────────────────────────────────────────────────
@@ -33,6 +37,7 @@ interface SensorFormState {
   name: string;
   description: string;
   node_id: string;
+  data_type: SensorDataType;
   units: string;
   opc_server_id: string;
 }
@@ -41,6 +46,7 @@ const emptyForm: SensorFormState = {
   name: "",
   description: "",
   node_id: "",
+  data_type: "numeric",
   units: "",
   opc_server_id: "",
 };
@@ -68,6 +74,7 @@ export function SensorFormDialog({
           name: editTarget.name,
           description: editTarget.description ?? "",
           node_id: editTarget.node_id,
+          data_type: editTarget.data_type,
           units: editTarget.units ?? "",
           opc_server_id: editTarget.opc_server_id,
         }
@@ -85,6 +92,7 @@ export function SensorFormDialog({
           name: form.name || undefined,
           description: form.description || null,
           node_id: form.node_id || undefined,
+          data_type: form.data_type,
           units: form.units || null,
         }).unwrap();
         toast.success("Sensor updated.");
@@ -94,6 +102,7 @@ export function SensorFormDialog({
           name: form.name,
           description: form.description || null,
           node_id: form.node_id,
+          data_type: form.data_type,
           units: form.units || null,
         };
         await createSensor(payload).unwrap();
@@ -159,6 +168,23 @@ export function SensorFormDialog({
               placeholder="ns=2;i=1001"
               className="font-mono"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Data Type</Label>
+            <Select
+              value={form.data_type}
+              onValueChange={(v) => setForm((f) => ({ ...f, data_type: v as SensorDataType }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="numeric">Numeric</SelectItem>
+                <SelectItem value="boolean">Boolean</SelectItem>
+                <SelectItem value="string">String</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

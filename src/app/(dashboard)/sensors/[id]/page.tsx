@@ -4,6 +4,7 @@ import {
   getFirstSearchParamValue,
   parsePageSizeParam,
   parsePositiveIntParam,
+  parseBucketIntervalParam,
   type SearchParamValue,
 } from "@/lib/utils";
 
@@ -18,9 +19,8 @@ export default async function SensorPage({ params, searchParams }: SensorPagePro
   const initialRange = getFirstSearchParamValue(resolvedSearchParams.range);
   const initialStartTime = getFirstSearchParamValue(resolvedSearchParams.start_time);
   const initialEndTime = getFirstSearchParamValue(resolvedSearchParams.end_time);
-  const initialSampleEvery = parsePositiveIntParam(
-    getFirstSearchParamValue(resolvedSearchParams.sample_every),
-    5,
+  const initialBucketInterval = parseBucketIntervalParam(
+    getFirstSearchParamValue(resolvedSearchParams.bucket_interval),
   );
   const initialAlertsPage = parsePositiveIntParam(
     getFirstSearchParamValue(resolvedSearchParams.alerts_page),
@@ -38,7 +38,7 @@ export default async function SensorPage({ params, searchParams }: SensorPagePro
       initialRange={initialRange}
       initialStartTime={initialStartTime}
       initialEndTime={initialEndTime}
-      initialSampleEvery={initialSampleEvery}
+      initialBucketInterval={initialBucketInterval}
       initialAlertsPage={initialAlertsPage}
       initialAlertsPerPage={initialAlertsPerPage}
     />

@@ -11,6 +11,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { EditSensorFormState } from "@/features/sensors/components/sensor-detail-types";
 
 interface SensorEditDialogProps {
@@ -57,6 +64,22 @@ export function SensorEditDialog({
               placeholder="ns=2;i=1001"
               className="font-mono"
             />
+          </div>
+          <div className="space-y-2">
+            <Label>Data Type</Label>
+            <Select
+              value={form.data_type}
+              onValueChange={(value) => onFormChange({ ...form, data_type: value as EditSensorFormState["data_type"] })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="numeric">Numeric</SelectItem>
+                <SelectItem value="boolean">Boolean</SelectItem>
+                <SelectItem value="string">String</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">

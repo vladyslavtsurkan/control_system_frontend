@@ -26,13 +26,14 @@ import {
   useSensorReadingsFilters,
   useSensorReadingsQueryArgs,
 } from "@/features/sensors/hooks";
+import type { BucketInterval } from "@/features/sensors/types";
 
 interface SensorPageClientProps {
   id: string;
   initialRange?: string;
   initialStartTime?: string;
   initialEndTime?: string;
-  initialSampleEvery: number;
+  initialBucketInterval: BucketInterval;
   initialAlertsPage: number;
   initialAlertsPerPage: number;
 }
@@ -42,7 +43,7 @@ export default function SensorPageClient({
   initialRange,
   initialStartTime,
   initialEndTime,
-  initialSampleEvery,
+  initialBucketInterval,
   initialAlertsPage,
   initialAlertsPerPage,
 }: SensorPageClientProps) {
@@ -56,8 +57,7 @@ export default function SensorPageClient({
     activePreset,
     startTimeLocal,
     endTimeLocal,
-    sampleEveryInput,
-    sampleEvery,
+    bucketInterval,
     startTimeIso,
     endTimeIso,
     rangeError,
@@ -68,12 +68,12 @@ export default function SensorPageClient({
     onClear,
     onStartTimeChange,
     onEndTimeChange,
-    onSampleEveryChange,
+    onBucketIntervalChange,
   } = useSensorReadingsFilters({
     initialRange,
     initialStartTime,
     initialEndTime,
-    initialSampleEvery,
+    initialBucketInterval,
     alertsPerPage: alertsPagination.perPage,
   });
 
@@ -81,7 +81,7 @@ export default function SensorPageClient({
     sensorId: id,
     startTimeIso,
     endTimeIso,
-    sampleEvery,
+    bucketInterval,
     rangeError,
   });
 
@@ -148,7 +148,7 @@ export default function SensorPageClient({
     sensorId: id,
     startTimeIso,
     endTimeIso,
-    sampleEvery,
+    bucketInterval,
     readingsPage,
   });
 
@@ -168,7 +168,7 @@ export default function SensorPageClient({
         activePreset={activePreset}
         startTimeLocal={startTimeLocal}
         endTimeLocal={endTimeLocal}
-        sampleEveryInput={sampleEveryInput}
+        bucketInterval={bucketInterval}
         rangeError={rangeError}
         maxWindowHours={maxWindowHours}
         onPresetChange={onPresetChange}
@@ -177,7 +177,7 @@ export default function SensorPageClient({
         onClear={onClear}
         onStartTimeChange={onStartTimeChange}
         onEndTimeChange={onEndTimeChange}
-        onSampleEveryChange={onSampleEveryChange}
+        onBucketIntervalChange={onBucketIntervalChange}
       />
 
       <SensorReadingsStats stats={stats} unit={unit} isLoading={readingsLoading} />
@@ -186,6 +186,7 @@ export default function SensorPageClient({
         isLoading={readingsLoading}
         chartKey={chartKey}
         chartData={chartData}
+        sensorDataType={sensor?.data_type}
         unit={unit}
         sensorName={sensor?.name}
       />

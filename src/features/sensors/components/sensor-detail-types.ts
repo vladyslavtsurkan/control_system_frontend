@@ -1,10 +1,11 @@
 import type { AlertSeverity } from "@/features/alerts";
-import type { SensorReading } from "@/features/sensors/types";
+import type { SensorDataType, SensorReading } from "@/features/sensors/types";
 
 export interface EditSensorFormState {
   name: string;
   description: string;
   node_id: string;
+  data_type: SensorDataType;
   units: string;
 }
 

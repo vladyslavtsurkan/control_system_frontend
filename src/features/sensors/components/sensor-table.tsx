@@ -26,16 +26,6 @@ interface SensorTableProps {
   onEdit: (sensor: Sensor) => void;
 }
 
-function formatReadingValue(payload: Record<string, unknown>): string {
-  const entries = Object.entries(payload);
-  if (entries.length === 0) return "{}";
-
-  return entries
-    .slice(0, 2)
-    .map(([key, value]) => `${key}: ${String(value)}`)
-    .join(", ");
-}
-
 export function SensorTable({ sensors, servers, serverFilter, onEdit }: SensorTableProps) {
   const [deleteSensor] = useDeleteSensorMutation();
   const { confirm, ConfirmDialog } = useConfirm();
@@ -80,6 +70,23 @@ export function SensorTable({ sensors, servers, serverFilter, onEdit }: SensorTa
           ) : (
             sensors.map((s) => {
               const server = servers.find((srv) => srv.id === s.opc_server_id);
+              const prefetchedTimes = s.readings?.times ?? [];
+              const prefetchedValues = s.readings?.values ?? [];
+              const prefetchedLen = Math.min(prefetchedTimes.length, prefetchedValues.length);
+              const recentPrefetchedReadings = Array.from({ length: prefetchedLen }, (_, index) => ({
+                time: prefetchedTimes[index],
+                value: prefetchedValues[index],
+              }));
+
+              if (s.readings && prefetchedTimes.length !== prefetchedValues.length) {
+                console.warn("[Sensors] Prefetched readings are misaligned; truncating in table.", {
+                  sensorId: s.id,
+                  timesLength: prefetchedTimes.length,
+                  valuesLength: prefetchedValues.length,
+                  truncatedTo: prefetchedLen,
+                });
+              }
+
               return (
                 <TableRow key={s.id}>
                   <TableCell className="font-medium">
@@ -101,18 +108,18 @@ export function SensorTable({ sensors, servers, serverFilter, onEdit }: SensorTa
                     )}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
-                    {!s.readings || s.readings.length === 0 ? (
+                    {recentPrefetchedReadings.length === 0 ? (
                       <span>No recent readings</span>
                     ) : (
                       <div className="space-y-1">
-                        {s.readings.slice(0, 3).map((reading) => (
-                          <div key={`${reading.sensor_id}-${reading.time}`} className="truncate">
+                        {recentPrefetchedReadings.slice(0, 3).map((reading) => (
+                          <div key={`${s.id}-${reading.time}`} className="truncate">
                             {formatTime24(reading.time, { withSeconds: true })}
                             {" - "}
-                            {formatReadingValue(reading.payload)}
+                            {reading.value.toFixed(3)}
                           </div>
                         ))}
-                        {s.readings.length > 3 ? <div>...</div> : null}
+                        {recentPrefetchedReadings.length > 3 ? <div>...</div> : null}
                       </div>
                     )}
                   </TableCell>

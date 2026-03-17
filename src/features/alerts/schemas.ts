@@ -8,7 +8,11 @@ const alertCondition = z.enum([
 
 const singleValueThreshold = z.object({
   type: z.literal("single_value"),
-  value: z.number({ error: "Threshold value is required" }),
+  value: z.union([
+    z.number({ error: "Threshold value is required" }),
+    z.boolean({ error: "Threshold value is required" }),
+    z.string().min(1, "Threshold value is required"),
+  ]),
 });
 
 const rangeThreshold = z.object({

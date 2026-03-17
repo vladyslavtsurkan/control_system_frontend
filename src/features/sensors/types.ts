@@ -1,7 +1,28 @@
-export interface ReadingResponse {
-  sensor_id: string;
-  payload: Record<string, unknown>;
-  time: string;
+export const BUCKET_INTERVAL_VALUES = [
+  "1 second",
+  "2 seconds",
+  "5 seconds",
+  "10 seconds",
+  "15 seconds",
+  "30 seconds",
+  "1 minute",
+  "5 minutes",
+  "15 minutes",
+  "30 minutes",
+  "1 hour",
+] as const;
+
+export type BucketInterval = (typeof BUCKET_INTERVAL_VALUES)[number];
+
+export const DEFAULT_BUCKET_INTERVAL: BucketInterval = "10 seconds";
+
+export const SENSOR_DATA_TYPES = ["numeric", "boolean", "string"] as const;
+
+export type SensorDataType = (typeof SENSOR_DATA_TYPES)[number];
+
+export interface ReadingsBucketedResponse {
+  times: string[];
+  values: number[];
 }
 
 export interface Sensor {
@@ -11,8 +32,9 @@ export interface Sensor {
   name: string;
   description: string | null;
   node_id: string;
+  data_type: SensorDataType;
   units: string | null;
-  readings?: ReadingResponse[] | null;
+  readings?: ReadingsBucketedResponse | null;
 }
 
 export interface GetSensorsParams {
@@ -28,6 +50,7 @@ export interface CreateSensorRequest {
   name: string;
   description?: string | null;
   node_id: string;
+  data_type: SensorDataType;
   units?: string | null;
 }
 
@@ -36,6 +59,7 @@ export interface UpdateSensorRequest {
   name?: string | null;
   description?: string | null;
   node_id?: string | null;
+  data_type?: SensorDataType;
   units?: string | null;
 }
 
@@ -43,7 +67,7 @@ export interface GetReadingsParams {
   sensorId: string;
   startTime?: string;
   endTime?: string;
-  sampleEvery?: number;
+  bucketInterval?: BucketInterval;
 }
 
 export interface SensorReading {
@@ -56,7 +80,7 @@ export interface GetSensorReadingsParams {
   sensorId: string;
   from?: string;
   to?: string;
-  sampleEvery?: number;
+  bucketInterval?: BucketInterval;
 }
 
 export interface LiveKpi {

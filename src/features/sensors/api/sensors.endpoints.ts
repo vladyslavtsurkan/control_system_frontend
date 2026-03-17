@@ -1,13 +1,16 @@
 import { api } from "@/store/api/base-api";
+import {
+  DEFAULT_BUCKET_INTERVAL,
+} from "@/features/sensors/types";
 import type {
   Sensor,
   GetSensorsParams,
   CreateSensorRequest,
   UpdateSensorRequest,
-  ReadingResponse,
+  ReadingsBucketedResponse,
   GetReadingsParams,
 } from "@/features/sensors/types";
-import type { PaginatedResponse, ItemsResponse } from "@/shared/types/pagination";
+import type { PaginatedResponse } from "@/shared/types/pagination";
 
 const sensorsApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -61,12 +64,12 @@ const sensorsApi = api.injectEndpoints({
       invalidatesTags: [{ type: "Sensors", id: "LIST" }],
     }),
 
-    getReadings: builder.query<ItemsResponse<ReadingResponse>, GetReadingsParams>({
-      query: ({ sensorId, startTime, endTime, sampleEvery }) => {
+    getReadings: builder.query<ReadingsBucketedResponse, GetReadingsParams>({
+      query: ({ sensorId, startTime, endTime, bucketInterval = DEFAULT_BUCKET_INTERVAL }) => {
         const params = new URLSearchParams({ sensor_id: sensorId });
         if (startTime) params.set("start_time", startTime);
         if (endTime) params.set("end_time", endTime);
-        if (sampleEvery != null) params.set("sample_every", String(sampleEvery));
+        params.set("bucket_interval", bucketInterval);
         return `/v1/readings/?${params.toString()}`;
       },
       providesTags: (_r, _e, { sensorId }) => [{ type: "Readings", id: sensorId }],

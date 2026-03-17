@@ -9,12 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { SensorReading } from "@/features/sensors/types";
+import type { SensorDataType, SensorReading } from "@/features/sensors/types";
 
 interface SensorReadingsChartCardProps {
   isLoading: boolean;
   chartKey: string;
   chartData: SensorReading[];
+  sensorDataType?: SensorDataType;
   unit: string;
   sensorName?: string;
 }
@@ -23,9 +24,15 @@ export function SensorReadingsChartCard({
   isLoading,
   chartKey,
   chartData,
+  sensorDataType,
   unit,
   sensorName,
 }: SensorReadingsChartCardProps) {
+  const emptyStateMessage =
+    sensorDataType && sensorDataType !== "numeric"
+      ? "No numeric data for this sensor type."
+      : "No readings found for this sensor yet.";
+
   return (
     <Card>
       <CardHeader>
@@ -39,7 +46,7 @@ export function SensorReadingsChartCard({
           <Skeleton className="h-105 w-full" />
         ) : chartData.length === 0 ? (
           <div className="flex h-105 items-center justify-center text-sm text-muted-foreground">
-            No readings found for this sensor yet.
+            {emptyStateMessage}
           </div>
         ) : (
           <TimeSeriesChart

@@ -6,8 +6,13 @@ import {
   SENSOR_RANGE_PRESETS,
   type SensorRangePresetKey,
 } from "@/features/sensors/components";
+import {
+  BUCKET_INTERVAL_VALUES,
+  DEFAULT_BUCKET_INTERVAL,
+  type BucketInterval,
+} from "@/features/sensors/types";
 
-const MAX_READINGS_WINDOW_HOURS = 25;
+const MAX_READINGS_WINDOW_HOURS = 24 * 7;
 const MAX_READINGS_WINDOW_MS = MAX_READINGS_WINDOW_HOURS * 60 * 60 * 1000;
 
 function toDateTimeLocalValue(date: Date): string {
@@ -19,7 +24,7 @@ interface UseSensorReadingsFiltersParams {
   initialRange?: string;
   initialStartTime?: string;
   initialEndTime?: string;
-  initialSampleEvery: number;
+  initialBucketInterval: BucketInterval;
   alertsPerPage: number;
 }
 
@@ -27,7 +32,7 @@ export function useSensorReadingsFilters({
   initialRange,
   initialStartTime,
   initialEndTime,
-  initialSampleEvery,
+  initialBucketInterval,
   alertsPerPage,
 }: UseSensorReadingsFiltersParams) {
   const router = useRouter();
@@ -49,7 +54,13 @@ export function useSensorReadingsFilters({
 
   const startTimeLocal = searchParams.get("start_time") ?? initialStartTime ?? defaultStartTimeLocal;
   const endTimeLocal = searchParams.get("end_time") ?? initialEndTime ?? "";
-  const sampleEveryInput = searchParams.get("sample_every") ?? String(initialSampleEvery);
+  const bucketIntervalInput = searchParams.get("bucket_interval") ?? initialBucketInterval;
+  const bucketInterval = useMemo<BucketInterval>(() => {
+    if (BUCKET_INTERVAL_VALUES.includes(bucketIntervalInput as BucketInterval)) {
+      return bucketIntervalInput as BucketInterval;
+    }
+    return DEFAULT_BUCKET_INTERVAL;
+  }, [bucketIntervalInput]);
 
   const replaceQuery = useCallback((mutate: (params: URLSearchParams) => void) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -136,19 +147,12 @@ export function useSensorReadingsFilters({
     });
   }, [replaceQuery, resetAlertsPaginationParams]);
 
-  const onSampleEveryChange = useCallback((value: string) => {
+  const onBucketIntervalChange = useCallback((value: BucketInterval) => {
     replaceQuery((params) => {
-      if (value) {
-        params.set("sample_every", value);
-      } else {
-        params.delete("sample_every");
-      }
+      params.set("bucket_interval", value);
       resetAlertsPaginationParams(params);
     });
   }, [replaceQuery, resetAlertsPaginationParams]);
-
-  const parsedSampleEvery = Number(sampleEveryInput);
-  const sampleEvery = Number.isInteger(parsedSampleEvery) ? parsedSampleEvery : NaN;
 
   const startTimeIso = useMemo(() => {
     if (!startTimeLocal) return undefined;
@@ -165,9 +169,6 @@ export function useSensorReadingsFilters({
   }, [endTimeLocal]);
 
   const rangeError = useMemo(() => {
-    if (!Number.isInteger(sampleEvery) || sampleEvery < 1) {
-      return "Sampling must be an integer greater than or equal to 1.";
-    }
     if (startTimeIso === null || endTimeIso === null) {
       return "Please enter valid start and end datetimes.";
     }
@@ -186,14 +187,13 @@ export function useSensorReadingsFilters({
     }
 
     return null;
-  }, [sampleEvery, startTimeIso, endTimeIso]);
+  }, [startTimeIso, endTimeIso]);
 
   return {
     activePreset,
     startTimeLocal,
     endTimeLocal,
-    sampleEveryInput,
-    sampleEvery,
+    bucketInterval,
     startTimeIso,
     endTimeIso,
     rangeError,
@@ -204,7 +204,7 @@ export function useSensorReadingsFilters({
     onClear,
     onStartTimeChange,
     onEndTimeChange,
-    onSampleEveryChange,
+    onBucketIntervalChange,
   };
 }
 

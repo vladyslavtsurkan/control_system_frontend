@@ -1,21 +1,24 @@
 import { useSensorReadingsChartViewModel } from "./use-sensor-readings-chart-view-model";
 import { useSensorReadingsQueryArgs } from "./use-sensor-readings-query-args";
-import type { ReadingResponse } from "@/features/sensors/types";
+import type {
+  BucketInterval,
+  ReadingsBucketedResponse,
+} from "@/features/sensors/types";
 
 interface UseSensorReadingsViewModelParams {
   sensorId: string;
   startTimeIso: string | undefined | null;
   endTimeIso: string | undefined | null;
-  sampleEvery: number;
+  bucketInterval: BucketInterval;
   rangeError: string | null;
-  readingsPage?: { items: ReadingResponse[] };
+  readingsPage?: ReadingsBucketedResponse;
 }
 
 export function useSensorReadingsViewModel({
   sensorId,
   startTimeIso,
   endTimeIso,
-  sampleEvery,
+  bucketInterval,
   rangeError,
   readingsPage,
 }: UseSensorReadingsViewModelParams) {
@@ -23,7 +26,7 @@ export function useSensorReadingsViewModel({
     sensorId,
     startTimeIso,
     endTimeIso,
-    sampleEvery,
+    bucketInterval,
     rangeError,
   });
 
@@ -31,7 +34,7 @@ export function useSensorReadingsViewModel({
     sensorId,
     startTimeIso,
     endTimeIso,
-    sampleEvery,
+    bucketInterval,
     readingsPage,
   });
 

@@ -16,15 +16,26 @@ function SensorKpiCard({ sensor }: { sensor: Sensor }) {
 
   // Prefetched readings may be undefined/null/empty depending server response.
   const chartData = useMemo<SensorReading[]>(() => {
-    if (!sensor.readings?.length) return [];
-    return sensor.readings.map((r) => ({
-      sensor_id: r.sensor_id,
-      time: r.time,
-      value: typeof r.payload.value === "number"
-        ? r.payload.value
-        : Number(r.payload.value ?? 0),
+    if (!sensor.readings) return [];
+
+    const { times, values } = sensor.readings;
+    const maxLen = Math.min(times.length, values.length);
+
+    if (times.length !== values.length) {
+      console.warn("[Sensors] Prefetched readings are misaligned; truncating.", {
+        sensorId: sensor.id,
+        timesLength: times.length,
+        valuesLength: values.length,
+        truncatedTo: maxLen,
+      });
+    }
+
+    return Array.from({ length: maxLen }, (_, index) => ({
+      sensor_id: sensor.id,
+      time: times[index],
+      value: values[index],
     }));
-  }, [sensor.readings]);
+  }, [sensor.id, sensor.readings]);
 
   const mergedChartData = useMemo<SensorReading[]>(() => {
     const liveTail = liveReadingsBySensor[sensor.id] ?? [];

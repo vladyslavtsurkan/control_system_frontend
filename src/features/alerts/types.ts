@@ -48,9 +48,11 @@ export interface GetAlertRulesParams extends PaginationQueryParams {
   sensorId?: string;
 }
 
+export type AlertThresholdScalar = number | string | boolean;
+
 export interface SingleValueThreshold {
   type: "single_value";
-  value: number;
+  value: AlertThresholdScalar;
 }
 
 export interface RangeThreshold {

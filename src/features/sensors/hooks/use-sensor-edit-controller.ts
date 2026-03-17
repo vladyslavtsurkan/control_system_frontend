@@ -16,6 +16,7 @@ export function useSensorEditController({ sensorId, sensor }: UseSensorEditContr
     name: "",
     description: "",
     node_id: "",
+    data_type: "numeric",
     units: "",
   });
 
@@ -26,6 +27,7 @@ export function useSensorEditController({ sensorId, sensor }: UseSensorEditContr
       name: sensor.name,
       description: sensor.description ?? "",
       node_id: sensor.node_id,
+      data_type: sensor.data_type,
       units: sensor.units ?? "",
     });
     setEditOpen(true);
@@ -40,6 +42,7 @@ export function useSensorEditController({ sensorId, sensor }: UseSensorEditContr
         name: form.name || undefined,
         description: form.description || null,
         node_id: form.node_id || undefined,
+        data_type: form.data_type,
         units: form.units || null,
       }).unwrap();
       toast.success("Sensor updated.");

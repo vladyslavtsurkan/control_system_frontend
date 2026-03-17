@@ -2,9 +2,8 @@ import { api } from "@/store/api";
 import { updateLiveKpi } from "@/store/ws-slice";
 import type {
   GetReadingsParams,
-  ReadingResponse,
+  ReadingsBucketedResponse,
 } from "@/features/sensors/types";
-import type { ItemsResponse } from "@/shared/types/pagination";
 import type { WsTelemetryHandler } from "@/store/ws/base/ws-types";
 import {
   normalizeTelemetry,
@@ -66,22 +65,22 @@ export function createTelemetryEventHandler(): WsTelemetryHandler {
         continue;
       }
 
-      const newReading: ReadingResponse = {
-        sensor_id: sensorId,
-        payload: { value },
-        time,
-      };
-
       const dispatchThunk = apiStore.dispatch as (action: unknown) => unknown;
       dispatchThunk(
         (api.util.updateQueryData as unknown as (
           endpointName: string,
           args: unknown,
-          updater: (draft: ItemsResponse<ReadingResponse>) => void,
+          updater: (draft: ReadingsBucketedResponse) => void,
         ) => unknown)(
           "getReadings",
           arg,
-          (draft: ItemsResponse<ReadingResponse>) => {
+          (draft: ReadingsBucketedResponse) => {
+            const alignedLen = Math.min(draft.times.length, draft.values.length);
+            if (draft.times.length !== draft.values.length) {
+              draft.times = draft.times.slice(0, alignedLen);
+              draft.values = draft.values.slice(0, alignedLen);
+            }
+
             const patchNowMs = Date.now();
             const { startMs: windowStartMs, endMs } = resolveWindowBounds(
               arg,
@@ -93,42 +92,45 @@ export function createTelemetryEventHandler(): WsTelemetryHandler {
                 : Math.max(endMs, readingTimeMs) +
                   LIVE_READING_END_SKEW_TOLERANCE_MS;
 
-            const existingIndex = draft.items.findIndex(
-              (item) => item.time === newReading.time,
-            );
+            const existingIndex = draft.times.findIndex((itemTime) => itemTime === time);
 
             if (existingIndex >= 0) {
-              draft.items[existingIndex] = newReading;
+              draft.values[existingIndex] = value;
             } else {
-              const first = draft.items[0];
-              const last = draft.items[draft.items.length - 1];
-              if (!first || Date.parse(first.time) <= readingTimeMs) {
-                draft.items.unshift(newReading);
-              } else if (last && Date.parse(last.time) >= readingTimeMs) {
-                draft.items.push(newReading);
+              const insertAt = draft.times.findIndex(
+                (itemTime) => Date.parse(itemTime) < readingTimeMs,
+              );
+              if (insertAt === -1) {
+                draft.times.push(time);
+                draft.values.push(value);
               } else {
-                const insertAt = draft.items.findIndex(
-                  (item) => Date.parse(item.time) < readingTimeMs,
-                );
-                if (insertAt === -1) {
-                  draft.items.push(newReading);
-                } else {
-                  draft.items.splice(insertAt, 0, newReading);
-                }
+                draft.times.splice(insertAt, 0, time);
+                draft.values.splice(insertAt, 0, value);
               }
             }
 
-            draft.items = draft.items.filter((item) => {
-              const itemMs = parseIsoMs(item.time);
-              return (
-                itemMs !== null &&
-                (windowStartMs === null || itemMs >= windowStartMs) &&
-                (windowEndMs === null || itemMs <= windowEndMs)
-              );
-            });
+            const nextTimes: string[] = [];
+            const nextValues: number[] = [];
 
-            if (draft.items.length > MAX_WS_READINGS_GUARD_POINTS) {
-              draft.items.splice(MAX_WS_READINGS_GUARD_POINTS);
+            for (let i = 0; i < draft.times.length; i += 1) {
+              const itemMs = parseIsoMs(draft.times[i]);
+              if (itemMs === null) continue;
+
+              const isInWindow =
+                (windowStartMs === null || itemMs >= windowStartMs) &&
+                (windowEndMs === null || itemMs <= windowEndMs);
+              if (!isInWindow) continue;
+
+              nextTimes.push(draft.times[i]);
+              nextValues.push(draft.values[i]);
+            }
+
+            draft.times = nextTimes;
+            draft.values = nextValues;
+
+            if (draft.times.length > MAX_WS_READINGS_GUARD_POINTS) {
+              draft.times.splice(MAX_WS_READINGS_GUARD_POINTS);
+              draft.values.splice(MAX_WS_READINGS_GUARD_POINTS);
             }
           },
         ),

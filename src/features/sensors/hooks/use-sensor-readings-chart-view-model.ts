@@ -1,33 +1,45 @@
 import { useMemo } from "react";
 import type { SensorReadingsStatsData } from "@/features/sensors/components";
-import type { ReadingResponse, SensorReading } from "@/features/sensors/types";
+import type {
+  BucketInterval,
+  ReadingsBucketedResponse,
+  SensorReading,
+} from "@/features/sensors/types";
 
 interface UseSensorReadingsChartViewModelParams {
   sensorId: string;
   startTimeIso: string | undefined | null;
   endTimeIso: string | undefined | null;
-  sampleEvery: number;
-  readingsPage?: { items: ReadingResponse[] };
+  bucketInterval: BucketInterval;
+  readingsPage?: ReadingsBucketedResponse;
 }
 
 export function useSensorReadingsChartViewModel({
   sensorId,
   startTimeIso,
   endTimeIso,
-  sampleEvery,
+  bucketInterval,
   readingsPage,
 }: UseSensorReadingsChartViewModelParams) {
   const chartData = useMemo<SensorReading[]>(() => {
     if (!readingsPage) return [];
-    return readingsPage.items.map((reading) => ({
-      sensor_id: reading.sensor_id,
-      time: reading.time,
-      value:
-        typeof reading.payload.value === "number"
-          ? reading.payload.value
-          : Number(reading.payload.value ?? 0),
+    const maxLen = Math.min(readingsPage.times.length, readingsPage.values.length);
+
+    if (readingsPage.times.length !== readingsPage.values.length) {
+      console.warn("[Readings] times/values length mismatch; truncating to aligned points.", {
+        sensorId,
+        timesLength: readingsPage.times.length,
+        valuesLength: readingsPage.values.length,
+        truncatedTo: maxLen,
+      });
+    }
+
+    return Array.from({ length: maxLen }, (_, index) => ({
+      sensor_id: sensorId,
+      time: readingsPage.times[index],
+      value: readingsPage.values[index],
     }));
-  }, [readingsPage]);
+  }, [readingsPage, sensorId]);
 
   const stats = useMemo<SensorReadingsStatsData | null>(() => {
     if (!chartData.length) return null;
@@ -42,7 +54,7 @@ export function useSensorReadingsChartViewModel({
     return { min, max, avg, latest, count: chartData.length };
   }, [chartData]);
 
-  const chartKey = `${sensorId}-${startTimeIso ?? "default-start"}-${endTimeIso ?? "default-end"}-${sampleEvery}`;
+  const chartKey = `${sensorId}-${startTimeIso ?? "default-start"}-${endTimeIso ?? "default-end"}-${bucketInterval}`;
 
   return {
     chartData,

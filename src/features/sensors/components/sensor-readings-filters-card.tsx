@@ -17,6 +17,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  BUCKET_INTERVAL_VALUES,
+  type BucketInterval,
+} from "@/features/sensors/types";
 
 export const SENSOR_RANGE_PRESETS = [
   { key: "15m", label: "Last 15m", ms: 15 * 60 * 1000 },
@@ -32,7 +36,7 @@ interface SensorReadingsFiltersCardProps {
   activePreset: SensorRangePresetKey;
   startTimeLocal: string;
   endTimeLocal: string;
-  sampleEveryInput: string;
+  bucketInterval: BucketInterval;
   rangeError: string | null;
   maxWindowHours: number;
   onPresetChange: (value: SensorRangePresetKey) => void;
@@ -41,14 +45,14 @@ interface SensorReadingsFiltersCardProps {
   onClear: () => void;
   onStartTimeChange: (value: string) => void;
   onEndTimeChange: (value: string) => void;
-  onSampleEveryChange: (value: string) => void;
+  onBucketIntervalChange: (value: BucketInterval) => void;
 }
 
 export function SensorReadingsFiltersCard({
   activePreset,
   startTimeLocal,
   endTimeLocal,
-  sampleEveryInput,
+  bucketInterval,
   rangeError,
   maxWindowHours,
   onPresetChange,
@@ -57,7 +61,7 @@ export function SensorReadingsFiltersCard({
   onClear,
   onStartTimeChange,
   onEndTimeChange,
-  onSampleEveryChange,
+  onBucketIntervalChange,
 }: SensorReadingsFiltersCardProps) {
   return (
     <Card>
@@ -126,15 +130,17 @@ export function SensorReadingsFiltersCard({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sample-every">Sample every N readings</Label>
-            <Input
-              id="sample-every"
-              type="number"
-              min={1}
-              step={1}
-              value={sampleEveryInput}
-              onChange={(e) => onSampleEveryChange(e.target.value)}
-            />
+            <Label htmlFor="bucket-interval">Bucket interval</Label>
+            <Select value={bucketInterval} onValueChange={(value) => onBucketIntervalChange(value as BucketInterval)}>
+              <SelectTrigger id="bucket-interval">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {BUCKET_INTERVAL_VALUES.map((value) => (
+                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
