@@ -4,6 +4,20 @@ import type { OrganizationWithRole } from "@/features/organizations/types";
 
 const TENANT_COOKIE = "iiot_tenant_id";
 
+function persistTenantCookie(tenantId: string) {
+  if (typeof document === "undefined") {
+    return;
+  }
+  document.cookie = `${TENANT_COOKIE}=${tenantId}; path=/; SameSite=Strict`;
+}
+
+function clearTenantCookie() {
+  if (typeof document === "undefined") {
+    return;
+  }
+  document.cookie = `${TENANT_COOKIE}=; path=/; max-age=0`;
+}
+
 type AuthStatus = "idle" | "loading" | "authenticated" | "unauthenticated";
 
 interface AuthState {
@@ -34,22 +48,20 @@ const authSlice = createSlice({
       state.activeOrgId = action.payload.id;
       // Persist to a plain (non-httpOnly) cookie so server-side BFF routes
       // (e.g. /api/ws/ticket) can read X-Tenant-ID without needing JS access.
-      if (typeof document !== "undefined") {
-        document.cookie = `${TENANT_COOKIE}=${action.payload.id}; path=/; SameSite=Strict`;
-      }
+      persistTenantCookie(action.payload.id);
     },
     /** Used during bootstrap only — sets the active org without triggering
      *  the listener that resets the RTK Query cache. */
     initActiveOrg(state, action: PayloadAction<string>) {
       state.activeOrgId = action.payload;
+      // Keep the tenant cookie in sync during initial bootstrap as well.
+      persistTenantCookie(action.payload);
     },
     logout(state) {
       state.user = null;
       state.activeOrgId = null;
       state.status = "unauthenticated";
-      if (typeof document !== "undefined") {
-        document.cookie = `${TENANT_COOKIE}=; path=/; max-age=0`;
-      }
+      clearTenantCookie();
     },
   },
 });

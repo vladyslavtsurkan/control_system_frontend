@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useAppDispatch } from "@/store/hooks";
-import { setUser } from "@/store/auth-slice";
 import { loginSchema } from "@/features/auth/schemas";
 import {
   Card,
@@ -16,10 +15,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import type { User } from "@/features/auth/types";
 
 export default function LoginPageClient() {
-  const dispatch = useAppDispatch();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -59,7 +56,6 @@ export default function LoginPageClient() {
         return;
       }
 
-      dispatch(setUser(data.user as User));
       router.push("/");
     } catch {
       toast.error("Network error. Please try again.");
@@ -109,6 +105,14 @@ export default function LoginPageClient() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Signing in..." : "Sign in"}
           </Button>
+          <div className="flex items-center justify-between text-sm">
+            <Link href="/forgot-password" className="text-muted-foreground hover:text-foreground">
+              Forgot password?
+            </Link>
+            <Link href="/signup" className="text-muted-foreground hover:text-foreground">
+              Create account
+            </Link>
+          </div>
         </form>
       </CardContent>
     </Card>

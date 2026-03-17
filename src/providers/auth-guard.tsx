@@ -53,7 +53,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         if (controller.signal.aborted) {
           return;
         }
-        dispatch(setUser(user));
 
         // 2. Load orgs and activate the last-used one (from cookie) or the first
         const orgsRes = await fetch("/api/proxy/v1/organizations/", {
@@ -73,6 +72,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             dispatch(initActiveOrg((match || orgs.items[0]).id));
           }
         }
+
+        // Mark auth as ready only after tenant bootstrap is complete.
+        dispatch(setUser(user));
 
         // 3. Open WebSocket connection
         dispatch(wsConnect());
