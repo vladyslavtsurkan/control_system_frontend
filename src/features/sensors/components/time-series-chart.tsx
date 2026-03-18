@@ -367,6 +367,10 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
     <ReactECharts
       onChartReady={(chart) => {
         chartInstanceRef.current = chart as ECharts;
+        chart.setOption(option, {
+          notMerge: false,
+          lazyUpdate: true,
+        });
       }}
       option={{ backgroundColor: "transparent", animation: false }}
       style={{ height, width: "100%" }}
