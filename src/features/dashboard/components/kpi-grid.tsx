@@ -1,62 +1,36 @@
 "use client";
 
-import { useMemo } from "react";
-import { useAppSelector } from "@/store/hooks";
+import { memo } from "react";
 import { useGetSensorsQuery } from "@/store/api";
-import { selectLiveKpis, selectLiveReadingsBySensor } from "@/store/selectors";
 import { KpiCard } from "./kpi-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Sensor, SensorReading } from "@/features/sensors";
+import type { LiveKpi, Sensor, SensorReading } from "@/features/sensors";
+import { useDashboardTelemetry } from "@/features/dashboard/hooks/use-dashboard-telemetry";
+import {
+  buildFallbackKpi,
+  getLatestReading,
+  mergeByTimestamp,
+  toChartData,
+} from "@/features/dashboard/lib/kpi-data";
+
+const SKELETON_COUNT = 4;
 
 // Uses readings prefetched by getSensors for sparkline and KPI fallback.
-function SensorKpiCard({ sensor }: { sensor: Sensor }) {
-  const liveKpis = useAppSelector(selectLiveKpis);
-  const liveReadingsBySensor = useAppSelector(selectLiveReadingsBySensor);
-  const liveKpi = liveKpis[sensor.id];
+interface SensorKpiCardProps {
+  sensor: Sensor;
+  liveKpi: LiveKpi | undefined;
+  liveTail: SensorReading[] | undefined;
+}
 
-  // Prefetched readings may be undefined/null/empty depending server response.
-  const chartData = useMemo<SensorReading[]>(() => {
-    if (!sensor.readings) return [];
-
-    const { times, values } = sensor.readings;
-    const maxLen = Math.min(times.length, values.length);
-
-    if (times.length !== values.length) {
-      console.warn("[Sensors] Prefetched readings are misaligned; truncating.", {
-        sensorId: sensor.id,
-        timesLength: times.length,
-        valuesLength: values.length,
-        truncatedTo: maxLen,
-      });
-    }
-
-    return Array.from({ length: maxLen }, (_, index) => ({
-      sensor_id: sensor.id,
-      time: times[index],
-      value: values[index],
-    }));
-  }, [sensor.id, sensor.readings]);
-
-  const mergedChartData = useMemo<SensorReading[]>(() => {
-    const liveTail = liveReadingsBySensor[sensor.id] ?? [];
-    const byTime = new Map<string, SensorReading>();
-    for (const point of chartData) byTime.set(point.time, point);
-    for (const point of liveTail) byTime.set(point.time, point);
-    return Array.from(byTime.values()).sort((a, b) => Date.parse(a.time) - Date.parse(b.time));
-  }, [chartData, liveReadingsBySensor, sensor.id]);
-
-  // Derive the latest known value from merged history (used before the first WS event)
-  const historicalLatest = mergedChartData.reduce<SensorReading | undefined>((latest, current) => {
-    if (!latest) return current;
-    return Date.parse(current.time) > Date.parse(latest.time) ? current : latest;
-  }, undefined);
-
-  // Prefer the live WS kpi; fall back to the last historical reading
-  const effectiveKpi = liveKpi ?? (
-    historicalLatest
-      ? { value: historicalLatest.value, time: historicalLatest.time }
-      : undefined
-  );
+const SensorKpiCard = memo(function SensorKpiCard({
+  sensor,
+  liveKpi,
+  liveTail,
+}: SensorKpiCardProps) {
+  const chartData = toChartData(sensor);
+  const mergedChartData = mergeByTimestamp(chartData, liveTail);
+  const historicalLatest = getLatestReading(mergedChartData);
+  const effectiveKpi = liveKpi ?? buildFallbackKpi(sensor.id, historicalLatest);
 
   return (
     <KpiCard
@@ -67,9 +41,11 @@ function SensorKpiCard({ sensor }: { sensor: Sensor }) {
       readings={mergedChartData}
     />
   );
-}
+});
 
 export function KpiGrid() {
+  const { latestBySensor, readingsBySensor } = useDashboardTelemetry();
+
   const { data: sensorsData, isLoading } = useGetSensorsQuery({
     prefetchReadings: true,
     prefetchWindowMinutes: 15,
@@ -80,7 +56,7 @@ export function KpiGrid() {
   if (isLoading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
+        {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
           <Skeleton key={i} className="h-50 w-full rounded-xl" />
         ))}
       </div>
@@ -92,7 +68,12 @@ export function KpiGrid() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {sensors.map((sensor) => (
-        <SensorKpiCard key={sensor.id} sensor={sensor} />
+        <SensorKpiCard
+          key={sensor.id}
+          sensor={sensor}
+          liveKpi={latestBySensor[sensor.id]}
+          liveTail={readingsBySensor[sensor.id]}
+        />
       ))}
       {sensors.length === 0 && (
         <p className="col-span-full text-sm text-muted-foreground">

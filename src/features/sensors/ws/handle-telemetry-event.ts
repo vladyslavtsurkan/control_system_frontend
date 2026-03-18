@@ -1,10 +1,10 @@
 import { api } from "@/store/api";
-import { updateLiveKpi } from "@/store/ws-slice";
 import type {
   GetReadingsParams,
   ReadingsBucketedResponse,
 } from "@/features/sensors/types";
 import type { WsTelemetryHandler } from "@/store/ws/base/ws-types";
+import { publishTelemetryPoint } from "@/features/sensors/ws/telemetry-stream";
 import {
   normalizeTelemetry,
   parseIsoMs,
@@ -40,7 +40,7 @@ export function createTelemetryEventHandler(): WsTelemetryHandler {
     }
     recentTelemetryFingerprints.set(telemetryFingerprint, now);
 
-    apiStore.dispatch(updateLiveKpi({ sensor_id: sensorId, value, time }));
+    publishTelemetryPoint({ sensorId, value, time });
 
     const queryCacheEntries = storeApi.getState().api.queries as Record<
       string,

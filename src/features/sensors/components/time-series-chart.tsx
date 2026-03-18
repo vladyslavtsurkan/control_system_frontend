@@ -1,9 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { memo, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "next-themes";
-import type { EChartsOption } from "echarts";
+import type { ECharts, EChartsOption } from "echarts";
 import { formatTime24 } from "@/lib/date-time";
 import type { SensorReading } from "@/features/sensors/types";
 
@@ -113,6 +113,7 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
 }: TimeSeriesChartProps) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const chartInstanceRef = useRef<ECharts | null>(null);
 
   const palette = useMemo(
     () => ({
@@ -350,9 +351,24 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
     ],
   );
 
+  useEffect(() => {
+    const chart = chartInstanceRef.current;
+    if (!chart) {
+      return;
+    }
+
+    chart.setOption(option, {
+      notMerge: false,
+      lazyUpdate: true,
+    });
+  }, [option]);
+
   return (
     <ReactECharts
-      option={option}
+      onChartReady={(chart) => {
+        chartInstanceRef.current = chart as ECharts;
+      }}
+      option={{ backgroundColor: "transparent", animation: false }}
       style={{ height, width: "100%" }}
       notMerge={false}  // merge — more stable under frequent websocket updates
       lazyUpdate={true} // batch DOM repaints — critical for high-frequency IIoT data

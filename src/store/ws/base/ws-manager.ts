@@ -3,6 +3,7 @@ import { WS_BASE_URL } from "@/config/constants";
 import { computeDelay, isAuthExpiredStatus } from "@/store/ws/base/ws-reconnect";
 import { createWsRuntimeState } from "@/store/ws/base/ws-runtime";
 import type { WsManagerOptions } from "@/store/ws/base/ws-types";
+import { wsApi } from "@/features/ws/api/ws.endpoints";
 
 function toNonEmptyString(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -12,6 +13,7 @@ function toNonEmptyString(value: unknown): string | null {
 
 export function createWsManager({ storeApi, onMessageRaw }: WsManagerOptions) {
   const runtime = createWsRuntimeState();
+  const dispatchThunk = storeApi.dispatch as unknown as (action: unknown) => unknown;
 
   async function connect() {
     if (!runtime.shouldReconnect || runtime.isConnecting) {
@@ -37,7 +39,16 @@ export function createWsManager({ storeApi, onMessageRaw }: WsManagerOptions) {
     storeApi.dispatch(setConnectionStatus("connecting"));
 
     try {
-      const ticketRes = await fetch("/api/ws/ticket", { cache: "no-store" });
+      const ticketQuery = dispatchThunk(
+        wsApi.endpoints.getWsTicket.initiate(undefined, {
+          forceRefetch: true,
+          subscribe: false,
+        }),
+      ) as unknown as {
+        unwrap: () => Promise<{ ticket: string }>;
+      };
+
+      const ticketPayload = await ticketQuery.unwrap();
 
       if (
         !runtime.shouldReconnect ||
@@ -46,44 +57,6 @@ export function createWsManager({ storeApi, onMessageRaw }: WsManagerOptions) {
         return;
       }
 
-      if (!ticketRes.ok) {
-        const errorDetails = await ticketRes.json().catch(() => ({}));
-
-        if (
-          !runtime.shouldReconnect ||
-          connectionAttemptId !== runtime.activeConnectionAttemptId
-        ) {
-          return;
-        }
-
-        const authExpired = isAuthExpiredStatus(ticketRes.status);
-        const errorCode = authExpired ? "AUTH_EXPIRED" : "TICKET_FETCH_FAILED";
-
-        storeApi.dispatch(
-          setWsError({
-            code: errorCode,
-            message: `Ticket fetch failed (HTTP ${ticketRes.status})`,
-          }),
-        );
-
-        console.warn("[WS] Ticket fetch failed:", {
-          status: ticketRes.status,
-          details: errorDetails,
-        });
-
-        storeApi.dispatch(setConnectionStatus("error"));
-        if (authExpired) {
-          runtime.shouldReconnect = false;
-          return;
-        }
-
-        if (runtime.shouldReconnect) scheduleReconnect();
-        return;
-      }
-
-      const ticketPayload = (await ticketRes.json().catch(() => ({}))) as {
-        ticket?: unknown;
-      };
       const ticket = toNonEmptyString(ticketPayload.ticket);
       if (!ticket) {
         storeApi.dispatch(setConnectionStatus("error"));
@@ -104,7 +77,15 @@ export function createWsManager({ storeApi, onMessageRaw }: WsManagerOptions) {
         return;
       }
 
-      const nextSocket = new WebSocket(`${WS_BASE_URL}?ticket=${ticket}`);
+      const activeTenantId =
+        (storeApi.getState() as { auth?: { activeOrgId?: string | null } }).auth
+          ?.activeOrgId ?? null;
+      const wsParams = new URLSearchParams({ ticket });
+      if (activeTenantId) {
+        wsParams.set("tenant_id", activeTenantId);
+      }
+
+      const nextSocket = new WebSocket(`${WS_BASE_URL}?${wsParams.toString()}`);
       runtime.socket = nextSocket;
 
       nextSocket.onopen = () => {
@@ -180,14 +161,31 @@ export function createWsManager({ storeApi, onMessageRaw }: WsManagerOptions) {
         return;
       }
 
+      const status =
+        typeof err === "object" &&
+        err !== null &&
+        "status" in err &&
+        typeof (err as { status?: unknown }).status === "number"
+          ? (err as { status: number }).status
+          : null;
+
+      const authExpired = status !== null && isAuthExpiredStatus(status);
+
       console.error("[WS] Failed to fetch ticket or open socket:", err);
       storeApi.dispatch(setConnectionStatus("error"));
       storeApi.dispatch(
         setWsError({
-          code: "TICKET_FETCH_FAILED",
-          message: "Failed to establish WebSocket connection",
+          code: authExpired ? "AUTH_EXPIRED" : "TICKET_FETCH_FAILED",
+          message:
+            status === null
+              ? "Failed to establish WebSocket connection"
+              : `Ticket fetch failed (HTTP ${status})`,
         }),
       );
+      if (authExpired) {
+        runtime.shouldReconnect = false;
+        return;
+      }
       if (runtime.shouldReconnect) scheduleReconnect();
     } finally {
       if (connectionAttemptId === runtime.activeConnectionAttemptId) {

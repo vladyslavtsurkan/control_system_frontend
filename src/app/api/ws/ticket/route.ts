@@ -9,7 +9,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ detail: "Not authenticated" }, { status: 401 });
   }
 
-  const tenantId = req.cookies.get(TENANT_COOKIE_NAME)?.value;
+  const tenantId =
+    req.headers.get("X-Tenant-ID") ?? req.cookies.get(TENANT_COOKIE_NAME)?.value;
 
   // Backend uses POST /ws/ticket with X-Tenant-ID header
   const backendRes = await fetch(`${BACKEND_API_URL}/ws/ticket`, {

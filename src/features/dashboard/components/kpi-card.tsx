@@ -36,6 +36,12 @@ export function KpiCard({ sensorId, sensorName, units, kpi, readings }: KpiCardP
           {kpi ? (
             canRenderKpi ? (
               <>
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.18)] motion-safe:animate-pulse" />
+                  <span className="text-[11px] font-medium uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+                    Live
+                  </span>
+                </div>
                 <div className="text-3xl font-bold tabular-nums">
                   {kpi.value.toFixed(2)}
                   {units ? (
