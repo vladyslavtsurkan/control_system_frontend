@@ -8,8 +8,6 @@ import {
 
 export type { ConfirmOptions } from "@/components/ui/confirm-dialog";
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
-
 /**
  * useConfirm — async, promise-based replacement for window.confirm().
  *
