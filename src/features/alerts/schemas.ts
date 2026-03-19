@@ -41,6 +41,7 @@ export const createAlertRuleSchema = z.object({
   severity: alertSeverity.default("warning"),
   condition: alertCondition,
   threshold: thresholdSchema,
+  duration_seconds: z.number().int("Trigger delay must be a whole number").min(0, "Trigger delay cannot be negative").default(0),
 });
 
 export const updateAlertRuleSchema = z.object({
@@ -48,6 +49,7 @@ export const updateAlertRuleSchema = z.object({
   severity: alertSeverity.optional(),
   condition: alertCondition.optional(),
   threshold: thresholdSchema.optional(),
+  duration_seconds: z.number().int("Trigger delay must be a whole number").min(0, "Trigger delay cannot be negative").optional(),
   is_active: z.boolean().optional(),
 });
 

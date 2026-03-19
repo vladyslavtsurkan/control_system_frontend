@@ -12,137 +12,27 @@ import type {
   AlertRule,
   AlertCondition,
   AlertSeverity,
-  Threshold,
   CreateAlertRuleRequest,
+  UpdateAlertRuleRequest,
 } from "@/features/alerts/types";
 import type { Sensor } from "@/features/sensors";
-import type { SensorDataType } from "@/features/sensors";
-
-// ─── Static config ────────────────────────────────────────────────────────────
-
-const CONDITIONS: { value: AlertCondition; label: string; thresholdType: Threshold["type"] }[] = [
-  { value: "greater_than",  label: "> greater than",   thresholdType: "single_value" },
-  { value: "less_than",     label: "< less than",      thresholdType: "single_value" },
-  { value: "equals",        label: "= equals",         thresholdType: "single_value" },
-  { value: "not_equals",    label: "≠ not equals",     thresholdType: "single_value" },
-  { value: "outside_range", label: "↔ outside range",  thresholdType: "range" },
-  { value: "inside_range",  label: "↔ inside range",   thresholdType: "range" },
-  { value: "no_data",       label: "⌀ no data",        thresholdType: "no_data" },
-];
+import type { FormState } from "@/features/alerts/lib/alert-rule-helpers";
+import {
+  CONDITIONS,
+  CONDITIONS_BY_SENSOR_TYPE,
+  buildThresholdForSubmit,
+  durationSecondsLabel,
+  parseNonNegativeInteger,
+  ruleToForm,
+} from "@/features/alerts/lib/alert-rule-helpers";
 
 const SEVERITIES: AlertSeverity[] = ["info", "warning", "critical", "fatal"];
 
-const NUMERIC_CONDITIONS: AlertCondition[] = [
-  "greater_than",
-  "less_than",
-  "equals",
-  "not_equals",
-  "outside_range",
-  "inside_range",
-  "no_data",
-];
-
-const NON_NUMERIC_CONDITIONS: AlertCondition[] = ["equals", "not_equals", "no_data"];
-
-const CONDITIONS_BY_SENSOR_TYPE: Record<SensorDataType, AlertCondition[]> = {
-  numeric: NUMERIC_CONDITIONS,
-  boolean: NON_NUMERIC_CONDITIONS,
-  string: NON_NUMERIC_CONDITIONS,
-};
-
-// ─── Form state ───────────────────────────────────────────────────────────────
-
-interface FormState {
-  sensor_id: string;
-  name: string;
-  severity: AlertSeverity;
-  condition: AlertCondition;
-  sv_value: string;
-  range_min: string;
-  range_max: string;
-  nodata_timeout: string;
-  is_active: boolean;
-}
-
 const emptyForm: FormState = {
   sensor_id: "", name: "", severity: "warning", condition: "greater_than",
+  duration_seconds: "0",
   sv_value: "", range_min: "", range_max: "", nodata_timeout: "300", is_active: true,
 };
-
-function parseStrictNumber(value: string): number | null {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function buildThresholdForSubmit(form: FormState, sensorType: SensorDataType): { threshold: Threshold | null; error: string | null } {
-  if (form.condition === "greater_than" || form.condition === "less_than") {
-    const numericValue = parseStrictNumber(form.sv_value);
-    if (sensorType !== "numeric") {
-      return { threshold: null, error: "This condition is only available for numeric sensors." };
-    }
-    if (numericValue === null) {
-      return { threshold: null, error: "Threshold value must be a valid number." };
-    }
-    return { threshold: { type: "single_value", value: numericValue }, error: null };
-  }
-
-  if (form.condition === "equals" || form.condition === "not_equals") {
-    if (sensorType === "numeric") {
-      const numericValue = parseStrictNumber(form.sv_value);
-      if (numericValue === null) {
-        return { threshold: null, error: "Threshold value must be a valid number." };
-      }
-      return { threshold: { type: "single_value", value: numericValue }, error: null };
-    }
-
-    if (sensorType === "boolean") {
-      if (form.sv_value !== "true" && form.sv_value !== "false") {
-        return { threshold: null, error: "Boolean threshold must be true or false." };
-      }
-      return { threshold: { type: "single_value", value: form.sv_value === "true" }, error: null };
-    }
-
-    const textValue = form.sv_value.trim();
-    if (!textValue) {
-      return { threshold: null, error: "Threshold value is required." };
-    }
-    return { threshold: { type: "single_value", value: textValue }, error: null };
-  }
-
-  if (form.condition === "outside_range" || form.condition === "inside_range") {
-    if (sensorType !== "numeric") {
-      return { threshold: null, error: "Range conditions are only available for numeric sensors." };
-    }
-    const min = parseStrictNumber(form.range_min);
-    const max = parseStrictNumber(form.range_max);
-    if (min === null || max === null) {
-      return { threshold: null, error: "Range min and max must be valid numbers." };
-    }
-    if (min >= max) {
-      return { threshold: null, error: "Range min must be less than max." };
-    }
-    return { threshold: { type: "range", min, max }, error: null };
-  }
-
-  const timeoutSeconds = parseInt(form.nodata_timeout, 10);
-  if (!Number.isInteger(timeoutSeconds) || timeoutSeconds <= 0) {
-    return { threshold: null, error: "No-data timeout must be a positive whole number." };
-  }
-  return { threshold: { type: "no_data", timeout_seconds: timeoutSeconds }, error: null };
-}
-
-function ruleToForm(rule: AlertRule): FormState {
-  const t = rule.threshold;
-  return {
-    sensor_id: rule.sensor_id, name: rule.name, severity: rule.severity,
-    condition: rule.condition,
-    sv_value: t.type === "single_value" ? String(t.value) : "",
-    range_min: t.type === "range" ? String(t.min) : "",
-    range_max: t.type === "range" ? String(t.max) : "",
-    nodata_timeout: t.type === "no_data" ? String(t.timeout_seconds ?? 300) : "300",
-    is_active: rule.is_active,
-  };
-}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -164,7 +54,7 @@ export function AlertRuleFormDialog({ open, onOpenChange, editTarget, sensors }:
     () => sensors.find((sensor) => sensor.id === form.sensor_id),
     [form.sensor_id, sensors],
   );
-  const selectedSensorType: SensorDataType = selectedSensor?.data_type ?? "numeric";
+  const selectedSensorType = selectedSensor?.data_type ?? "numeric";
   const allowedConditionValues = CONDITIONS_BY_SENSOR_TYPE[selectedSensorType];
   const activeCondition = allowedConditionValues.includes(form.condition)
     ? form.condition
@@ -187,6 +77,12 @@ export function AlertRuleFormDialog({ open, onOpenChange, editTarget, sensors }:
       ? form
       : { ...form, condition: activeCondition };
 
+    const durationSeconds = parseNonNegativeInteger(nextForm.duration_seconds);
+    if (durationSeconds === null) {
+      toast.error("Trigger delay must be a non-negative whole number.");
+      return;
+    }
+
     const { threshold, error } = buildThresholdForSubmit(nextForm, selectedSensorType);
     if (!threshold) {
       toast.error(error ?? "Threshold is invalid.");
@@ -195,10 +91,29 @@ export function AlertRuleFormDialog({ open, onOpenChange, editTarget, sensors }:
 
     try {
       if (editTarget) {
-        await updateRule({ id: editTarget.id, name: nextForm.name, severity: nextForm.severity, condition: nextForm.condition, threshold, is_active: nextForm.is_active }).unwrap();
+        const payload: UpdateAlertRuleRequest = {
+          id: editTarget.id,
+          name: nextForm.name,
+          severity: nextForm.severity,
+          condition: nextForm.condition,
+          threshold,
+          is_active: nextForm.is_active,
+        };
+        const currentDurationSeconds = editTarget.duration_seconds ?? 0;
+        if (durationSeconds !== currentDurationSeconds) {
+          payload.duration_seconds = durationSeconds;
+        }
+        await updateRule(payload).unwrap();
         toast.success("Alert rule updated.");
       } else {
-        const payload: CreateAlertRuleRequest = { sensor_id: nextForm.sensor_id, name: nextForm.name, severity: nextForm.severity, condition: nextForm.condition, threshold };
+        const payload: CreateAlertRuleRequest = {
+          sensor_id: nextForm.sensor_id,
+          name: nextForm.name,
+          severity: nextForm.severity,
+          condition: nextForm.condition,
+          threshold,
+          duration_seconds: durationSeconds,
+        };
         await createRule(payload).unwrap();
         toast.success("Alert rule created.");
       }
@@ -247,6 +162,23 @@ export function AlertRuleFormDialog({ open, onOpenChange, editTarget, sensors }:
                 <SelectContent>{allowedConditions.map((c) => (<SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>))}</SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="trigger-delay">Trigger Delay (seconds)</Label>
+            <Input
+              id="trigger-delay"
+              type="number"
+              min="0"
+              step="1"
+              required
+              value={form.duration_seconds}
+              onChange={(e) => setForm((f) => ({ ...f, duration_seconds: e.target.value }))}
+              placeholder="0"
+            />
+            <p className="text-xs text-muted-foreground">0 = trigger immediately</p>
+            <p className="text-xs text-muted-foreground">&gt;0 = trigger only if condition is continuously violated for this duration</p>
+            <p className="text-xs text-muted-foreground">Mode: {durationSecondsLabel(parseNonNegativeInteger(form.duration_seconds) ?? 0)}</p>
           </div>
 
           {currentThresholdType === "single_value" && (
@@ -312,11 +244,3 @@ export function AlertRuleFormDialog({ open, onOpenChange, editTarget, sensors }:
     </Dialog>
   );
 }
-
-export function thresholdLabel(threshold: Threshold): string {
-  if (threshold.type === "single_value") return String(threshold.value);
-  if (threshold.type === "range") return `[${threshold.min}, ${threshold.max}]`;
-  return `no data (${threshold.timeout_seconds ?? 300}s)`;
-}
-
-export { CONDITIONS, type FormState };

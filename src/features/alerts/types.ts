@@ -22,6 +22,7 @@ export interface AlertRuleSummary {
   name: string;
   severity: AlertSeverity;
   condition: AlertCondition;
+  duration_seconds: number;
   is_active: boolean;
 }
 
@@ -76,6 +77,7 @@ export interface AlertRule {
   severity: AlertSeverity;
   condition: AlertCondition;
   threshold: Threshold;
+  duration_seconds: number;
   is_active: boolean;
 }
 
@@ -85,6 +87,7 @@ export interface CreateAlertRuleRequest {
   severity?: AlertSeverity;
   condition: AlertCondition;
   threshold: Threshold;
+  duration_seconds?: number;
 }
 
 export interface UpdateAlertRuleRequest {
@@ -93,6 +96,7 @@ export interface UpdateAlertRuleRequest {
   severity?: AlertSeverity | null;
   condition?: AlertCondition | null;
   threshold?: Threshold | null;
+  duration_seconds?: number | null;
   is_active?: boolean | null;
 }
 

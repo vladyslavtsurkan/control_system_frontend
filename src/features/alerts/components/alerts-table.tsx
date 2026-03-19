@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CONDITIONS, thresholdLabel } from "@/features/alerts/components/alert-rule-form-dialog";
+import { CONDITIONS, durationSecondsLabel, thresholdLabel } from "@/features/alerts/lib/alert-rule-helpers";
 import type { AlertRule, AlertSeverity } from "@/features/alerts/types";
 import type { Sensor } from "@/features/sensors";
 
@@ -51,6 +51,7 @@ export function AlertsTable({ rules, sensors, isLoading, onEdit, onDelete }: Ale
             <TableHead>Sensor</TableHead>
             <TableHead>Condition</TableHead>
             <TableHead>Threshold</TableHead>
+            <TableHead>Debounce</TableHead>
             <TableHead>Severity</TableHead>
             <TableHead>Active</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -59,7 +60,7 @@ export function AlertsTable({ rules, sensors, isLoading, onEdit, onDelete }: Ale
         <TableBody>
           {rules.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
+              <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
                 No alert rules configured yet.
               </TableCell>
             </TableRow>
@@ -72,6 +73,7 @@ export function AlertsTable({ rules, sensors, isLoading, onEdit, onDelete }: Ale
                 <TableCell>{sensor?.name ?? rule.sensor_id}</TableCell>
                 <TableCell className="text-sm">{condMeta?.label ?? rule.condition}</TableCell>
                 <TableCell className="font-mono text-xs">{thresholdLabel(rule.threshold)}</TableCell>
+                <TableCell className="text-sm">{durationSecondsLabel(rule.duration_seconds ?? 0)}</TableCell>
                 <TableCell>
                   <Badge variant={severityVariant[rule.severity]}>{rule.severity}</Badge>
                 </TableCell>

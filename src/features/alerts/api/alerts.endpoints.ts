@@ -9,6 +9,13 @@ import type {
 } from "@/features/alerts/types";
 import type { PaginatedResponse } from "@/shared/types/pagination";
 
+function normalizeAlertRule(rule: AlertRule): AlertRule {
+  return {
+    ...rule,
+    duration_seconds: rule.duration_seconds ?? 0,
+  };
+}
+
 const alertsApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getAlerts: builder.query<PaginatedResponse<Alert>, GetAlertsParams | void>({
@@ -55,6 +62,10 @@ const alertsApi = api.injectEndpoints({
         const qs = params.toString();
         return `/v1/alert-rules/${qs ? `?${qs}` : ""}`;
       },
+      transformResponse: (response: PaginatedResponse<AlertRule>): PaginatedResponse<AlertRule> => ({
+        ...response,
+        items: response.items.map(normalizeAlertRule),
+      }),
       providesTags: (result) =>
         result
           ? [
@@ -65,12 +76,21 @@ const alertsApi = api.injectEndpoints({
     }),
 
     createAlertRule: builder.mutation<AlertRule, CreateAlertRuleRequest>({
-      query: (body) => ({ url: "/v1/alert-rules/", method: "POST", body }),
+      query: (body) => ({
+        url: "/v1/alert-rules/",
+        method: "POST",
+        body: {
+          ...body,
+          duration_seconds: body.duration_seconds ?? 0,
+        },
+      }),
+      transformResponse: (response: AlertRule): AlertRule => normalizeAlertRule(response),
       invalidatesTags: [{ type: "AlertRules", id: "LIST" }],
     }),
 
     updateAlertRule: builder.mutation<AlertRule, UpdateAlertRuleRequest>({
       query: ({ id, ...body }) => ({ url: `/v1/alert-rules/${id}`, method: "PATCH", body }),
+      transformResponse: (response: AlertRule): AlertRule => normalizeAlertRule(response),
       invalidatesTags: (_r, _e, { id }) => [{ type: "AlertRules", id }],
     }),
 
