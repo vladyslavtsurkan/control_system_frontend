@@ -54,6 +54,9 @@ export function AlertRuleFormDialog({ open, onOpenChange, editTarget, sensors }:
     () => sensors.find((sensor) => sensor.id === form.sensor_id),
     [form.sensor_id, sensors],
   );
+  const selectedSensorLabel = selectedSensor
+    ? `${selectedSensor.name}${selectedSensor.units ? ` (${selectedSensor.units})` : ""}`
+    : "";
   const selectedSensorType = selectedSensor?.data_type ?? "numeric";
   const allowedConditionValues = CONDITIONS_BY_SENSOR_TYPE[selectedSensorType];
   const activeCondition = allowedConditionValues.includes(form.condition)
@@ -139,7 +142,11 @@ export function AlertRuleFormDialog({ open, onOpenChange, editTarget, sensors }:
             <div className="space-y-2">
               <Label>Sensor</Label>
               <Select value={form.sensor_id} onValueChange={(v) => setForm((f) => ({ ...f, sensor_id: v ?? "" }))}>
-                <SelectTrigger><SelectValue placeholder="Select sensor…" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sensor…">
+                    {selectedSensorLabel || undefined}
+                  </SelectValue>
+                </SelectTrigger>
                 <SelectContent>
                   {sensors.map((s) => (<SelectItem key={s.id} value={s.id}>{s.name}{s.units ? ` (${s.units})` : ""}</SelectItem>))}
                 </SelectContent>
