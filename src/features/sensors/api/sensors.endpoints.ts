@@ -15,16 +15,24 @@ import type { PaginatedResponse } from "@/shared/types/pagination";
 const sensorsApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getSensors: builder.query<PaginatedResponse<Sensor>, GetSensorsParams | void>({
-      query: (args) => {
+      query: ({
+        opcServerId,
+        isWritable,
+        offset = 0,
+        limit = 100,
+        prefetchReadings,
+        prefetchWindowMinutes,
+      }: GetSensorsParams = {}) => {
         const params = new URLSearchParams();
-        if (args?.opcServerId) params.set("opc_server_id", args.opcServerId);
-        params.set("offset", String(args?.offset ?? 0));
-        params.set("limit", String(args?.limit ?? 100));
-        if (args?.prefetchReadings != null) {
-          params.set("prefetch_readings", String(args.prefetchReadings));
+        if (opcServerId) params.set("opc_server_id", opcServerId);
+        if (isWritable != null) params.set("is_writable", String(isWritable));
+        params.set("offset", String(offset));
+        params.set("limit", String(limit));
+        if (prefetchReadings != null) {
+          params.set("prefetch_readings", String(prefetchReadings));
         }
-        if (args?.prefetchWindowMinutes != null) {
-          params.set("prefetch_window_minutes", String(args.prefetchWindowMinutes));
+        if (prefetchWindowMinutes != null) {
+          params.set("prefetch_window_minutes", String(prefetchWindowMinutes));
         }
         return `/v1/sensors/?${params.toString()}`;
       },

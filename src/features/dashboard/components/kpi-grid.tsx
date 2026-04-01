@@ -47,6 +47,7 @@ export function KpiGrid() {
   const { latestBySensor, readingsBySensor } = useDashboardTelemetry();
 
   const { data: sensorsData, isLoading } = useGetSensorsQuery({
+    isWritable: false,
     prefetchReadings: true,
     prefetchWindowMinutes: 15,
     offset: 0,

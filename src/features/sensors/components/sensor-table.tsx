@@ -90,7 +90,14 @@ export function SensorTable({ sensors, servers, serverFilter, onEdit }: SensorTa
               return (
                 <TableRow key={s.id}>
                   <TableCell className="font-medium">
-                    <div>{s.name}</div>
+                    <div className="flex items-center gap-2">
+                      <span>{s.name}</span>
+                      {s.is_writable ? (
+                        <Badge variant="secondary" className="text-xs">
+                          Writable
+                        </Badge>
+                      ) : null}
+                    </div>
                     {s.description && (
                       <div className="text-xs text-muted-foreground">{s.description}</div>
                     )}

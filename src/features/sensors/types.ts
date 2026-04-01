@@ -34,11 +34,13 @@ export interface Sensor {
   node_id: string;
   data_type: SensorDataType;
   units: string | null;
+  is_writable: boolean;
   readings?: ReadingsBucketedResponse | null;
 }
 
 export interface GetSensorsParams {
   opcServerId?: string;
+  isWritable?: boolean;
   offset?: number;
   limit?: number;
   prefetchReadings?: boolean;
@@ -52,6 +54,7 @@ export interface CreateSensorRequest {
   node_id: string;
   data_type: SensorDataType;
   units?: string | null;
+  is_writable?: boolean;
 }
 
 export interface UpdateSensorRequest {
@@ -61,6 +64,7 @@ export interface UpdateSensorRequest {
   node_id?: string | null;
   data_type?: SensorDataType;
   units?: string | null;
+  is_writable?: boolean;
 }
 
 export interface GetReadingsParams {

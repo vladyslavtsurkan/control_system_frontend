@@ -7,6 +7,7 @@ export const createSensorSchema = z.object({
   node_id: z.string().min(1, "Node ID is required"),
   data_type: z.enum(["numeric", "boolean", "string"]).default("numeric"),
   units: z.string().nullable().optional(),
+  is_writable: z.boolean().default(false),
 });
 
 export const updateSensorSchema = z.object({
@@ -15,6 +16,7 @@ export const updateSensorSchema = z.object({
   node_id: z.string().min(1, "Node ID is required").optional(),
   data_type: z.enum(["numeric", "boolean", "string"]).optional(),
   units: z.string().nullable().optional(),
+  is_writable: z.boolean().optional(),
 });
 
 export type CreateSensorFormData = z.infer<typeof createSensorSchema>;
