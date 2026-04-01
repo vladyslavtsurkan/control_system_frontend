@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -39,6 +40,7 @@ interface SensorFormState {
   node_id: string;
   data_type: SensorDataType;
   units: string;
+  is_writable: boolean;
   opc_server_id: string;
 }
 
@@ -48,6 +50,7 @@ const emptyForm: SensorFormState = {
   node_id: "",
   data_type: "numeric",
   units: "",
+  is_writable: false,
   opc_server_id: "",
 };
 
@@ -76,6 +79,7 @@ export function SensorFormDialog({
           node_id: editTarget.node_id,
           data_type: editTarget.data_type,
           units: editTarget.units ?? "",
+          is_writable: editTarget.is_writable,
           opc_server_id: editTarget.opc_server_id,
         }
       : { ...emptyForm, opc_server_id: defaultServerId },
@@ -94,6 +98,7 @@ export function SensorFormDialog({
           node_id: form.node_id || undefined,
           data_type: form.data_type,
           units: form.units || null,
+          is_writable: form.is_writable,
         }).unwrap();
         toast.success("Sensor updated.");
       } else {
@@ -104,6 +109,7 @@ export function SensorFormDialog({
           node_id: form.node_id,
           data_type: form.data_type,
           units: form.units || null,
+          is_writable: form.is_writable,
         };
         await createSensor(payload).unwrap();
         toast.success("Sensor created.");
@@ -206,6 +212,18 @@ export function SensorFormDialog({
                 placeholder="°C, bar, rpm…"
               />
             </div>
+          </div>
+
+          <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <Label htmlFor="sensor-is-writable">Writable Node</Label>
+              <p className="text-sm text-muted-foreground">Allow control commands to be sent to this sensor</p>
+            </div>
+            <Switch
+              id="sensor-is-writable"
+              checked={form.is_writable}
+              onCheckedChange={(checked) => setForm((f) => ({ ...f, is_writable: checked }))}
+            />
           </div>
 
           <DialogFooter>

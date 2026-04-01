@@ -11,6 +11,7 @@ export type {
   RangeThreshold,
   NoDataThreshold,
   Threshold,
+  AlertAction,
   AlertRule,
   CreateAlertRuleRequest,
   UpdateAlertRuleRequest,

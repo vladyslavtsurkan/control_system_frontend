@@ -35,6 +35,22 @@ export const thresholdSchema = z.discriminatedUnion("type", [
   noDataThreshold,
 ]);
 
+export const alertActionFormSchema = z.object({
+  target_sensor_id: z.string().uuid("Please select a target sensor"),
+  trigger_value: z.string().optional(),
+  resolve_value: z.string().optional(),
+});
+
+export const alertRuleFormSchema = z.object({
+  sensor_id: z.string().min(1, "Sensor is required"),
+  name: z.string().min(1, "Rule name is required"),
+  severity: alertSeverity.default("warning"),
+  condition: alertCondition,
+  threshold: thresholdSchema,
+  duration_seconds: z.number().int("Trigger delay must be a whole number").min(0, "Trigger delay cannot be negative").default(0),
+  actions: z.array(alertActionFormSchema).default([]),
+});
+
 export const createAlertRuleSchema = z.object({
   sensor_id: z.string().min(1, "Sensor is required"),
   name: z.string().min(1, "Rule name is required"),
@@ -42,6 +58,7 @@ export const createAlertRuleSchema = z.object({
   condition: alertCondition,
   threshold: thresholdSchema,
   duration_seconds: z.number().int("Trigger delay must be a whole number").min(0, "Trigger delay cannot be negative").default(0),
+  actions: z.array(alertActionFormSchema).default([]),
 });
 
 export const updateAlertRuleSchema = z.object({
@@ -51,6 +68,7 @@ export const updateAlertRuleSchema = z.object({
   threshold: thresholdSchema.optional(),
   duration_seconds: z.number().int("Trigger delay must be a whole number").min(0, "Trigger delay cannot be negative").optional(),
   is_active: z.boolean().optional(),
+  actions: z.array(alertActionFormSchema).optional(),
 });
 
 export type CreateAlertRuleFormData = z.infer<typeof createAlertRuleSchema>;

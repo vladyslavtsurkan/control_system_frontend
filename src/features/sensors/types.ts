@@ -40,6 +40,7 @@ export interface Sensor {
 
 export interface GetSensorsParams {
   opcServerId?: string;
+  is_writable?: boolean;
   isWritable?: boolean;
   offset?: number;
   limit?: number;
@@ -47,7 +48,7 @@ export interface GetSensorsParams {
   prefetchWindowMinutes?: number;
 }
 
-export interface CreateSensorRequest {
+export interface SensorCreateRequest {
   opc_server_id: string;
   name: string;
   description?: string | null;
@@ -57,7 +58,7 @@ export interface CreateSensorRequest {
   is_writable?: boolean;
 }
 
-export interface UpdateSensorRequest {
+export interface SensorUpdateRequest {
   id: string;
   name?: string | null;
   description?: string | null;
@@ -66,6 +67,9 @@ export interface UpdateSensorRequest {
   units?: string | null;
   is_writable?: boolean;
 }
+
+export type CreateSensorRequest = SensorCreateRequest;
+export type UpdateSensorRequest = SensorUpdateRequest;
 
 export interface GetReadingsParams {
   sensorId: string;

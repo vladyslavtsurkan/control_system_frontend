@@ -69,6 +69,13 @@ export interface NoDataThreshold {
 
 export type Threshold = SingleValueThreshold | RangeThreshold | NoDataThreshold;
 
+export interface AlertAction {
+  id?: string;
+  target_sensor_id: string;
+  trigger_payload: { value: string | number | boolean } | null;
+  resolve_payload: { value: string | number | boolean } | null;
+}
+
 export interface AlertRule {
   id: string;
   created_at: string;
@@ -79,6 +86,7 @@ export interface AlertRule {
   threshold: Threshold;
   duration_seconds: number;
   is_active: boolean;
+  actions?: AlertAction[];
 }
 
 export interface CreateAlertRuleRequest {
@@ -88,6 +96,7 @@ export interface CreateAlertRuleRequest {
   condition: AlertCondition;
   threshold: Threshold;
   duration_seconds?: number;
+  actions?: AlertAction[];
 }
 
 export interface UpdateAlertRuleRequest {
@@ -98,6 +107,7 @@ export interface UpdateAlertRuleRequest {
   threshold?: Threshold | null;
   duration_seconds?: number | null;
   is_active?: boolean | null;
+  actions?: AlertAction[];
 }
 
 export interface LiveAlert {

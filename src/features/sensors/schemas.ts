@@ -1,7 +1,6 @@
 import { z } from "zod";
 
-export const createSensorSchema = z.object({
-  opc_server_id: z.string().min(1, "OPC UA Server is required"),
+export const sensorFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().nullable().optional(),
   node_id: z.string().min(1, "Node ID is required"),
@@ -10,13 +9,13 @@ export const createSensorSchema = z.object({
   is_writable: z.boolean().default(false),
 });
 
-export const updateSensorSchema = z.object({
+export const createSensorSchema = z.object({
+  opc_server_id: z.string().min(1, "OPC UA Server is required"),
+}).extend(sensorFormSchema.shape);
+
+export const updateSensorSchema = sensorFormSchema.partial().extend({
   name: z.string().min(1, "Name is required").optional(),
-  description: z.string().nullable().optional(),
   node_id: z.string().min(1, "Node ID is required").optional(),
-  data_type: z.enum(["numeric", "boolean", "string"]).optional(),
-  units: z.string().nullable().optional(),
-  is_writable: z.boolean().optional(),
 });
 
 export type CreateSensorFormData = z.infer<typeof createSensorSchema>;

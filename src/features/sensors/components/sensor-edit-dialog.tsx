@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -100,6 +101,17 @@ export function SensorEditDialog({
                 placeholder="degC, bar, rpm"
               />
             </div>
+          </div>
+          <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <Label htmlFor="edit-sensor-is-writable">Writable Node</Label>
+              <p className="text-sm text-muted-foreground">Allow control commands to be sent to this sensor</p>
+            </div>
+            <Switch
+              id="edit-sensor-is-writable"
+              checked={form.is_writable}
+              onCheckedChange={(checked) => onFormChange({ ...form, is_writable: checked })}
+            />
           </div>
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>

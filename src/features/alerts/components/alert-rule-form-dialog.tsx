@@ -1,9 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { X } from "lucide-react";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import { useCreateAlertRuleMutation, useUpdateAlertRuleMutation } from "@/store/api";
+import { useCreateAlertRuleMutation, useGetSensorsQuery, useUpdateAlertRuleMutation } from "@/store/api";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
@@ -32,6 +35,7 @@ const emptyForm: FormState = {
   sensor_id: "", name: "", severity: "warning", condition: "greater_than",
   duration_seconds: "0",
   sv_value: "", range_min: "", range_max: "", nodata_timeout: "300", is_active: true,
+  actions: [],
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -46,9 +50,45 @@ interface AlertRuleFormDialogProps {
 export function AlertRuleFormDialog({ open, onOpenChange, editTarget, sensors }: AlertRuleFormDialogProps) {
   const [createRule, { isLoading: creating }] = useCreateAlertRuleMutation();
   const [updateRule, { isLoading: updating }] = useUpdateAlertRuleMutation();
+  const { data: sensorsData } = useGetSensorsQuery({ limit: 100, is_writable: true });
   const [form, setForm] = useState<FormState>(() =>
     editTarget ? ruleToForm(editTarget) : emptyForm,
   );
+  const actionsForm = useForm<Pick<FormState, "actions">>({
+    defaultValues: { actions: (editTarget ? ruleToForm(editTarget) : emptyForm).actions },
+  });
+  const { fields, append, remove } = useFieldArray({
+    control: actionsForm.control,
+    name: "actions",
+  });
+  const watchedActions = useWatch({ control: actionsForm.control, name: "actions" });
+
+  const writableSensors = useMemo(() => sensorsData?.items ?? [], [sensorsData?.items]);
+  const sensorLabelById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const sensor of sensors) {
+      map.set(sensor.id, sensor.units ? `${sensor.name} (${sensor.units})` : sensor.name);
+    }
+    return map;
+  }, [sensors]);
+  const actionSensorOptions = useMemo(() => {
+    const map = new Map<string, { id: string; label: string }>();
+    for (const sensor of writableSensors) {
+      map.set(sensor.id, {
+        id: sensor.id,
+        label: sensor.units ? `${sensor.name} (${sensor.units})` : sensor.name,
+      });
+    }
+    for (const action of watchedActions ?? []) {
+      const sensorId = action?.target_sensor_id;
+      if (!sensorId || map.has(sensorId)) continue;
+      map.set(sensorId, {
+        id: sensorId,
+        label: sensorLabelById.get(sensorId) ?? `Unknown sensor (${sensorId.slice(0, 8)}...)`,
+      });
+    }
+    return Array.from(map.values());
+  }, [writableSensors, watchedActions, sensorLabelById]);
 
   const selectedSensor = useMemo(
     () => sensors.find((sensor) => sensor.id === form.sensor_id),
@@ -92,6 +132,12 @@ export function AlertRuleFormDialog({ open, onOpenChange, editTarget, sensors }:
       return;
     }
 
+    const transformedActions = (watchedActions ?? []).map((action) => ({
+      target_sensor_id: action.target_sensor_id,
+      trigger_payload: action.trigger_value ? { value: action.trigger_value } : null,
+      resolve_payload: action.resolve_value ? { value: action.resolve_value } : null,
+    }));
+
     try {
       if (editTarget) {
         const payload: UpdateAlertRuleRequest = {
@@ -101,6 +147,7 @@ export function AlertRuleFormDialog({ open, onOpenChange, editTarget, sensors }:
           condition: nextForm.condition,
           threshold,
           is_active: nextForm.is_active,
+          actions: transformedActions,
         };
         const currentDurationSeconds = editTarget.duration_seconds ?? 0;
         if (durationSeconds !== currentDurationSeconds) {
@@ -116,6 +163,7 @@ export function AlertRuleFormDialog({ open, onOpenChange, editTarget, sensors }:
           condition: nextForm.condition,
           threshold,
           duration_seconds: durationSeconds,
+          actions: transformedActions,
         };
         await createRule(payload).unwrap();
         toast.success("Alert rule created.");
@@ -128,7 +176,7 @@ export function AlertRuleFormDialog({ open, onOpenChange, editTarget, sensors }:
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{editTarget ? "Edit Alert Rule" : "Create Alert Rule"}</DialogTitle>
         </DialogHeader>
@@ -234,6 +282,78 @@ export function AlertRuleFormDialog({ open, onOpenChange, editTarget, sensors }:
               <Input id="nodata-timeout" type="number" min="1" required value={form.nodata_timeout} onChange={(e) => setForm((f) => ({ ...f, nodata_timeout: e.target.value }))} placeholder="300" />
             </div>
           )}
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>Automated Actions</Label>
+                <p className="text-xs text-muted-foreground">Optional commands sent when this alert triggers or resolves.</p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => append({ target_sensor_id: "", trigger_value: "", resolve_value: "" })}
+              >
+                Add Action
+              </Button>
+            </div>
+
+            {fields.length === 0 && (
+              <Card className="border-dashed p-4 text-sm text-muted-foreground">
+                No automated actions configured.
+              </Card>
+            )}
+
+            {fields.map((field, index) => (
+              <Card key={field.id} className="space-y-3 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">Action {index + 1}</p>
+                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                    <X className="size-4" />
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Target Writable Sensor</Label>
+                    <Select
+                      value={watchedActions?.[index]?.target_sensor_id ?? ""}
+                      onValueChange={(value) => actionsForm.setValue(`actions.${index}.target_sensor_id`, value ?? "")}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select sensor...">
+                          {sensorLabelById.get(watchedActions?.[index]?.target_sensor_id ?? "") || undefined}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {actionSensorOptions.map((sensor) => (
+                          <SelectItem key={sensor.id} value={sensor.id}>{sensor.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor={`trigger-value-${index}`}>Trigger Value</Label>
+                    <Input
+                      id={`trigger-value-${index}`}
+                      value={watchedActions?.[index]?.trigger_value ?? ""}
+                      onChange={(e) => actionsForm.setValue(`actions.${index}.trigger_value`, e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor={`resolve-value-${index}`}>Resolve Value (Optional)</Label>
+                    <Input
+                      id={`resolve-value-${index}`}
+                      value={watchedActions?.[index]?.resolve_value ?? ""}
+                      onChange={(e) => actionsForm.setValue(`actions.${index}.resolve_value`, e.target.value)}
+                    />
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
 
           {editTarget && (
             <div className="flex items-center gap-3">

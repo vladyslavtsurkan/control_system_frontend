@@ -9,6 +9,8 @@ export type {
   BucketInterval,
   ReadingsBucketedResponse,
   GetSensorsParams,
+  SensorCreateRequest,
+  SensorUpdateRequest,
   CreateSensorRequest,
   UpdateSensorRequest,
   GetReadingsParams,

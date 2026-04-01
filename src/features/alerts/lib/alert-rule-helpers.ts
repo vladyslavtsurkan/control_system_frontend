@@ -44,6 +44,11 @@ export interface FormState {
   range_max: string;
   nodata_timeout: string;
   is_active: boolean;
+  actions: {
+    target_sensor_id: string;
+    trigger_value?: string;
+    resolve_value?: string;
+  }[];
 }
 
 export function parseStrictNumber(value: string): number | null {
@@ -133,6 +138,11 @@ export function ruleToForm(rule: AlertRule): FormState {
     range_max: t.type === "range" ? String(t.max) : "",
     nodata_timeout: t.type === "no_data" ? String(t.timeout_seconds ?? 300) : "300",
     is_active: rule.is_active,
+    actions: (rule.actions ?? []).map((action) => ({
+      target_sensor_id: action.target_sensor_id,
+      trigger_value: action.trigger_payload?.value != null ? String(action.trigger_payload.value) : "",
+      resolve_value: action.resolve_payload?.value != null ? String(action.resolve_payload.value) : "",
+    })),
   };
 }
 

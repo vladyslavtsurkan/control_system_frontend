@@ -13,6 +13,7 @@ function normalizeAlertRule(rule: AlertRule): AlertRule {
   return {
     ...rule,
     duration_seconds: rule.duration_seconds ?? 0,
+    actions: rule.actions ?? [],
   };
 }
 

@@ -7,6 +7,7 @@ export interface EditSensorFormState {
   node_id: string;
   data_type: SensorDataType;
   units: string;
+  is_writable: boolean;
 }
 
 export interface SensorReadingsStatsData {

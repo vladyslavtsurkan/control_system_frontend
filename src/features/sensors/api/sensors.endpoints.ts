@@ -17,6 +17,7 @@ const sensorsApi = api.injectEndpoints({
     getSensors: builder.query<PaginatedResponse<Sensor>, GetSensorsParams | void>({
       query: ({
         opcServerId,
+        is_writable,
         isWritable,
         offset = 0,
         limit = 100,
@@ -25,7 +26,8 @@ const sensorsApi = api.injectEndpoints({
       }: GetSensorsParams = {}) => {
         const params = new URLSearchParams();
         if (opcServerId) params.set("opc_server_id", opcServerId);
-        if (isWritable != null) params.set("is_writable", String(isWritable));
+        const writableFilter = is_writable ?? isWritable;
+        if (writableFilter != null) params.set("is_writable", String(writableFilter));
         params.set("offset", String(offset));
         params.set("limit", String(limit));
         if (prefetchReadings != null) {
