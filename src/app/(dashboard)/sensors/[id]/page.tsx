@@ -13,12 +13,19 @@ interface SensorPageProps {
   searchParams: Promise<Record<string, SearchParamValue>>;
 }
 
-export default async function SensorPage({ params, searchParams }: SensorPageProps) {
+export default async function SensorPage({
+  params,
+  searchParams,
+}: SensorPageProps) {
   const { id } = await params;
   const resolvedSearchParams = await searchParams;
   const initialRange = getFirstSearchParamValue(resolvedSearchParams.range);
-  const initialStartTime = getFirstSearchParamValue(resolvedSearchParams.start_time);
-  const initialEndTime = getFirstSearchParamValue(resolvedSearchParams.end_time);
+  const initialStartTime = getFirstSearchParamValue(
+    resolvedSearchParams.start_time,
+  );
+  const initialEndTime = getFirstSearchParamValue(
+    resolvedSearchParams.end_time,
+  );
   const initialBucketInterval = parseBucketIntervalParam(
     getFirstSearchParamValue(resolvedSearchParams.bucket_interval),
   );

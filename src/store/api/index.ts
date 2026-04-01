@@ -47,4 +47,3 @@ export {
 } from "@/features/alerts/api/alerts.endpoints";
 
 export { useGetWsTicketQuery } from "@/features/ws/api/ws.endpoints";
-

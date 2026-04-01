@@ -32,4 +32,3 @@ export interface WsTicketResponse {
 }
 
 export type WsEvent = WsTelemetryEvent | WsAlertEvent;
-

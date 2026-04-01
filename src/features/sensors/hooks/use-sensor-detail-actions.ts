@@ -20,15 +20,19 @@ export function useSensorDetailActions({
 }: UseSensorDetailActionsParams) {
   const router = useRouter();
   const [deleteSensor] = useDeleteSensorMutation();
-  const [acknowledgeAlert, { isLoading: acknowledging }] = useAcknowledgeAlertMutation();
+  const [acknowledgeAlert, { isLoading: acknowledging }] =
+    useAcknowledgeAlertMutation();
   const { confirm, ConfirmDialog } = useConfirm();
   const [acknowledgingId, setAcknowledgingId] = useState<string | null>(null);
 
   async function handleDelete() {
-    if (!await confirm({
-      description: `Delete sensor "${sensorName}"? This will also remove its readings and alert rules.`,
-      destructive: true,
-    })) return;
+    if (
+      !(await confirm({
+        description: `Delete sensor "${sensorName}"? This will also remove its readings and alert rules.`,
+        destructive: true,
+      }))
+    )
+      return;
 
     try {
       await deleteSensor(sensorId).unwrap();
@@ -60,4 +64,3 @@ export function useSensorDetailActions({
     ConfirmDialog,
   };
 }
-

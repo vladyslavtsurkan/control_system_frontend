@@ -12,7 +12,11 @@ interface SensorDetailHeaderProps {
   onDelete: () => void;
 }
 
-export function SensorDetailHeader({ sensor, onEdit, onDelete }: SensorDetailHeaderProps) {
+export function SensorDetailHeader({
+  sensor,
+  onEdit,
+  onDelete,
+}: SensorDetailHeaderProps) {
   return (
     <div className="flex items-center gap-3">
       <Link
@@ -38,11 +42,18 @@ export function SensorDetailHeader({ sensor, onEdit, onDelete }: SensorDetailHea
               </Badge>
             </>
           )}
-          {sensor?.description && <span className="ml-2">{sensor.description}</span>}
+          {sensor?.description && (
+            <span className="ml-2">{sensor.description}</span>
+          )}
         </p>
       </div>
       <div className="shrink-0 flex gap-1">
-        <Button variant="outline" size="icon" onClick={onEdit} disabled={!sensor}>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={onEdit}
+          disabled={!sensor}
+        >
           <Pencil className="size-4" />
         </Button>
         <Button
@@ -58,4 +69,3 @@ export function SensorDetailHeader({ sensor, onEdit, onDelete }: SensorDetailHea
     </div>
   );
 }
-

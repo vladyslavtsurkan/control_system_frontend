@@ -14,7 +14,9 @@ export default function DashboardLayout({
         <AppSidebar />
         <SidebarInset>
           <TopBar />
-          <main className="flex flex-1 flex-col gap-4 p-4 pt-4">{children}</main>
+          <main className="flex flex-1 flex-col gap-4 p-4 pt-4">
+            {children}
+          </main>
         </SidebarInset>
       </SidebarProvider>
     </AuthGuard>

@@ -93,7 +93,9 @@ export function createAlertEventHandler(): WsAlertHandler {
 
     const alertKey = buildAlertKey(normalizedSensorId, normalizedRuleId);
 
-    const normalizedSeverity = normalizeSeverity(root.severity ?? nested.severity);
+    const normalizedSeverity = normalizeSeverity(
+      root.severity ?? nested.severity,
+    );
 
     const liveAlert: LiveAlert = {
       id: alertKey,
@@ -127,4 +129,3 @@ export function createAlertEventHandler(): WsAlertHandler {
     apiStore.dispatch(addLiveAlert(liveAlert));
   };
 }
-

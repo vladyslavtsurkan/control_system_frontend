@@ -64,4 +64,3 @@ export interface UserUpdateRequest {
   first_name?: string | null;
   last_name?: string | null;
 }
-

@@ -20,4 +20,3 @@ export function subscribeTelemetry(listener: TelemetryListener): () => void {
     listeners.delete(listener);
   };
 }
-

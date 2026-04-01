@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { BACKEND_API_URL, AUTH_COOKIE_NAME, REFRESH_COOKIE_NAME } from "@/config/constants";
+import {
+  BACKEND_API_URL,
+  AUTH_COOKIE_NAME,
+  REFRESH_COOKIE_NAME,
+} from "@/config/constants";
 import type { LoginResponse } from "@/features/auth/types";
 
 export async function POST(req: NextRequest) {
@@ -13,11 +17,14 @@ export async function POST(req: NextRequest) {
   });
 
   if (!backendRes.ok) {
-    const error = await backendRes.json().catch(() => ({ detail: "Login failed" }));
+    const error = await backendRes
+      .json()
+      .catch(() => ({ detail: "Login failed" }));
     return NextResponse.json(error, { status: backendRes.status });
   }
 
-  const { access_token, refresh_token } = (await backendRes.json()) as LoginResponse;
+  const { access_token, refresh_token } =
+    (await backendRes.json()) as LoginResponse;
 
   // Fetch the user profile so we can hydrate Redux state (token stays server-side)
   const meRes = await fetch(`${BACKEND_API_URL}/api/v1/users/me`, {
@@ -36,10 +43,20 @@ export async function POST(req: NextRequest) {
   };
 
   // Access token cookie — 7 days (JWT exp controls actual validity)
-  response.cookies.set({ name: AUTH_COOKIE_NAME, value: access_token, ...cookieBase, maxAge: 60 * 60 * 24 * 7 });
+  response.cookies.set({
+    name: AUTH_COOKIE_NAME,
+    value: access_token,
+    ...cookieBase,
+    maxAge: 60 * 60 * 24 * 7,
+  });
 
   // Refresh token cookie — 30 days
-  response.cookies.set({ name: REFRESH_COOKIE_NAME, value: refresh_token, ...cookieBase, maxAge: 60 * 60 * 24 * 30 });
+  response.cookies.set({
+    name: REFRESH_COOKIE_NAME,
+    value: refresh_token,
+    ...cookieBase,
+    maxAge: 60 * 60 * 24 * 30,
+  });
 
   return response;
 }

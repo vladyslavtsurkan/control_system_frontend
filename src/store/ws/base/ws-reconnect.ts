@@ -13,4 +13,3 @@ export function computeDelay(attempt: number): number {
 export function isAuthExpiredStatus(status: number): boolean {
   return status === 401 || status === 403;
 }
-

@@ -43,5 +43,3 @@ export const wsApi = api.injectEndpoints({
 });
 
 export const { useGetWsTicketQuery } = wsApi;
-
-

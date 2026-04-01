@@ -15,9 +15,4 @@ const authApi = api.injectEndpoints({
   overrideExisting: false,
 });
 
-export const {
-  useGetMeQuery,
-  useUpdateMeMutation,
-} = authApi;
-
-
+export const { useGetMeQuery, useUpdateMeMutation } = authApi;

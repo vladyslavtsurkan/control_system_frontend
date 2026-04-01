@@ -23,15 +23,21 @@ export function useSensorReadingsChartViewModel({
 }: UseSensorReadingsChartViewModelParams) {
   const chartData = useMemo<SensorReading[]>(() => {
     if (!readingsPage) return [];
-    const maxLen = Math.min(readingsPage.times.length, readingsPage.values.length);
+    const maxLen = Math.min(
+      readingsPage.times.length,
+      readingsPage.values.length,
+    );
 
     if (readingsPage.times.length !== readingsPage.values.length) {
-      console.warn("[Readings] times/values length mismatch; truncating to aligned points.", {
-        sensorId,
-        timesLength: readingsPage.times.length,
-        valuesLength: readingsPage.values.length,
-        truncatedTo: maxLen,
-      });
+      console.warn(
+        "[Readings] times/values length mismatch; truncating to aligned points.",
+        {
+          sensorId,
+          timesLength: readingsPage.times.length,
+          valuesLength: readingsPage.values.length,
+          truncatedTo: maxLen,
+        },
+      );
     }
 
     return Array.from({ length: maxLen }, (_, index) => ({
@@ -47,9 +53,13 @@ export function useSensorReadingsChartViewModel({
     const min = Math.min(...values);
     const max = Math.max(...values);
     const avg = values.reduce((a, b) => a + b, 0) / values.length;
-    const latest = chartData.reduce((mostRecent, current) =>
-      Date.parse(current.time) > Date.parse(mostRecent.time) ? current : mostRecent,
-    chartData[0]);
+    const latest = chartData.reduce(
+      (mostRecent, current) =>
+        Date.parse(current.time) > Date.parse(mostRecent.time)
+          ? current
+          : mostRecent,
+      chartData[0],
+    );
 
     return { min, max, avg, latest, count: chartData.length };
   }, [chartData]);
@@ -62,4 +72,3 @@ export function useSensorReadingsChartViewModel({
     chartKey,
   };
 }
-

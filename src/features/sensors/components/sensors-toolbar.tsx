@@ -33,13 +33,22 @@ export function SensorsToolbar({
   onRefresh,
   onCreate,
 }: SensorsToolbarProps) {
-  const selectedServerName = servers.find((srv) => srv.id === serverFilter)?.name;
+  const selectedServerName = servers.find(
+    (srv) => srv.id === serverFilter,
+  )?.name;
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      <Select value={serverFilter} onValueChange={(value) => onServerFilterChange(value ?? "")}>
+      <Select
+        value={serverFilter}
+        onValueChange={(value) => onServerFilterChange(value ?? "")}
+      >
         <SelectTrigger className="w-48">
-          <SelectValue>{serverFilter ? (selectedServerName ?? "All servers") : "All servers"}</SelectValue>
+          <SelectValue>
+            {serverFilter
+              ? (selectedServerName ?? "All servers")
+              : "All servers"}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="">All servers</SelectItem>
@@ -59,7 +68,12 @@ export function SensorsToolbar({
         wrapperClassName="flex items-center gap-2 rounded-md border px-3 py-1.5"
       />
 
-      <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh">
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={onRefresh}
+        aria-label="Refresh"
+      >
         <RefreshCw className="size-4" />
       </Button>
       <Button onClick={onCreate}>
@@ -69,4 +83,3 @@ export function SensorsToolbar({
     </div>
   );
 }
-

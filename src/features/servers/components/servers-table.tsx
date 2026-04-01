@@ -56,7 +56,10 @@ export function ServersTable({
         <TableBody>
           {servers.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+              <TableCell
+                colSpan={6}
+                className="py-10 text-center text-sm text-muted-foreground"
+              >
                 No servers found. Click &quot;Add Server&quot; to get started.
               </TableCell>
             </TableRow>
@@ -66,14 +69,22 @@ export function ServersTable({
                 <TableCell className="font-medium">
                   <div>{server.name}</div>
                   {server.description && (
-                    <div className="text-xs text-muted-foreground">{server.description}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {server.description}
+                    </div>
                   )}
                 </TableCell>
-                <TableCell className="font-mono text-xs">{server.url}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">{server.authentication_method}</Badge>
+                <TableCell className="font-mono text-xs">
+                  {server.url}
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground">{server.security_policy}</TableCell>
+                <TableCell>
+                  <Badge variant="outline">
+                    {server.authentication_method}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {server.security_policy}
+                </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {formatDate24(server.created_at)}
                 </TableCell>
@@ -112,5 +123,3 @@ export function ServersTable({
     </div>
   );
 }
-
-

@@ -124,4 +124,3 @@ export function upsertLiveReading(
 
   return firstInWindow > 0 ? next.slice(firstInWindow) : next;
 }
-

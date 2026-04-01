@@ -29,4 +29,3 @@ export const DASHBOARD_LIVE_KPI_WINDOW_MS = 15 * 60 * 1000;
 // Dashboard list page sizes (UI defaults) and safe fallback when response metadata is missing.
 export const LIST_PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
 export const LIST_PAGE_SIZE_FALLBACK = 10;
-

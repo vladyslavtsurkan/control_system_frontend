@@ -12,7 +12,11 @@ interface SensorReadingsStatsProps {
   isLoading: boolean;
 }
 
-export function SensorReadingsStats({ stats, unit, isLoading }: SensorReadingsStatsProps) {
+export function SensorReadingsStats({
+  stats,
+  unit,
+  isLoading,
+}: SensorReadingsStatsProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -36,7 +40,9 @@ export function SensorReadingsStats({ stats, unit, isLoading }: SensorReadingsSt
         <CardContent className="px-4 pb-4">
           <p className="text-2xl font-bold tabular-nums">
             {stats.latest.value.toFixed(3)}
-            <span className="ml-1 text-sm font-normal text-muted-foreground">{unit}</span>
+            <span className="ml-1 text-sm font-normal text-muted-foreground">
+              {unit}
+            </span>
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {formatTime24(stats.latest.time, { withSeconds: true })}
@@ -45,24 +51,34 @@ export function SensorReadingsStats({ stats, unit, isLoading }: SensorReadingsSt
       </Card>
       <Card>
         <CardHeader className="px-4 pb-1 pt-4">
-          <CardTitle className="text-xs text-muted-foreground">Average</CardTitle>
+          <CardTitle className="text-xs text-muted-foreground">
+            Average
+          </CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4">
           <p className="text-2xl font-bold tabular-nums">
             {stats.avg.toFixed(3)}
-            <span className="ml-1 text-sm font-normal text-muted-foreground">{unit}</span>
+            <span className="ml-1 text-sm font-normal text-muted-foreground">
+              {unit}
+            </span>
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">over {stats.count} readings</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            over {stats.count} readings
+          </p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader className="px-4 pb-1 pt-4">
-          <CardTitle className="text-xs text-muted-foreground">Min / Max</CardTitle>
+          <CardTitle className="text-xs text-muted-foreground">
+            Min / Max
+          </CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4">
           <p className="text-2xl font-bold tabular-nums">
             {stats.min.toFixed(2)}
-            <span className="mx-1 text-base font-normal text-muted-foreground">/</span>
+            <span className="mx-1 text-base font-normal text-muted-foreground">
+              /
+            </span>
             {stats.max.toFixed(2)}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">{unit}</p>
@@ -84,4 +100,3 @@ export function SensorReadingsStats({ stats, unit, isLoading }: SensorReadingsSt
     </div>
   );
 }
-

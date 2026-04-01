@@ -1,6 +1,9 @@
 import { setConnectionStatus, setWsError } from "@/store/ws-slice";
 import { WS_BASE_URL } from "@/config/constants";
-import { computeDelay, isAuthExpiredStatus } from "@/store/ws/base/ws-reconnect";
+import {
+  computeDelay,
+  isAuthExpiredStatus,
+} from "@/store/ws/base/ws-reconnect";
 import { createWsRuntimeState } from "@/store/ws/base/ws-runtime";
 import type { WsManagerOptions } from "@/store/ws/base/ws-types";
 import { wsApi } from "@/features/ws/api/ws.endpoints";
@@ -13,7 +16,9 @@ function toNonEmptyString(value: unknown): string | null {
 
 export function createWsManager({ storeApi, onMessageRaw }: WsManagerOptions) {
   const runtime = createWsRuntimeState();
-  const dispatchThunk = storeApi.dispatch as unknown as (action: unknown) => unknown;
+  const dispatchThunk = storeApi.dispatch as unknown as (
+    action: unknown,
+  ) => unknown;
 
   async function connect() {
     if (!runtime.shouldReconnect || runtime.isConnecting) {
@@ -195,7 +200,11 @@ export function createWsManager({ storeApi, onMessageRaw }: WsManagerOptions) {
   }
 
   function scheduleReconnect() {
-    if (!runtime.shouldReconnect || runtime.isConnecting || runtime.reconnectTimer) {
+    if (
+      !runtime.shouldReconnect ||
+      runtime.isConnecting ||
+      runtime.reconnectTimer
+    ) {
       return;
     }
 
@@ -242,4 +251,3 @@ export function createWsManager({ storeApi, onMessageRaw }: WsManagerOptions) {
     disconnect,
   };
 }
-

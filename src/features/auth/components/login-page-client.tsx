@@ -106,10 +106,16 @@ export default function LoginPageClient() {
             {loading ? "Signing in..." : "Sign in"}
           </Button>
           <div className="flex items-center justify-between text-sm">
-            <Link href="/forgot-password" className="text-muted-foreground hover:text-foreground">
+            <Link
+              href="/forgot-password"
+              className="text-muted-foreground hover:text-foreground"
+            >
               Forgot password?
             </Link>
-            <Link href="/signup" className="text-muted-foreground hover:text-foreground">
+            <Link
+              href="/signup"
+              className="text-muted-foreground hover:text-foreground"
+            >
               Create account
             </Link>
           </div>
@@ -118,5 +124,3 @@ export default function LoginPageClient() {
     </Card>
   );
 }
-
-

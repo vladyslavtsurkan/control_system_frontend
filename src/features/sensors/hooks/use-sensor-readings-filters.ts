@@ -43,47 +43,65 @@ export function useSensorReadingsFilters({
     toDateTimeLocalValue(new Date(Date.now() - 3 * 60 * 60 * 1000)),
   );
 
-  const activePresetParam = searchParams.get("range") ?? initialRange ?? undefined;
+  const activePresetParam =
+    searchParams.get("range") ?? initialRange ?? undefined;
   const activePreset = useMemo<SensorRangePresetKey>(() => {
     if (activePresetParam === "custom") return "custom";
-    if (SENSOR_RANGE_PRESETS.some((preset) => preset.key === activePresetParam)) {
+    if (
+      SENSOR_RANGE_PRESETS.some((preset) => preset.key === activePresetParam)
+    ) {
       return activePresetParam as SensorRangePresetKey;
     }
     return "3h";
   }, [activePresetParam]);
 
-  const startTimeLocal = searchParams.get("start_time") ?? initialStartTime ?? defaultStartTimeLocal;
+  const startTimeLocal =
+    searchParams.get("start_time") ?? initialStartTime ?? defaultStartTimeLocal;
   const endTimeLocal = searchParams.get("end_time") ?? initialEndTime ?? "";
-  const bucketIntervalInput = searchParams.get("bucket_interval") ?? initialBucketInterval;
+  const bucketIntervalInput =
+    searchParams.get("bucket_interval") ?? initialBucketInterval;
   const bucketInterval = useMemo<BucketInterval>(() => {
-    if (BUCKET_INTERVAL_VALUES.includes(bucketIntervalInput as BucketInterval)) {
+    if (
+      BUCKET_INTERVAL_VALUES.includes(bucketIntervalInput as BucketInterval)
+    ) {
       return bucketIntervalInput as BucketInterval;
     }
     return DEFAULT_BUCKET_INTERVAL;
   }, [bucketIntervalInput]);
 
-  const replaceQuery = useCallback((mutate: (params: URLSearchParams) => void) => {
-    const params = new URLSearchParams(searchParams.toString());
-    mutate(params);
-    const next = params.toString();
-    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
-  }, [pathname, router, searchParams]);
+  const replaceQuery = useCallback(
+    (mutate: (params: URLSearchParams) => void) => {
+      const params = new URLSearchParams(searchParams.toString());
+      mutate(params);
+      const next = params.toString();
+      router.replace(next ? `${pathname}?${next}` : pathname, {
+        scroll: false,
+      });
+    },
+    [pathname, router, searchParams],
+  );
 
-  const resetAlertsPaginationParams = useCallback((params: URLSearchParams) => {
-    params.set("alerts_page", "1");
-    params.set("alerts_per_page", String(alertsPerPage));
-  }, [alertsPerPage]);
+  const resetAlertsPaginationParams = useCallback(
+    (params: URLSearchParams) => {
+      params.set("alerts_page", "1");
+      params.set("alerts_per_page", String(alertsPerPage));
+    },
+    [alertsPerPage],
+  );
 
-  const applyPreset = useCallback((ms: number, key: Exclude<SensorRangePresetKey, "custom">) => {
-    const now = new Date();
-    const start = new Date(now.getTime() - ms);
-    replaceQuery((params) => {
-      params.set("start_time", toDateTimeLocalValue(start));
-      params.delete("end_time");
-      params.set("range", key);
-      resetAlertsPaginationParams(params);
-    });
-  }, [replaceQuery, resetAlertsPaginationParams]);
+  const applyPreset = useCallback(
+    (ms: number, key: Exclude<SensorRangePresetKey, "custom">) => {
+      const now = new Date();
+      const start = new Date(now.getTime() - ms);
+      replaceQuery((params) => {
+        params.set("start_time", toDateTimeLocalValue(start));
+        params.delete("end_time");
+        params.set("range", key);
+        resetAlertsPaginationParams(params);
+      });
+    },
+    [replaceQuery, resetAlertsPaginationParams],
+  );
 
   const onUseNowAsEndTime = useCallback(() => {
     replaceQuery((params) => {
@@ -109,50 +127,62 @@ export function useSensorReadingsFilters({
     });
   }, [replaceQuery, resetAlertsPaginationParams]);
 
-  const onPresetChange = useCallback((value: SensorRangePresetKey) => {
-    if (value === "custom") {
+  const onPresetChange = useCallback(
+    (value: SensorRangePresetKey) => {
+      if (value === "custom") {
+        replaceQuery((params) => {
+          params.set("range", "custom");
+          resetAlertsPaginationParams(params);
+        });
+        return;
+      }
+
+      const preset = SENSOR_RANGE_PRESETS.find((p) => p.key === value);
+      if (!preset) return;
+      applyPreset(preset.ms, preset.key);
+    },
+    [applyPreset, replaceQuery, resetAlertsPaginationParams],
+  );
+
+  const onStartTimeChange = useCallback(
+    (value: string) => {
       replaceQuery((params) => {
+        if (value) {
+          params.set("start_time", value);
+        } else {
+          params.delete("start_time");
+        }
         params.set("range", "custom");
         resetAlertsPaginationParams(params);
       });
-      return;
-    }
+    },
+    [replaceQuery, resetAlertsPaginationParams],
+  );
 
-    const preset = SENSOR_RANGE_PRESETS.find((p) => p.key === value);
-    if (!preset) return;
-    applyPreset(preset.ms, preset.key);
-  }, [applyPreset, replaceQuery, resetAlertsPaginationParams]);
+  const onEndTimeChange = useCallback(
+    (value: string) => {
+      replaceQuery((params) => {
+        if (value) {
+          params.set("end_time", value);
+        } else {
+          params.delete("end_time");
+        }
+        params.set("range", "custom");
+        resetAlertsPaginationParams(params);
+      });
+    },
+    [replaceQuery, resetAlertsPaginationParams],
+  );
 
-  const onStartTimeChange = useCallback((value: string) => {
-    replaceQuery((params) => {
-      if (value) {
-        params.set("start_time", value);
-      } else {
-        params.delete("start_time");
-      }
-      params.set("range", "custom");
-      resetAlertsPaginationParams(params);
-    });
-  }, [replaceQuery, resetAlertsPaginationParams]);
-
-  const onEndTimeChange = useCallback((value: string) => {
-    replaceQuery((params) => {
-      if (value) {
-        params.set("end_time", value);
-      } else {
-        params.delete("end_time");
-      }
-      params.set("range", "custom");
-      resetAlertsPaginationParams(params);
-    });
-  }, [replaceQuery, resetAlertsPaginationParams]);
-
-  const onBucketIntervalChange = useCallback((value: BucketInterval) => {
-    replaceQuery((params) => {
-      params.set("bucket_interval", value);
-      resetAlertsPaginationParams(params);
-    });
-  }, [replaceQuery, resetAlertsPaginationParams]);
+  const onBucketIntervalChange = useCallback(
+    (value: BucketInterval) => {
+      replaceQuery((params) => {
+        params.set("bucket_interval", value);
+        resetAlertsPaginationParams(params);
+      });
+    },
+    [replaceQuery, resetAlertsPaginationParams],
+  );
 
   const startTimeIso = useMemo(() => {
     if (!startTimeLocal) return undefined;
@@ -172,7 +202,11 @@ export function useSensorReadingsFilters({
     if (startTimeIso === null || endTimeIso === null) {
       return "Please enter valid start and end datetimes.";
     }
-    if (startTimeIso && endTimeIso && Date.parse(startTimeIso) > Date.parse(endTimeIso)) {
+    if (
+      startTimeIso &&
+      endTimeIso &&
+      Date.parse(startTimeIso) > Date.parse(endTimeIso)
+    ) {
       return "Start time must be before or equal to end time.";
     }
 
@@ -207,5 +241,3 @@ export function useSensorReadingsFilters({
     onBucketIntervalChange,
   };
 }
-
-

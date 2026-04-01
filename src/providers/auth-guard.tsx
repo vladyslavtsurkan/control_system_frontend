@@ -60,14 +60,16 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           signal: controller.signal,
         });
         if (orgsRes.ok) {
-          const orgs: PaginatedResponse<OrganizationWithRole> = await orgsRes.json();
+          const orgs: PaginatedResponse<OrganizationWithRole> =
+            await orgsRes.json();
           if (controller.signal.aborted) {
             return;
           }
 
           if (orgs.items.length > 0) {
             const persistedId = getPersistedTenantId();
-            const match = persistedId && orgs.items.find((o) => o.id === persistedId);
+            const match =
+              persistedId && orgs.items.find((o) => o.id === persistedId);
             // initActiveOrg sets the ID without triggering the cache-reset listener
             dispatch(initActiveOrg((match || orgs.items[0]).id));
           }

@@ -47,7 +47,12 @@ import { Label } from "@/components/ui/label";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setActiveOrg, setUser } from "@/store/auth-slice";
 import { useGetOrganizationsQuery, useUpdateMeMutation } from "@/store/api";
-import { selectUser, selectActiveOrgId, selectWsStatus, selectActiveAlertCount } from "@/store/selectors";
+import {
+  selectUser,
+  selectActiveOrgId,
+  selectWsStatus,
+  selectActiveAlertCount,
+} from "@/store/selectors";
 import { useLogout } from "@/features/auth/hooks/use-logout";
 import { toast } from "sonner";
 import type { OrganizationWithRole } from "@/features/organizations/types";
@@ -108,7 +113,6 @@ export function AppSidebar() {
     }
   }
 
-
   function handleSwitchOrg(org: OrganizationWithRole) {
     if (org.id === activeOrgId) {
       return;
@@ -125,7 +129,8 @@ export function AppSidebar() {
     if (orgSwitchToastIdRef.current == null) return;
 
     if (wsStatus === "connected") {
-      const orgName = pendingOrgNameRef.current ?? activeOrg?.name ?? "selected organization";
+      const orgName =
+        pendingOrgNameRef.current ?? activeOrg?.name ?? "selected organization";
       toast.success(`Switched to ${orgName}. Live stream reconnected.`, {
         id: orgSwitchToastIdRef.current,
       });
@@ -255,7 +260,9 @@ export function AppSidebar() {
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
               <span className="truncate font-medium">{displayName}</span>
-              <span className="truncate text-xs text-muted-foreground">{user?.email}</span>
+              <span className="truncate text-xs text-muted-foreground">
+                {user?.email}
+              </span>
             </div>
             <ChevronDown className="ml-auto size-4 shrink-0" />
           </DropdownMenuTrigger>
@@ -281,7 +288,8 @@ export function AppSidebar() {
             <span
               className={`inline-block size-2 shrink-0 rounded-full ${statusColor[wsStatus] ?? "bg-zinc-400"}`}
             />
-            WS: {wsStatus}{isOrgSwitchPending ? " (switching org...)" : ""}
+            WS: {wsStatus}
+            {isOrgSwitchPending ? " (switching org...)" : ""}
           </span>
         </div>
       </SidebarFooter>
@@ -336,7 +344,9 @@ export function AppSidebar() {
                 <Input
                   id="profile-first"
                   value={form.first_name}
-                  onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, first_name: e.target.value }))
+                  }
                   placeholder="Jane"
                 />
               </div>
@@ -345,7 +355,9 @@ export function AppSidebar() {
                 <Input
                   id="profile-last"
                   value={form.last_name}
-                  onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, last_name: e.target.value }))
+                  }
                   placeholder="Doe"
                 />
               </div>

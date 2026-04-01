@@ -16,4 +16,3 @@ export type {
   GetReadingsParams,
   GetSensorReadingsParams,
 } from "@/features/sensors/types";
-

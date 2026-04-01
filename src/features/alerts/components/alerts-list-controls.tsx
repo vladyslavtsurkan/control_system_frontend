@@ -1,6 +1,9 @@
 "use client";
 
-import { ListPageSizeSelect, ListResultsSummary } from "@/components/ui/list-pagination";
+import {
+  ListPageSizeSelect,
+  ListResultsSummary,
+} from "@/components/ui/list-pagination";
 
 interface AlertsListControlsProps {
   shownCount: number;
@@ -19,7 +22,11 @@ export function AlertsListControls({
 }: AlertsListControlsProps) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <ListResultsSummary shownCount={shownCount} totalCount={totalCount} noun="alert rules" />
+      <ListResultsSummary
+        shownCount={shownCount}
+        totalCount={totalCount}
+        noun="alert rules"
+      />
       <ListPageSizeSelect
         id="alert-rules-page-size"
         value={pageSize}
@@ -29,4 +36,3 @@ export function AlertsListControls({
     </div>
   );
 }
-

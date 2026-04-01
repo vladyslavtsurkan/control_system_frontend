@@ -3,4 +3,3 @@ import ForgotPasswordPageClient from "@/features/auth/components/forgot-password
 export default function ForgotPasswordPage() {
   return <ForgotPasswordPageClient />;
 }
-

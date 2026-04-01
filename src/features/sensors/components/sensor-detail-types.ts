@@ -32,4 +32,3 @@ export type SensorAlertRow = {
   updatedAt: string;
   resolvedAt: string | null;
 };
-

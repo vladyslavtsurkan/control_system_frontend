@@ -26,10 +26,17 @@ export default async function ServersPage({ searchParams }: ServersPageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">OPC UA Servers</h1>
-        <p className="text-sm text-muted-foreground">Manage your industrial OPC UA server connections.</p>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          OPC UA Servers
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Manage your industrial OPC UA server connections.
+        </p>
       </div>
-      <ServersPageClient initialPage={initialPage} initialPerPage={initialPerPage} />
+      <ServersPageClient
+        initialPage={initialPage}
+        initialPerPage={initialPerPage}
+      />
     </div>
   );
 }

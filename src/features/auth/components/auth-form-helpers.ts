@@ -43,4 +43,3 @@ export function getApiErrorMessage(data: unknown, fallback: string): string {
 
   return fallback;
 }
-

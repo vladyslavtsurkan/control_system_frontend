@@ -64,75 +64,88 @@ export function OrganizationsTable({
         <TableBody>
           {organizations.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
-                No organizations found. Click &quot;New Organization&quot; to create one.
+              <TableCell
+                colSpan={4}
+                className="py-10 text-center text-sm text-muted-foreground"
+              >
+                No organizations found. Click &quot;New Organization&quot; to
+                create one.
               </TableCell>
             </TableRow>
-          ) : organizations.map((org) => (
-            <TableRow key={org.id} className={org.id === activeOrgId ? "bg-muted/30" : ""}>
-              <TableCell className="font-medium">
-                <div className="flex items-center gap-2">
-                  {org.name}
-                  {org.id === activeOrgId && (
-                    <Badge variant="outline" className="text-xs">active</Badge>
+          ) : (
+            organizations.map((org) => (
+              <TableRow
+                key={org.id}
+                className={org.id === activeOrgId ? "bg-muted/30" : ""}
+              >
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    {org.name}
+                    {org.id === activeOrgId && (
+                      <Badge variant="outline" className="text-xs">
+                        active
+                      </Badge>
+                    )}
+                  </div>
+                  {org.description && (
+                    <div className="text-xs text-muted-foreground">
+                      {org.description}
+                    </div>
                   )}
-                </div>
-                {org.description && (
-                  <div className="text-xs text-muted-foreground">{org.description}</div>
-                )}
-              </TableCell>
-              <TableCell>
-                <Badge variant={ROLE_VARIANT[org.role]}>{org.role}</Badge>
-              </TableCell>
-              <TableCell className="text-sm text-muted-foreground">{formatDate24(org.created_at)}</TableCell>
-              <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onManageMembers(org)}
-                  aria-label="Manage members"
-                >
-                  <Users className="size-4" />
-                </Button>
-                {(org.role === "owner" || org.role === "admin") && (
+                </TableCell>
+                <TableCell>
+                  <Badge variant={ROLE_VARIANT[org.role]}>{org.role}</Badge>
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {formatDate24(org.created_at)}
+                </TableCell>
+                <TableCell className="text-right">
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => onEdit(org)}
-                    aria-label="Edit organization"
+                    onClick={() => onManageMembers(org)}
+                    aria-label="Manage members"
                   >
-                    <Pencil className="size-4" />
+                    <Users className="size-4" />
                   </Button>
-                )}
-                {org.role === "owner" && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-red-600 hover:text-red-700"
-                    onClick={() => onDelete(org)}
-                    aria-label="Delete organization"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                )}
-                {org.role !== "owner" && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-orange-500 hover:text-orange-600"
-                    onClick={() => onLeave(org)}
-                    aria-label="Leave organization"
-                  >
-                    <LeaveIcon className="size-4" />
-                  </Button>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
+                  {(org.role === "owner" || org.role === "admin") && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEdit(org)}
+                      aria-label="Edit organization"
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                  )}
+                  {org.role === "owner" && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() => onDelete(org)}
+                      aria-label="Delete organization"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
+                  {org.role !== "owner" && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-orange-500 hover:text-orange-600"
+                      onClick={() => onLeave(org)}
+                      aria-label="Leave organization"
+                    >
+                      <LeaveIcon className="size-4" />
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>
   );
 }
-
-

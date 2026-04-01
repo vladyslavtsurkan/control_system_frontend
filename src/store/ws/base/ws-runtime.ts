@@ -17,4 +17,3 @@ export function createWsRuntimeState(): WsRuntimeState {
     activeConnectionAttemptId: 0,
   };
 }
-

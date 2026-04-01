@@ -22,15 +22,18 @@ export function useConfirm() {
   const [options, setOptions] = useState<ConfirmOptions>({ description: "" });
   const resolveRef = useRef<((value: boolean) => void) | null>(null);
 
-  const confirm = useCallback((opts: ConfirmOptions | string): Promise<boolean> => {
-    const normalized: ConfirmOptions =
-      typeof opts === "string" ? { description: opts } : opts;
-    setOptions(normalized);
-    setOpen(true);
-    return new Promise<boolean>((resolve) => {
-      resolveRef.current = resolve;
-    });
-  }, []);
+  const confirm = useCallback(
+    (opts: ConfirmOptions | string): Promise<boolean> => {
+      const normalized: ConfirmOptions =
+        typeof opts === "string" ? { description: opts } : opts;
+      setOptions(normalized);
+      setOpen(true);
+      return new Promise<boolean>((resolve) => {
+        resolveRef.current = resolve;
+      });
+    },
+    [],
+  );
 
   const handleConfirm = useCallback(() => {
     setOpen(false);

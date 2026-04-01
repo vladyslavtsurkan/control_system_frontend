@@ -44,7 +44,10 @@ export function TopBar() {
       <DropdownMenu>
         {/* Inline trigger content — DropdownMenuTrigger already renders a <button>,
             so we must NOT nest another <Button> inside it */}
-        <DropdownMenuTrigger className="inline-flex size-9 items-center justify-center rounded-md hover:bg-accent focus-visible:outline-none" aria-label="User menu">
+        <DropdownMenuTrigger
+          className="inline-flex size-9 items-center justify-center rounded-md hover:bg-accent focus-visible:outline-none"
+          aria-label="User menu"
+        >
           <User className="size-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
@@ -52,7 +55,8 @@ export function TopBar() {
           <div className="px-2 py-1.5">
             <p className="text-sm font-medium">
               {user
-                ? [user.first_name, user.last_name].filter(Boolean).join(" ") || user.email
+                ? [user.first_name, user.last_name].filter(Boolean).join(" ") ||
+                  user.email
                 : "User"}
             </p>
             <p className="text-xs text-muted-foreground">{user?.email}</p>

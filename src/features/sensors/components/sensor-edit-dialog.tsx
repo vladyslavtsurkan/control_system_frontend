@@ -61,7 +61,9 @@ export function SensorEditDialog({
               id="edit-sensor-node-id"
               required
               value={form.node_id}
-              onChange={(e) => onFormChange({ ...form, node_id: e.target.value })}
+              onChange={(e) =>
+                onFormChange({ ...form, node_id: e.target.value })
+              }
               placeholder="ns=2;i=1001"
               className="font-mono"
             />
@@ -70,7 +72,12 @@ export function SensorEditDialog({
             <Label>Data Type</Label>
             <Select
               value={form.data_type}
-              onValueChange={(value) => onFormChange({ ...form, data_type: value as EditSensorFormState["data_type"] })}
+              onValueChange={(value) =>
+                onFormChange({
+                  ...form,
+                  data_type: value as EditSensorFormState["data_type"],
+                })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -88,7 +95,9 @@ export function SensorEditDialog({
               <Input
                 id="edit-sensor-desc"
                 value={form.description}
-                onChange={(e) => onFormChange({ ...form, description: e.target.value })}
+                onChange={(e) =>
+                  onFormChange({ ...form, description: e.target.value })
+                }
                 placeholder="Optional"
               />
             </div>
@@ -97,7 +106,9 @@ export function SensorEditDialog({
               <Input
                 id="edit-sensor-units"
                 value={form.units}
-                onChange={(e) => onFormChange({ ...form, units: e.target.value })}
+                onChange={(e) =>
+                  onFormChange({ ...form, units: e.target.value })
+                }
                 placeholder="degC, bar, rpm"
               />
             </div>
@@ -105,12 +116,16 @@ export function SensorEditDialog({
           <div className="flex flex-row items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
               <Label htmlFor="edit-sensor-is-writable">Writable Node</Label>
-              <p className="text-sm text-muted-foreground">Allow control commands to be sent to this sensor</p>
+              <p className="text-sm text-muted-foreground">
+                Allow control commands to be sent to this sensor
+              </p>
             </div>
             <Switch
               id="edit-sensor-is-writable"
               checked={form.is_writable}
-              onCheckedChange={(checked) => onFormChange({ ...form, is_writable: checked })}
+              onCheckedChange={(checked) =>
+                onFormChange({ ...form, is_writable: checked })
+              }
             />
           </div>
           <DialogFooter>
@@ -126,4 +141,3 @@ export function SensorEditDialog({
     </Dialog>
   );
 }
-

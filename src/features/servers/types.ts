@@ -55,4 +55,3 @@ export interface ApiKeyInfoResponse {
   last_used_at: string | null;
   updated_at: string;
 }
-

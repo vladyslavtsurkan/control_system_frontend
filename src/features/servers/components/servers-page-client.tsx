@@ -10,8 +10,14 @@ import { ServersActionBar } from "@/features/servers/components/servers-action-b
 import { ServersListControls } from "@/features/servers/components/servers-list-controls";
 import { ServersTable } from "@/features/servers/components/servers-table";
 import { useConfirm } from "@/hooks/use-confirm";
-import { getOffsetLimitPaginationMeta, useOffsetLimitPagination } from "@/hooks/use-offset-limit-pagination";
-import { LIST_PAGE_SIZE_FALLBACK, LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
+import {
+  getOffsetLimitPaginationMeta,
+  useOffsetLimitPagination,
+} from "@/hooks/use-offset-limit-pagination";
+import {
+  LIST_PAGE_SIZE_FALLBACK,
+  LIST_PAGE_SIZE_OPTIONS,
+} from "@/config/constants";
 import type { OpcServer } from "@/features/servers/types";
 
 interface ServersPageClientProps {
@@ -39,15 +45,16 @@ export default function ServersPageClient({
   const { confirm, ConfirmDialog } = useConfirm();
 
   const servers = data?.items ?? [];
-  const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } = getOffsetLimitPaginationMeta({
-    count: data?.count,
-    perPage: data?.per_page,
-    totalPages: data?.total_pages,
-    page: data?.page,
-    offset: pagination.offset,
-    requestedLimit: pagination.limit,
-    fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
-  });
+  const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } =
+    getOffsetLimitPaginationMeta({
+      count: data?.count,
+      perPage: data?.per_page,
+      totalPages: data?.total_pages,
+      page: data?.page,
+      offset: pagination.offset,
+      requestedLimit: pagination.limit,
+      fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
+    });
 
   function openCreate() {
     setEditTarget(null);
@@ -60,10 +67,12 @@ export default function ServersPageClient({
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!await confirm({
-      description: `Delete server "${name}"?`,
-      destructive: true,
-    })) {
+    if (
+      !(await confirm({
+        description: `Delete server "${name}"?`,
+        destructive: true,
+      }))
+    ) {
       return;
     }
 
@@ -127,6 +136,3 @@ export default function ServersPageClient({
     </div>
   );
 }
-
-
-

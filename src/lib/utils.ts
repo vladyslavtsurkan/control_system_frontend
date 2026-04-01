@@ -1,18 +1,25 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 import { BucketInterval } from "@/features/sensors";
-import { BUCKET_INTERVAL_VALUES, DEFAULT_BUCKET_INTERVAL } from "@/features/sensors/types";
+import {
+  BUCKET_INTERVAL_VALUES,
+  DEFAULT_BUCKET_INTERVAL,
+} from "@/features/sensors/types";
 
 export type SearchParamValue = string | string[] | undefined;
 
-export function parseBucketIntervalParam(value: string | undefined): BucketInterval {
+export function parseBucketIntervalParam(
+  value: string | undefined,
+): BucketInterval {
   if (value && BUCKET_INTERVAL_VALUES.includes(value as BucketInterval)) {
     return value as BucketInterval;
   }
   return DEFAULT_BUCKET_INTERVAL;
 }
 
-export function getFirstSearchParamValue(value: SearchParamValue): string | undefined {
+export function getFirstSearchParamValue(
+  value: SearchParamValue,
+): string | undefined {
   if (Array.isArray(value)) return value[0];
   return value;
 }
@@ -38,5 +45,5 @@ export function parsePageSizeParam(
 }
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }

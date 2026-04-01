@@ -1,6 +1,9 @@
 "use client";
 
-import { ListPageSizeSelect, ListResultsSummary } from "@/components/ui/list-pagination";
+import {
+  ListPageSizeSelect,
+  ListResultsSummary,
+} from "@/components/ui/list-pagination";
 
 interface OrganizationsListControlsProps {
   shownCount: number;
@@ -19,7 +22,11 @@ export function OrganizationsListControls({
 }: OrganizationsListControlsProps) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <ListResultsSummary shownCount={shownCount} totalCount={totalCount} noun="organizations" />
+      <ListResultsSummary
+        shownCount={shownCount}
+        totalCount={totalCount}
+        noun="organizations"
+      />
       <ListPageSizeSelect
         id="organizations-page-size"
         value={pageSize}
@@ -29,4 +36,3 @@ export function OrganizationsListControls({
     </div>
   );
 }
-

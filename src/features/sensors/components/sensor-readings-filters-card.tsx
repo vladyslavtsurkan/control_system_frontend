@@ -30,7 +30,9 @@ export const SENSOR_RANGE_PRESETS = [
   { key: "24h", label: "Last 24h", ms: 24 * 60 * 60 * 1000 },
 ] as const;
 
-export type SensorRangePresetKey = (typeof SENSOR_RANGE_PRESETS)[number]["key"] | "custom";
+export type SensorRangePresetKey =
+  | (typeof SENSOR_RANGE_PRESETS)[number]["key"]
+  | "custom";
 
 interface SensorReadingsFiltersCardProps {
   activePreset: SensorRangePresetKey;
@@ -68,12 +70,18 @@ export function SensorReadingsFiltersCard({
       <CardHeader>
         <CardTitle className="text-base">Readings Filters</CardTitle>
         <CardDescription>
-          Use presets for speed or pick custom local dates. Leave end time empty for live mode. Maximum window is {maxWindowHours} hours.
+          Use presets for speed or pick custom local dates. Leave end time empty
+          for live mode. Maximum window is {maxWindowHours} hours.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
-          <Select value={activePreset} onValueChange={(value) => onPresetChange(value as SensorRangePresetKey)}>
+          <Select
+            value={activePreset}
+            onValueChange={(value) =>
+              onPresetChange(value as SensorRangePresetKey)
+            }
+          >
             <SelectTrigger className="h-8 w-40">
               <SelectValue />
             </SelectTrigger>
@@ -105,7 +113,12 @@ export function SensorReadingsFiltersCard({
             End = now
           </Button>
 
-          <Button type="button" variant="ghost" className="h-8 px-2 text-xs" onClick={onClear}>
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-8 px-2 text-xs"
+            onClick={onClear}
+          >
             Clear
           </Button>
         </div>
@@ -131,13 +144,20 @@ export function SensorReadingsFiltersCard({
           </div>
           <div className="space-y-2">
             <Label htmlFor="bucket-interval">Bucket interval</Label>
-            <Select value={bucketInterval} onValueChange={(value) => onBucketIntervalChange(value as BucketInterval)}>
+            <Select
+              value={bucketInterval}
+              onValueChange={(value) =>
+                onBucketIntervalChange(value as BucketInterval)
+              }
+            >
               <SelectTrigger id="bucket-interval">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {BUCKET_INTERVAL_VALUES.map((value) => (
-                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                  <SelectItem key={value} value={value}>
+                    {value}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -148,9 +168,10 @@ export function SensorReadingsFiltersCard({
           Display/edit uses local time; requests are sent as UTC ISO.
         </p>
 
-        {rangeError ? <p className="text-sm text-red-600">{rangeError}</p> : null}
+        {rangeError ? (
+          <p className="text-sm text-red-600">{rangeError}</p>
+        ) : null}
       </CardContent>
     </Card>
   );
 }
-

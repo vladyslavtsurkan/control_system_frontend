@@ -18,8 +18,12 @@ export function useDashboardTelemetry(): DashboardTelemetryState {
   const readingsRef = useRef(new Map<string, SensorReading[]>());
   const rafIdRef = useRef<number | null>(null);
 
-  const [latestBySensor, setLatestBySensor] = useState<Record<string, LiveKpi>>({});
-  const [readingsBySensor, setReadingsBySensor] = useState<Record<string, SensorReading[]>>({});
+  const [latestBySensor, setLatestBySensor] = useState<Record<string, LiveKpi>>(
+    {},
+  );
+  const [readingsBySensor, setReadingsBySensor] = useState<
+    Record<string, SensorReading[]>
+  >({});
 
   useEffect(() => {
     const flushFrame = () => {
@@ -66,4 +70,3 @@ export function useDashboardTelemetry(): DashboardTelemetryState {
 
   return { latestBySensor, readingsBySensor };
 }
-

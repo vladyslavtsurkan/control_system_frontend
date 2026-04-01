@@ -31,4 +31,3 @@ export interface OrganizationMember {
 export interface ChangeRoleRequest {
   role: UserRoleInOrg;
 }
-

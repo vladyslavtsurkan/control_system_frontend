@@ -52,14 +52,15 @@ export function getOffsetLimitPaginationMeta({
   requestedLimit,
   fallbackLimit,
 }: OffsetLimitPaginationMetaInput): OffsetLimitPaginationMeta {
-  const safePerPage = perPage && perPage > 0 ? perPage : requestedLimit || fallbackLimit;
+  const safePerPage =
+    perPage && perPage > 0 ? perPage : requestedLimit || fallbackLimit;
   const totalCount = count ?? 0;
-  const safeTotalPages = totalPages && totalPages > 0
-    ? totalPages
-    : Math.max(1, Math.ceil(totalCount / Math.max(1, safePerPage)));
-  const currentPage = page && page > 0
-    ? page
-    : Math.floor(offset / Math.max(1, safePerPage)) + 1;
+  const safeTotalPages =
+    totalPages && totalPages > 0
+      ? totalPages
+      : Math.max(1, Math.ceil(totalCount / Math.max(1, safePerPage)));
+  const currentPage =
+    page && page > 0 ? page : Math.floor(offset / Math.max(1, safePerPage)) + 1;
 
   return {
     perPage: safePerPage,
@@ -81,17 +82,28 @@ export function useOffsetLimitPagination({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const page = parsePositiveIntParam(searchParams.get(pageParam) ?? undefined, initialPage);
-  const perPage = parsePositiveIntParam(searchParams.get(perPageParam) ?? undefined, initialLimit);
+  const page = parsePositiveIntParam(
+    searchParams.get(pageParam) ?? undefined,
+    initialPage,
+  );
+  const perPage = parsePositiveIntParam(
+    searchParams.get(perPageParam) ?? undefined,
+    initialLimit,
+  );
   const offset = (page - 1) * perPage;
   const limit = perPage;
 
-  const replaceQuery = useCallback((mutate: (params: URLSearchParams) => void) => {
-    const params = new URLSearchParams(searchParams.toString());
-    mutate(params);
-    const next = params.toString();
-    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
-  }, [pathname, router, searchParams]);
+  const replaceQuery = useCallback(
+    (mutate: (params: URLSearchParams) => void) => {
+      const params = new URLSearchParams(searchParams.toString());
+      mutate(params);
+      const next = params.toString();
+      router.replace(next ? `${pathname}?${next}` : pathname, {
+        scroll: false,
+      });
+    },
+    [pathname, router, searchParams],
+  );
 
   function setPage(next: number) {
     const safeNext = Math.max(1, Math.floor(next));
@@ -134,7 +146,3 @@ export function useOffsetLimitPagination({
     goNext,
   };
 }
-
-
-
-

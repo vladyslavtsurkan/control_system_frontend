@@ -8,10 +8,18 @@ interface ServersActionBarProps {
   onCreate: () => void;
 }
 
-export function ServersActionBar({ onRefresh, onCreate }: ServersActionBarProps) {
+export function ServersActionBar({
+  onRefresh,
+  onCreate,
+}: ServersActionBarProps) {
   return (
     <div className="flex justify-end gap-2">
-      <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh">
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={onRefresh}
+        aria-label="Refresh"
+      >
         <RefreshCw className="size-4" />
       </Button>
       <Button onClick={onCreate}>
@@ -21,4 +29,3 @@ export function ServersActionBar({ onRefresh, onCreate }: ServersActionBarProps)
     </div>
   );
 }
-

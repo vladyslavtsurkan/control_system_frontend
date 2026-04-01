@@ -22,7 +22,11 @@ export function ServersListControls({
 }: ServersListControlsProps) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <ListResultsSummary shownCount={shownCount} totalCount={totalCount} noun="servers" />
+      <ListResultsSummary
+        shownCount={shownCount}
+        totalCount={totalCount}
+        noun="servers"
+      />
       <ListPageSizeSelect
         id="servers-page-size"
         value={pageSize}
@@ -32,4 +36,3 @@ export function ServersListControls({
     </div>
   );
 }
-

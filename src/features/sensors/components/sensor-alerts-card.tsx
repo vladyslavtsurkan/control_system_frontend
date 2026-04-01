@@ -28,7 +28,10 @@ import { formatTime24 } from "@/lib/date-time";
 import type { SensorAlertRow } from "@/features/sensors/components/sensor-detail-types";
 import type { AlertSeverity } from "@/features/alerts";
 
-const severityVariant: Record<AlertSeverity, "default" | "secondary" | "destructive" | "outline"> = {
+const severityVariant: Record<
+  AlertSeverity,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
   info: "secondary",
   warning: "default",
   critical: "destructive",
@@ -81,7 +84,8 @@ export function SensorAlertsCard({
             Sensor Alerts
           </CardTitle>
           <CardDescription>
-            Loaded from REST on page entry and enriched with live WebSocket updates.
+            Loaded from REST on page entry and enriched with live WebSocket
+            updates.
           </CardDescription>
         </div>
         <Button type="button" variant="outline" size="sm" onClick={onRefresh}>
@@ -90,7 +94,11 @@ export function SensorAlertsCard({
       </CardHeader>
       <CardContent className="space-y-4 p-4">
         <div className="flex items-center justify-between gap-3">
-          <ListResultsSummary shownCount={rows.length} totalCount={totalCount} noun="alerts" />
+          <ListResultsSummary
+            shownCount={rows.length}
+            totalCount={totalCount}
+            noun="alerts"
+          />
           <ListPageSizeSelect
             id="sensor-alerts-page-size"
             value={pageSize}
@@ -124,22 +132,33 @@ export function SensorAlertsCard({
             <TableBody>
               {rows.map((row) => {
                 const canAcknowledge =
-                  row.source === "rest"
-                  && !!row.restAlertId
-                  && row.status === "active"
-                  && row.isAcknowledged === false;
+                  row.source === "rest" &&
+                  !!row.restAlertId &&
+                  row.status === "active" &&
+                  row.isAcknowledged === false;
 
                 return (
-                  <TableRow key={row.key} className={row.status === "resolved" ? "opacity-70" : undefined}>
+                  <TableRow
+                    key={row.key}
+                    className={
+                      row.status === "resolved" ? "opacity-70" : undefined
+                    }
+                  >
                     <TableCell>
                       {row.severity ? (
-                        <Badge variant={severityVariant[row.severity]}>{row.severity}</Badge>
+                        <Badge variant={severityVariant[row.severity]}>
+                          {row.severity}
+                        </Badge>
                       ) : (
                         <Badge variant="outline">unknown</Badge>
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={row.status === "active" ? "destructive" : "outline"}>
+                      <Badge
+                        variant={
+                          row.status === "active" ? "destructive" : "outline"
+                        }
+                      >
                         {row.status}
                       </Badge>
                     </TableCell>
@@ -147,7 +166,9 @@ export function SensorAlertsCard({
                       {row.isAcknowledged === null ? (
                         <Badge variant="outline">live</Badge>
                       ) : (
-                        <Badge variant={row.isAcknowledged ? "secondary" : "outline"}>
+                        <Badge
+                          variant={row.isAcknowledged ? "secondary" : "outline"}
+                        >
                           {row.isAcknowledged ? "acknowledged" : "pending"}
                         </Badge>
                       )}
@@ -164,7 +185,9 @@ export function SensorAlertsCard({
                           type="button"
                           variant="outline"
                           size="sm"
-                          disabled={acknowledging && acknowledgingId === row.restAlertId}
+                          disabled={
+                            acknowledging && acknowledgingId === row.restAlertId
+                          }
                           onClick={() => onAcknowledge(row.restAlertId!)}
                         >
                           <CheckCircle2 className="mr-1.5 size-3.5" />
@@ -195,4 +218,3 @@ export function SensorAlertsCard({
     </Card>
   );
 }
-

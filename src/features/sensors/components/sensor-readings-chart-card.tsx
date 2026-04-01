@@ -38,7 +38,8 @@ export function SensorReadingsChartCard({
       <CardHeader>
         <CardTitle className="text-base">Time-Series Chart</CardTitle>
         <CardDescription>
-          Readings from selected time window - live updates apply only when end time is unset
+          Readings from selected time window - live updates apply only when end
+          time is unset
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -61,4 +62,3 @@ export function SensorReadingsChartCard({
     </Card>
   );
 }
-

@@ -1,5 +1,8 @@
 import { skipToken } from "@reduxjs/toolkit/query/react";
-import type { BucketInterval, GetReadingsParams } from "@/features/sensors/types";
+import type {
+  BucketInterval,
+  GetReadingsParams,
+} from "@/features/sensors/types";
 
 interface UseSensorReadingsQueryArgsParams {
   sensorId: string;
@@ -28,4 +31,3 @@ export function useSensorReadingsQueryArgs({
 
   return { readingsArgs };
 }
-

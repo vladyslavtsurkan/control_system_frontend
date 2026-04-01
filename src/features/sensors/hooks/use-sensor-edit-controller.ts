@@ -9,7 +9,10 @@ interface UseSensorEditControllerParams {
   sensor?: Sensor;
 }
 
-export function useSensorEditController({ sensorId, sensor }: UseSensorEditControllerParams) {
+export function useSensorEditController({
+  sensorId,
+  sensor,
+}: UseSensorEditControllerParams) {
   const [updateSensor, { isLoading: updating }] = useUpdateSensorMutation();
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState<EditSensorFormState>({
@@ -65,4 +68,3 @@ export function useSensorEditController({ sensorId, sensor }: UseSensorEditContr
     handleEditSubmit,
   };
 }
-

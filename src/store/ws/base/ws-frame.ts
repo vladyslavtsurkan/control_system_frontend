@@ -21,7 +21,10 @@ export async function decodeWsFrame(data: unknown): Promise<string | null> {
   return null;
 }
 
-export function parseWsEvent(frame: string, raw: unknown): ParsedWsEvent | null {
+export function parseWsEvent(
+  frame: string,
+  raw: unknown,
+): ParsedWsEvent | null {
   try {
     return JSON.parse(frame) as ParsedWsEvent;
   } catch {
@@ -29,4 +32,3 @@ export function parseWsEvent(frame: string, raw: unknown): ParsedWsEvent | null 
     return null;
   }
 }
-

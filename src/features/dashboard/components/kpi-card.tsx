@@ -17,9 +17,17 @@ interface KpiCardProps {
   readings?: SensorReading[];
 }
 
-export function KpiCard({ sensorId, sensorName, units, kpi, readings }: KpiCardProps) {
-  const hasKpiValue = typeof kpi?.value === "number" && Number.isFinite(kpi.value);
-  const hasKpiTime = typeof kpi?.time === "string" && !Number.isNaN(Date.parse(kpi.time));
+export function KpiCard({
+  sensorId,
+  sensorName,
+  units,
+  kpi,
+  readings,
+}: KpiCardProps) {
+  const hasKpiValue =
+    typeof kpi?.value === "number" && Number.isFinite(kpi.value);
+  const hasKpiTime =
+    typeof kpi?.time === "string" && !Number.isNaN(Date.parse(kpi.time));
   const canRenderKpi = hasKpiValue && hasKpiTime;
 
   return (
@@ -51,14 +59,17 @@ export function KpiCard({ sensorId, sensorName, units, kpi, readings }: KpiCardP
                   ) : null}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Last updated:{" "}
-                  {formatTime24(kpi.time, { withSeconds: true })}
+                  Last updated: {formatTime24(kpi.time, { withSeconds: true })}
                 </p>
               </>
             ) : (
               <>
-                <div className="text-3xl font-bold tabular-nums text-muted-foreground">--</div>
-                <p className="text-xs text-muted-foreground">Waiting for telemetry...</p>
+                <div className="text-3xl font-bold tabular-nums text-muted-foreground">
+                  --
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Waiting for telemetry...
+                </p>
               </>
             )
           ) : (
@@ -90,4 +101,3 @@ export function KpiCard({ sensorId, sensorName, units, kpi, readings }: KpiCardP
     </Link>
   );
 }
-

@@ -30,13 +30,25 @@ export interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
-export function ConfirmDialog({ open, options, onConfirm, onCancel }: ConfirmDialogProps) {
-  const title = options.title ?? (options.destructive ? "Are you sure?" : "Confirm");
-  const confirmLabel = options.confirmLabel ?? (options.destructive ? "Delete" : "Confirm");
+export function ConfirmDialog({
+  open,
+  options,
+  onConfirm,
+  onCancel,
+}: ConfirmDialogProps) {
+  const title =
+    options.title ?? (options.destructive ? "Are you sure?" : "Confirm");
+  const confirmLabel =
+    options.confirmLabel ?? (options.destructive ? "Delete" : "Confirm");
   const cancelLabel = options.cancelLabel ?? "Cancel";
 
   return (
-    <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onCancel(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onCancel();
+      }}
+    >
       <DialogContent className="sm:max-w-sm" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -57,4 +69,3 @@ export function ConfirmDialog({ open, options, onConfirm, onCancel }: ConfirmDia
     </Dialog>
   );
 }
-

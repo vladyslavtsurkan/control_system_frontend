@@ -13,8 +13,14 @@ import { AlertsActionBar } from "@/features/alerts/components/alerts-action-bar"
 import { AlertsListControls } from "@/features/alerts/components/alerts-list-controls";
 import { AlertsTable } from "@/features/alerts/components/alerts-table";
 import { useConfirm } from "@/hooks/use-confirm";
-import { getOffsetLimitPaginationMeta, useOffsetLimitPagination } from "@/hooks/use-offset-limit-pagination";
-import { LIST_PAGE_SIZE_FALLBACK, LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
+import {
+  getOffsetLimitPaginationMeta,
+  useOffsetLimitPagination,
+} from "@/hooks/use-offset-limit-pagination";
+import {
+  LIST_PAGE_SIZE_FALLBACK,
+  LIST_PAGE_SIZE_OPTIONS,
+} from "@/config/constants";
 import type { AlertRule } from "@/features/alerts/types";
 
 interface AlertsPageClientProps {
@@ -43,15 +49,16 @@ export default function AlertsPageClient({
 
   const sensors = sensorsData?.items ?? [];
   const rules = data?.items ?? [];
-  const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } = getOffsetLimitPaginationMeta({
-    count: data?.count,
-    perPage: data?.per_page,
-    totalPages: data?.total_pages,
-    page: data?.page,
-    offset: pagination.offset,
-    requestedLimit: pagination.limit,
-    fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
-  });
+  const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } =
+    getOffsetLimitPaginationMeta({
+      count: data?.count,
+      perPage: data?.per_page,
+      totalPages: data?.total_pages,
+      page: data?.page,
+      offset: pagination.offset,
+      requestedLimit: pagination.limit,
+      fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
+    });
 
   function openCreate() {
     setEditTarget(null);
@@ -64,10 +71,12 @@ export default function AlertsPageClient({
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!await confirm({
-      description: `Delete alert rule "${name}"?`,
-      destructive: true,
-    })) {
+    if (
+      !(await confirm({
+        description: `Delete alert rule "${name}"?`,
+        destructive: true,
+      }))
+    ) {
       return;
     }
 
@@ -120,8 +129,3 @@ export default function AlertsPageClient({
     </div>
   );
 }
-
-
-
-
-

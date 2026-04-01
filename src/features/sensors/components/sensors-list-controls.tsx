@@ -7,7 +7,15 @@ interface SensorsListControlsProps {
   totalCount: number;
 }
 
-export function SensorsListControls({ shownCount, totalCount }: SensorsListControlsProps) {
-  return <ListResultsSummary shownCount={shownCount} totalCount={totalCount} noun="sensors" />;
+export function SensorsListControls({
+  shownCount,
+  totalCount,
+}: SensorsListControlsProps) {
+  return (
+    <ListResultsSummary
+      shownCount={shownCount}
+      totalCount={totalCount}
+      noun="sensors"
+    />
+  );
 }
-

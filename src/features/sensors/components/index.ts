@@ -14,4 +14,3 @@ export type {
   SensorAlertRow,
   SensorReadingsStatsData,
 } from "./sensor-detail-types";
-

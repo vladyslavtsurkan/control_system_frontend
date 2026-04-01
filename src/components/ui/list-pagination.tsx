@@ -2,7 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ListPageSizeSelectProps {
   id: string;
@@ -28,7 +34,10 @@ export function ListPageSizeSelect({
       <Label htmlFor={id} className="text-xs text-muted-foreground">
         {label}
       </Label>
-      <Select value={String(value)} onValueChange={(next) => onChange(Number(next))}>
+      <Select
+        value={String(value)}
+        onValueChange={(next) => onChange(Number(next))}
+      >
         <SelectTrigger id={id} className={triggerClassName}>
           <SelectValue />
         </SelectTrigger>
@@ -50,7 +59,11 @@ interface ListResultsSummaryProps {
   noun: string;
 }
 
-export function ListResultsSummary({ shownCount, totalCount, noun }: ListResultsSummaryProps) {
+export function ListResultsSummary({
+  shownCount,
+  totalCount,
+  noun,
+}: ListResultsSummaryProps) {
   return (
     <p className="text-sm text-muted-foreground">
       Showing {shownCount} of {totalCount} {noun}
@@ -81,15 +94,23 @@ export function ListPaginationFooter({
         Page {currentPage} of {totalPages}
       </p>
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" disabled={!canGoPrev} onClick={onPrev}>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={!canGoPrev}
+          onClick={onPrev}
+        >
           Previous
         </Button>
-        <Button variant="outline" size="sm" disabled={!canGoNext} onClick={onNext}>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={!canGoNext}
+          onClick={onNext}
+        >
           Next
         </Button>
       </div>
     </div>
   );
 }
-
-

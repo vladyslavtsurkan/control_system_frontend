@@ -9,9 +9,11 @@ export const sensorFormSchema = z.object({
   is_writable: z.boolean().default(false),
 });
 
-export const createSensorSchema = z.object({
-  opc_server_id: z.string().min(1, "OPC UA Server is required"),
-}).extend(sensorFormSchema.shape);
+export const createSensorSchema = z
+  .object({
+    opc_server_id: z.string().min(1, "OPC UA Server is required"),
+  })
+  .extend(sensorFormSchema.shape);
 
 export const updateSensorSchema = sensorFormSchema.partial().extend({
   name: z.string().min(1, "Name is required").optional(),

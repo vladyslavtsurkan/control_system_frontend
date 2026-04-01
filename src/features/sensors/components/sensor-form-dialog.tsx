@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  useCreateSensorMutation,
-  useUpdateSensorMutation,
-} from "@/store/api";
+import { useCreateSensorMutation, useUpdateSensorMutation } from "@/store/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,7 +82,8 @@ export function SensorFormDialog({
       : { ...emptyForm, opc_server_id: defaultServerId },
   );
 
-  const selectedServerName = servers.find((srv) => srv.id === form.opc_server_id)?.name ?? "";
+  const selectedServerName =
+    servers.find((srv) => srv.id === form.opc_server_id)?.name ?? "";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -124,9 +122,7 @@ export function SensorFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {editTarget ? "Edit Sensor" : "Add Sensor"}
-          </DialogTitle>
+          <DialogTitle>{editTarget ? "Edit Sensor" : "Add Sensor"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {!editTarget && (
@@ -134,7 +130,9 @@ export function SensorFormDialog({
               <Label>OPC UA Server</Label>
               <Select
                 value={form.opc_server_id}
-                onValueChange={(v) => setForm((f) => ({ ...f, opc_server_id: v ?? "" }))}
+                onValueChange={(v) =>
+                  setForm((f) => ({ ...f, opc_server_id: v ?? "" }))
+                }
                 required
               >
                 <SelectTrigger>
@@ -170,7 +168,9 @@ export function SensorFormDialog({
               id="sensor-node-id"
               required
               value={form.node_id}
-              onChange={(e) => setForm((f) => ({ ...f, node_id: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, node_id: e.target.value }))
+              }
               placeholder="ns=2;i=1001"
               className="font-mono"
             />
@@ -180,7 +180,9 @@ export function SensorFormDialog({
             <Label>Data Type</Label>
             <Select
               value={form.data_type}
-              onValueChange={(v) => setForm((f) => ({ ...f, data_type: v as SensorDataType }))}
+              onValueChange={(v) =>
+                setForm((f) => ({ ...f, data_type: v as SensorDataType }))
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -199,7 +201,9 @@ export function SensorFormDialog({
               <Input
                 id="sensor-desc"
                 value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, description: e.target.value }))
+                }
                 placeholder="Optional"
               />
             </div>
@@ -208,7 +212,9 @@ export function SensorFormDialog({
               <Input
                 id="sensor-units"
                 value={form.units}
-                onChange={(e) => setForm((f) => ({ ...f, units: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, units: e.target.value }))
+                }
                 placeholder="°C, bar, rpm…"
               />
             </div>
@@ -217,12 +223,16 @@ export function SensorFormDialog({
           <div className="flex flex-row items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
               <Label htmlFor="sensor-is-writable">Writable Node</Label>
-              <p className="text-sm text-muted-foreground">Allow control commands to be sent to this sensor</p>
+              <p className="text-sm text-muted-foreground">
+                Allow control commands to be sent to this sensor
+              </p>
             </div>
             <Switch
               id="sensor-is-writable"
               checked={form.is_writable}
-              onCheckedChange={(checked) => setForm((f) => ({ ...f, is_writable: checked }))}
+              onCheckedChange={(checked) =>
+                setForm((f) => ({ ...f, is_writable: checked }))
+              }
             />
           </div>
 
@@ -232,7 +242,9 @@ export function SensorFormDialog({
             </DialogClose>
             <Button
               type="submit"
-              disabled={creating || updating || (!editTarget && !form.opc_server_id)}
+              disabled={
+                creating || updating || (!editTarget && !form.opc_server_id)
+              }
             >
               {editTarget ? "Save Changes" : "Create Sensor"}
             </Button>

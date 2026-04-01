@@ -99,7 +99,9 @@ export function ActiveAlertsTable() {
               {rows.map((alert) => (
                 <TableRow
                   key={alert.id}
-                  className={alert.status === "resolved" ? "opacity-70" : undefined}
+                  className={
+                    alert.status === "resolved" ? "opacity-70" : undefined
+                  }
                 >
                   <TableCell>
                     <Badge variant={severityVariant[alert.severity]}>
@@ -113,12 +115,16 @@ export function ActiveAlertsTable() {
                     {alert.message}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={alert.status === "resolved" ? "outline" : "destructive"}>
+                    <Badge
+                      variant={
+                        alert.status === "resolved" ? "outline" : "destructive"
+                      }
+                    >
                       {alert.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right text-xs text-muted-foreground">
-                    {formatTime24(alert.updated_at, {withSeconds: true})}
+                    {formatTime24(alert.updated_at, { withSeconds: true })}
                   </TableCell>
                 </TableRow>
               ))}
@@ -129,4 +135,3 @@ export function ActiveAlertsTable() {
     </Card>
   );
 }
-

@@ -14,7 +14,9 @@ const listenerMiddleware = createListenerMiddleware();
 listenerMiddleware.startListening({
   actionCreator: setActiveOrg,
   effect: (action, listenerApi) => {
-    const prevState = listenerApi.getOriginalState() as { auth?: { activeOrgId?: string | null } };
+    const prevState = listenerApi.getOriginalState() as {
+      auth?: { activeOrgId?: string | null };
+    };
     if (prevState.auth?.activeOrgId === action.payload.id) {
       return;
     }

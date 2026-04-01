@@ -10,7 +10,8 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify(body),
   });
 
-  const data = await backendRes.json().catch(() => ({ detail: "Sign up failed" }));
+  const data = await backendRes
+    .json()
+    .catch(() => ({ detail: "Sign up failed" }));
   return NextResponse.json(data, { status: backendRes.status });
 }
-

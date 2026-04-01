@@ -125,4 +125,3 @@ export interface LiveAlert {
   status: AlertLifecycleStatus;
   triggered_value: Record<string, unknown>;
 }
-

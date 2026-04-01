@@ -6,11 +6,17 @@ import type {
   OrganizationMember,
   UserRoleInOrg,
 } from "@/features/organizations/types";
-import type { PaginatedResponse, PaginationQueryParams } from "@/shared/types/pagination";
+import type {
+  PaginatedResponse,
+  PaginationQueryParams,
+} from "@/shared/types/pagination";
 
 const organizationsApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getOrganizations: builder.query<PaginatedResponse<OrganizationWithRole>, PaginationQueryParams | void>({
+    getOrganizations: builder.query<
+      PaginatedResponse<OrganizationWithRole>,
+      PaginationQueryParams | void
+    >({
       query: (args) => {
         const params = new URLSearchParams();
         if (args?.offset != null) params.set("offset", String(args.offset));
@@ -27,13 +33,23 @@ const organizationsApi = api.injectEndpoints({
           : [{ type: "Orgs", id: "LIST" }],
     }),
 
-    createOrganization: builder.mutation<OrganizationWithRole, CreateOrganizationRequest>({
+    createOrganization: builder.mutation<
+      OrganizationWithRole,
+      CreateOrganizationRequest
+    >({
       query: (body) => ({ url: "/v1/organizations/", method: "POST", body }),
       invalidatesTags: [{ type: "Orgs", id: "LIST" }],
     }),
 
-    updateOrganization: builder.mutation<OrganizationWithRole, UpdateOrganizationRequest & { id: string }>({
-      query: ({ id, ...body }) => ({ url: `/v1/organizations/${id}`, method: "PATCH", body }),
+    updateOrganization: builder.mutation<
+      OrganizationWithRole,
+      UpdateOrganizationRequest & { id: string }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/v1/organizations/${id}`,
+        method: "PATCH",
+        body,
+      }),
       invalidatesTags: (_r, _e, { id }) => [{ type: "Orgs", id }],
     }),
 
@@ -47,28 +63,46 @@ const organizationsApi = api.injectEndpoints({
       invalidatesTags: [{ type: "Orgs", id: "LIST" }],
     }),
 
-    getOrganizationMembers: builder.query<PaginatedResponse<OrganizationMember>, string>({
+    getOrganizationMembers: builder.query<
+      PaginatedResponse<OrganizationMember>,
+      string
+    >({
       query: (orgId) => `/v1/organizations/${orgId}/members`,
-      providesTags: (_r, _e, orgId) => [{ type: "Orgs", id: `MEMBERS-${orgId}` }],
+      providesTags: (_r, _e, orgId) => [
+        { type: "Orgs", id: `MEMBERS-${orgId}` },
+      ],
     }),
 
-    addOrganizationMember: builder.mutation<void, { orgId: string; userId: string }>({
+    addOrganizationMember: builder.mutation<
+      void,
+      { orgId: string; userId: string }
+    >({
       query: ({ orgId, userId }) => ({
         url: `/v1/organizations/${orgId}/add/${userId}`,
         method: "POST",
       }),
-      invalidatesTags: (_r, _e, { orgId }) => [{ type: "Orgs", id: `MEMBERS-${orgId}` }],
+      invalidatesTags: (_r, _e, { orgId }) => [
+        { type: "Orgs", id: `MEMBERS-${orgId}` },
+      ],
     }),
 
-    removeOrganizationMember: builder.mutation<void, { orgId: string; userId: string }>({
+    removeOrganizationMember: builder.mutation<
+      void,
+      { orgId: string; userId: string }
+    >({
       query: ({ orgId, userId }) => ({
         url: `/v1/organizations/${orgId}/remove/${userId}`,
         method: "POST",
       }),
-      invalidatesTags: (_r, _e, { orgId }) => [{ type: "Orgs", id: `MEMBERS-${orgId}` }],
+      invalidatesTags: (_r, _e, { orgId }) => [
+        { type: "Orgs", id: `MEMBERS-${orgId}` },
+      ],
     }),
 
-    changeOrganizationMemberRole: builder.mutation<void, { orgId: string; userId: string; role: UserRoleInOrg }>({
+    changeOrganizationMemberRole: builder.mutation<
+      void,
+      { orgId: string; userId: string; role: UserRoleInOrg }
+    >({
       query: ({ orgId, userId, role }) => ({
         url: `/v1/organizations/${orgId}/members/${userId}/role`,
         method: "PATCH",
@@ -94,5 +128,3 @@ export const {
   useRemoveOrganizationMemberMutation,
   useChangeOrganizationMemberRoleMutation,
 } = organizationsApi;
-
-

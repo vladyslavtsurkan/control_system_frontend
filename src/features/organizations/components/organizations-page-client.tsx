@@ -16,8 +16,14 @@ import { OrganizationsActionBar } from "@/features/organizations/components/orga
 import { OrganizationsListControls } from "@/features/organizations/components/organizations-list-controls";
 import { OrganizationsTable } from "@/features/organizations/components/organizations-table";
 import { useConfirm } from "@/hooks/use-confirm";
-import { getOffsetLimitPaginationMeta, useOffsetLimitPagination } from "@/hooks/use-offset-limit-pagination";
-import { LIST_PAGE_SIZE_FALLBACK, LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
+import {
+  getOffsetLimitPaginationMeta,
+  useOffsetLimitPagination,
+} from "@/hooks/use-offset-limit-pagination";
+import {
+  LIST_PAGE_SIZE_FALLBACK,
+  LIST_PAGE_SIZE_OPTIONS,
+} from "@/config/constants";
 import type { OrganizationWithRole } from "@/features/organizations/types";
 
 interface OrganizationsPageClientProps {
@@ -43,20 +49,24 @@ export default function OrganizationsPageClient({
   const [leaveOrg] = useLeaveOrganizationMutation();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState<OrganizationWithRole | null>(null);
-  const [membersTarget, setMembersTarget] = useState<OrganizationWithRole | null>(null);
+  const [editTarget, setEditTarget] = useState<OrganizationWithRole | null>(
+    null,
+  );
+  const [membersTarget, setMembersTarget] =
+    useState<OrganizationWithRole | null>(null);
   const { confirm, ConfirmDialog } = useConfirm();
 
   const orgs = data?.items ?? [];
-  const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } = getOffsetLimitPaginationMeta({
-    count: data?.count,
-    perPage: data?.per_page,
-    totalPages: data?.total_pages,
-    page: data?.page,
-    offset: pagination.offset,
-    requestedLimit: pagination.limit,
-    fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
-  });
+  const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } =
+    getOffsetLimitPaginationMeta({
+      count: data?.count,
+      perPage: data?.per_page,
+      totalPages: data?.total_pages,
+      page: data?.page,
+      offset: pagination.offset,
+      requestedLimit: pagination.limit,
+      fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
+    });
 
   function openCreate() {
     setEditTarget(null);
@@ -69,10 +79,12 @@ export default function OrganizationsPageClient({
   }
 
   async function handleDelete(org: OrganizationWithRole) {
-    if (!await confirm({
-      description: `Delete "${org.name}"? This cannot be undone.`,
-      destructive: true,
-    })) {
+    if (
+      !(await confirm({
+        description: `Delete "${org.name}"? This cannot be undone.`,
+        destructive: true,
+      }))
+    ) {
       return;
     }
 
@@ -85,11 +97,13 @@ export default function OrganizationsPageClient({
   }
 
   async function handleLeave(org: OrganizationWithRole) {
-    if (!await confirm({
-      title: "Leave organization?",
-      description: `Leave "${org.name}"?`,
-      confirmLabel: "Leave",
-    })) {
+    if (
+      !(await confirm({
+        title: "Leave organization?",
+        description: `Leave "${org.name}"?`,
+        confirmLabel: "Leave",
+      }))
+    ) {
       return;
     }
 
@@ -158,8 +172,3 @@ export default function OrganizationsPageClient({
     </div>
   );
 }
-
-
-
-
-

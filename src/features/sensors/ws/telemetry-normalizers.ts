@@ -94,4 +94,3 @@ export function resolveWindowBounds(
   const endMs = parseIsoMs(arg.endTime) ?? nowMs;
   return { startMs, endMs };
 }
-

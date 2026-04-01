@@ -2,13 +2,23 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { useCreateOrganizationMutation, useUpdateOrganizationMutation } from "@/store/api";
+import {
+  useCreateOrganizationMutation,
+  useUpdateOrganizationMutation,
+} from "@/store/api";
 import { setActiveOrg } from "@/store/auth-slice";
 import { useAppDispatch } from "@/store/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type {
   CreateOrganizationRequest,
   OrganizationWithRole,
@@ -37,11 +47,11 @@ export function OrganizationFormDialog({
   const dispatch = useAppDispatch();
   const [createOrg, { isLoading: creating }] = useCreateOrganizationMutation();
   const [updateOrg, { isLoading: updating }] = useUpdateOrganizationMutation();
-  const [form, setForm] = useState<OrgFormState>(() => (
+  const [form, setForm] = useState<OrgFormState>(() =>
     editTarget
       ? { name: editTarget.name, description: editTarget.description ?? "" }
-      : emptyForm
-  ));
+      : emptyForm,
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -77,7 +87,9 @@ export function OrganizationFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{editTarget ? "Edit Organization" : "New Organization"}</DialogTitle>
+          <DialogTitle>
+            {editTarget ? "Edit Organization" : "New Organization"}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -95,12 +107,16 @@ export function OrganizationFormDialog({
             <Input
               id="org-desc"
               value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, description: e.target.value }))
+              }
               placeholder="Optional description"
             />
           </div>
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
+            <DialogClose render={<Button type="button" variant="outline" />}>
+              Cancel
+            </DialogClose>
             <Button type="submit" disabled={creating || updating}>
               {editTarget ? "Save Changes" : "Create"}
             </Button>
@@ -110,6 +126,3 @@ export function OrganizationFormDialog({
     </Dialog>
   );
 }
-
-
-

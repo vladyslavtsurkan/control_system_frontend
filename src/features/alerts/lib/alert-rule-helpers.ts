@@ -5,14 +5,22 @@ import type {
 } from "@/features/alerts/types";
 import type { SensorDataType } from "@/features/sensors";
 
-export const CONDITIONS: { value: AlertCondition; label: string; thresholdType: Threshold["type"] }[] = [
-  { value: "greater_than",  label: "> greater than",   thresholdType: "single_value" },
-  { value: "less_than",     label: "< less than",      thresholdType: "single_value" },
-  { value: "equals",        label: "= equals",         thresholdType: "single_value" },
-  { value: "not_equals",    label: "≠ not equals",     thresholdType: "single_value" },
-  { value: "outside_range", label: "↔ outside range",  thresholdType: "range" },
-  { value: "inside_range",  label: "↔ inside range",   thresholdType: "range" },
-  { value: "no_data",       label: "⌀ no data",        thresholdType: "no_data" },
+export const CONDITIONS: {
+  value: AlertCondition;
+  label: string;
+  thresholdType: Threshold["type"];
+}[] = [
+  {
+    value: "greater_than",
+    label: "> greater than",
+    thresholdType: "single_value",
+  },
+  { value: "less_than", label: "< less than", thresholdType: "single_value" },
+  { value: "equals", label: "= equals", thresholdType: "single_value" },
+  { value: "not_equals", label: "≠ not equals", thresholdType: "single_value" },
+  { value: "outside_range", label: "↔ outside range", thresholdType: "range" },
+  { value: "inside_range", label: "↔ inside range", thresholdType: "range" },
+  { value: "no_data", label: "⌀ no data", thresholdType: "no_data" },
 ];
 
 const NUMERIC_CONDITIONS: AlertCondition[] = [
@@ -25,9 +33,16 @@ const NUMERIC_CONDITIONS: AlertCondition[] = [
   "no_data",
 ];
 
-const NON_NUMERIC_CONDITIONS: AlertCondition[] = ["equals", "not_equals", "no_data"];
+const NON_NUMERIC_CONDITIONS: AlertCondition[] = [
+  "equals",
+  "not_equals",
+  "no_data",
+];
 
-export const CONDITIONS_BY_SENSOR_TYPE: Record<SensorDataType, AlertCondition[]> = {
+export const CONDITIONS_BY_SENSOR_TYPE: Record<
+  SensorDataType,
+  AlertCondition[]
+> = {
   numeric: NUMERIC_CONDITIONS,
   boolean: NON_NUMERIC_CONDITIONS,
   string: NON_NUMERIC_CONDITIONS,
@@ -72,45 +87,75 @@ export function buildThresholdForSubmit(
   if (form.condition === "greater_than" || form.condition === "less_than") {
     const numericValue = parseStrictNumber(form.sv_value);
     if (sensorType !== "numeric") {
-      return { threshold: null, error: "This condition is only available for numeric sensors." };
+      return {
+        threshold: null,
+        error: "This condition is only available for numeric sensors.",
+      };
     }
     if (numericValue === null) {
-      return { threshold: null, error: "Threshold value must be a valid number." };
+      return {
+        threshold: null,
+        error: "Threshold value must be a valid number.",
+      };
     }
-    return { threshold: { type: "single_value", value: numericValue }, error: null };
+    return {
+      threshold: { type: "single_value", value: numericValue },
+      error: null,
+    };
   }
 
   if (form.condition === "equals" || form.condition === "not_equals") {
     if (sensorType === "numeric") {
       const numericValue = parseStrictNumber(form.sv_value);
       if (numericValue === null) {
-        return { threshold: null, error: "Threshold value must be a valid number." };
+        return {
+          threshold: null,
+          error: "Threshold value must be a valid number.",
+        };
       }
-      return { threshold: { type: "single_value", value: numericValue }, error: null };
+      return {
+        threshold: { type: "single_value", value: numericValue },
+        error: null,
+      };
     }
 
     if (sensorType === "boolean") {
       if (form.sv_value !== "true" && form.sv_value !== "false") {
-        return { threshold: null, error: "Boolean threshold must be true or false." };
+        return {
+          threshold: null,
+          error: "Boolean threshold must be true or false.",
+        };
       }
-      return { threshold: { type: "single_value", value: form.sv_value === "true" }, error: null };
+      return {
+        threshold: { type: "single_value", value: form.sv_value === "true" },
+        error: null,
+      };
     }
 
     const textValue = form.sv_value.trim();
     if (!textValue) {
       return { threshold: null, error: "Threshold value is required." };
     }
-    return { threshold: { type: "single_value", value: textValue }, error: null };
+    return {
+      threshold: { type: "single_value", value: textValue },
+      error: null,
+    };
   }
 
   if (form.condition === "outside_range" || form.condition === "inside_range") {
     if (sensorType !== "numeric") {
-      return { threshold: null, error: "Range conditions are only available for numeric sensors." };
+      return {
+        threshold: null,
+        error: "Range conditions are only available for numeric sensors.",
+      };
     }
     const min = parseStrictNumber(form.range_min);
     const max = parseStrictNumber(form.range_max);
     if (min === null || max === null) {
-      return { threshold: null, error: "Range min and max must be valid numbers." };
+      return {
+        threshold: null,
+        error: "Range min and max must be valid numbers.",
+      };
     }
     if (min >= max) {
       return { threshold: null, error: "Range min must be less than max." };
@@ -120,9 +165,15 @@ export function buildThresholdForSubmit(
 
   const timeoutSeconds = parseInt(form.nodata_timeout, 10);
   if (!Number.isInteger(timeoutSeconds) || timeoutSeconds <= 0) {
-    return { threshold: null, error: "No-data timeout must be a positive whole number." };
+    return {
+      threshold: null,
+      error: "No-data timeout must be a positive whole number.",
+    };
   }
-  return { threshold: { type: "no_data", timeout_seconds: timeoutSeconds }, error: null };
+  return {
+    threshold: { type: "no_data", timeout_seconds: timeoutSeconds },
+    error: null,
+  };
 }
 
 export function ruleToForm(rule: AlertRule): FormState {
@@ -136,12 +187,19 @@ export function ruleToForm(rule: AlertRule): FormState {
     sv_value: t.type === "single_value" ? String(t.value) : "",
     range_min: t.type === "range" ? String(t.min) : "",
     range_max: t.type === "range" ? String(t.max) : "",
-    nodata_timeout: t.type === "no_data" ? String(t.timeout_seconds ?? 300) : "300",
+    nodata_timeout:
+      t.type === "no_data" ? String(t.timeout_seconds ?? 300) : "300",
     is_active: rule.is_active,
     actions: (rule.actions ?? []).map((action) => ({
       target_sensor_id: action.target_sensor_id,
-      trigger_value: action.trigger_payload?.value != null ? String(action.trigger_payload.value) : "",
-      resolve_value: action.resolve_payload?.value != null ? String(action.resolve_payload.value) : "",
+      trigger_value:
+        action.trigger_payload?.value != null
+          ? String(action.trigger_payload.value)
+          : "",
+      resolve_value:
+        action.resolve_payload?.value != null
+          ? String(action.resolve_payload.value)
+          : "",
     })),
   };
 }
@@ -152,11 +210,16 @@ export function thresholdLabel(threshold: Threshold): string {
   return `no data (${threshold.timeout_seconds ?? 300}s)`;
 }
 
-export function durationSecondsLabel(durationSeconds: number | null | undefined): string {
+export function durationSecondsLabel(
+  durationSeconds: number | null | undefined,
+): string {
   const normalizedDuration =
-    typeof durationSeconds === "number" && Number.isInteger(durationSeconds) && durationSeconds > 0
+    typeof durationSeconds === "number" &&
+    Number.isInteger(durationSeconds) &&
+    durationSeconds > 0
       ? durationSeconds
       : 0;
-  return normalizedDuration === 0 ? "Instant" : `${normalizedDuration} sec delay`;
+  return normalizedDuration === 0
+    ? "Instant"
+    : `${normalizedDuration} sec delay`;
 }
-

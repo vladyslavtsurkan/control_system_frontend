@@ -10,7 +10,10 @@ function toValidDate(value: DateInput): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-export function formatTime24(value: DateInput, options: DateTimeFormatOptions = {}): string {
+export function formatTime24(
+  value: DateInput,
+  options: DateTimeFormatOptions = {},
+): string {
   const date = toValidDate(value);
   if (!date) return "";
 
@@ -25,7 +28,10 @@ export function formatTime24(value: DateInput, options: DateTimeFormatOptions = 
   });
 }
 
-export function formatDateTime24(value: DateInput, options: DateTimeFormatOptions = {}): string {
+export function formatDateTime24(
+  value: DateInput,
+  options: DateTimeFormatOptions = {},
+): string {
   const date = toValidDate(value);
   if (!date) return "";
 
@@ -43,7 +49,10 @@ export function formatDateTime24(value: DateInput, options: DateTimeFormatOption
   });
 }
 
-export function formatDate24(value: DateInput, options: Omit<DateTimeFormatOptions, "withSeconds"> = {}): string {
+export function formatDate24(
+  value: DateInput,
+  options: Omit<DateTimeFormatOptions, "withSeconds"> = {},
+): string {
   const date = toValidDate(value);
   if (!date) return "";
 
@@ -54,4 +63,3 @@ export function formatDate24(value: DateInput, options: Omit<DateTimeFormatOptio
     timeZone: options.timeZone,
   });
 }
-

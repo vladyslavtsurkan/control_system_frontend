@@ -22,13 +22,16 @@ export default async function SensorsPage({ searchParams }: SensorsPageProps) {
     LIST_PAGE_SIZE_OPTIONS,
     LIST_PAGE_SIZE_OPTIONS[0],
   );
-  const initialServerFilter = getFirstSearchParamValue(resolvedSearchParams.server_id) ?? "";
+  const initialServerFilter =
+    getFirstSearchParamValue(resolvedSearchParams.server_id) ?? "";
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Sensors</h1>
-        <p className="text-sm text-muted-foreground">Manage OPC UA sensor nodes and their metadata.</p>
+        <p className="text-sm text-muted-foreground">
+          Manage OPC UA sensor nodes and their metadata.
+        </p>
       </div>
       <SensorsPageClient
         initialPage={initialPage}

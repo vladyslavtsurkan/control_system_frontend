@@ -11,7 +11,9 @@ interface OrganizationsPageProps {
   searchParams: Promise<Record<string, SearchParamValue>>;
 }
 
-export default async function OrganizationsPage({ searchParams }: OrganizationsPageProps) {
+export default async function OrganizationsPage({
+  searchParams,
+}: OrganizationsPageProps) {
   const resolvedSearchParams = await searchParams;
   const initialPage = parsePositiveIntParam(
     getFirstSearchParamValue(resolvedSearchParams.page),
@@ -27,9 +29,14 @@ export default async function OrganizationsPage({ searchParams }: OrganizationsP
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Organizations</h1>
-        <p className="text-sm text-muted-foreground">Manage your organizations and memberships.</p>
+        <p className="text-sm text-muted-foreground">
+          Manage your organizations and memberships.
+        </p>
       </div>
-      <OrganizationsPageClient initialPage={initialPage} initialPerPage={initialPerPage} />
+      <OrganizationsPageClient
+        initialPage={initialPage}
+        initialPerPage={initialPerPage}
+      />
     </div>
   );
 }

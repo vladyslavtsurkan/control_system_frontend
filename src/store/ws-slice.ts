@@ -15,7 +15,10 @@ export type WsConnectionStatus =
   | "error";
 
 // ─── Typed WS error codes ────────────────────────────────────────────────────
-export type WsErrorCode = "TICKET_FETCH_FAILED" | "AUTH_EXPIRED" | "NETWORK_ERROR";
+export type WsErrorCode =
+  | "TICKET_FETCH_FAILED"
+  | "AUTH_EXPIRED"
+  | "NETWORK_ERROR";
 
 export interface WsError {
   code: WsErrorCode;
@@ -46,15 +49,17 @@ function sortByUpdatedDesc(alerts: LiveAlert[]): LiveAlert[] {
 
 function upsertActiveAlert(state: WsState, alert: LiveAlert) {
   state.alertsByKey[alert.key] = alert;
-  state.liveAlerts = sortByUpdatedDesc(
-    [alert, ...state.liveAlerts.filter((item) => item.key !== alert.key)],
-  ).slice(0, MAX_LIVE_ALERTS);
+  state.liveAlerts = sortByUpdatedDesc([
+    alert,
+    ...state.liveAlerts.filter((item) => item.key !== alert.key),
+  ]).slice(0, MAX_LIVE_ALERTS);
 }
 
 function pushResolvedAlert(state: WsState, alert: LiveAlert) {
-  state.resolvedAlerts = sortByUpdatedDesc(
-    [alert, ...state.resolvedAlerts.filter((item) => item.key !== alert.key)],
-  ).slice(0, MAX_LIVE_ALERTS);
+  state.resolvedAlerts = sortByUpdatedDesc([
+    alert,
+    ...state.resolvedAlerts.filter((item) => item.key !== alert.key),
+  ]).slice(0, MAX_LIVE_ALERTS);
 }
 
 const wsSlice = createSlice({
@@ -137,7 +142,6 @@ export const {
   clearLiveAlerts,
   resetRealtimeState,
   setWsError,
-} =
-  wsSlice.actions;
+} = wsSlice.actions;
 
 export default wsSlice.reducer;

@@ -67,75 +67,74 @@ export function createTelemetryEventHandler(): WsTelemetryHandler {
 
       const dispatchThunk = apiStore.dispatch as (action: unknown) => unknown;
       dispatchThunk(
-        (api.util.updateQueryData as unknown as (
-          endpointName: string,
-          args: unknown,
-          updater: (draft: ReadingsBucketedResponse) => void,
-        ) => unknown)(
-          "getReadings",
-          arg,
-          (draft: ReadingsBucketedResponse) => {
-            const alignedLen = Math.min(draft.times.length, draft.values.length);
-            if (draft.times.length !== draft.values.length) {
-              draft.times = draft.times.slice(0, alignedLen);
-              draft.values = draft.values.slice(0, alignedLen);
-            }
+        (
+          api.util.updateQueryData as unknown as (
+            endpointName: string,
+            args: unknown,
+            updater: (draft: ReadingsBucketedResponse) => void,
+          ) => unknown
+        )("getReadings", arg, (draft: ReadingsBucketedResponse) => {
+          const alignedLen = Math.min(draft.times.length, draft.values.length);
+          if (draft.times.length !== draft.values.length) {
+            draft.times = draft.times.slice(0, alignedLen);
+            draft.values = draft.values.slice(0, alignedLen);
+          }
 
-            const patchNowMs = Date.now();
-            const { startMs: windowStartMs, endMs } = resolveWindowBounds(
-              arg,
-              patchNowMs,
+          const patchNowMs = Date.now();
+          const { startMs: windowStartMs, endMs } = resolveWindowBounds(
+            arg,
+            patchNowMs,
+          );
+          const windowEndMs =
+            endMs === null
+              ? null
+              : Math.max(endMs, readingTimeMs) +
+                LIVE_READING_END_SKEW_TOLERANCE_MS;
+
+          const existingIndex = draft.times.findIndex(
+            (itemTime) => itemTime === time,
+          );
+
+          if (existingIndex >= 0) {
+            draft.values[existingIndex] = value;
+          } else {
+            const insertAt = draft.times.findIndex(
+              (itemTime) => Date.parse(itemTime) < readingTimeMs,
             );
-            const windowEndMs =
-              endMs === null
-                ? null
-                : Math.max(endMs, readingTimeMs) +
-                  LIVE_READING_END_SKEW_TOLERANCE_MS;
-
-            const existingIndex = draft.times.findIndex((itemTime) => itemTime === time);
-
-            if (existingIndex >= 0) {
-              draft.values[existingIndex] = value;
+            if (insertAt === -1) {
+              draft.times.push(time);
+              draft.values.push(value);
             } else {
-              const insertAt = draft.times.findIndex(
-                (itemTime) => Date.parse(itemTime) < readingTimeMs,
-              );
-              if (insertAt === -1) {
-                draft.times.push(time);
-                draft.values.push(value);
-              } else {
-                draft.times.splice(insertAt, 0, time);
-                draft.values.splice(insertAt, 0, value);
-              }
+              draft.times.splice(insertAt, 0, time);
+              draft.values.splice(insertAt, 0, value);
             }
+          }
 
-            const nextTimes: string[] = [];
-            const nextValues: number[] = [];
+          const nextTimes: string[] = [];
+          const nextValues: number[] = [];
 
-            for (let i = 0; i < draft.times.length; i += 1) {
-              const itemMs = parseIsoMs(draft.times[i]);
-              if (itemMs === null) continue;
+          for (let i = 0; i < draft.times.length; i += 1) {
+            const itemMs = parseIsoMs(draft.times[i]);
+            if (itemMs === null) continue;
 
-              const isInWindow =
-                (windowStartMs === null || itemMs >= windowStartMs) &&
-                (windowEndMs === null || itemMs <= windowEndMs);
-              if (!isInWindow) continue;
+            const isInWindow =
+              (windowStartMs === null || itemMs >= windowStartMs) &&
+              (windowEndMs === null || itemMs <= windowEndMs);
+            if (!isInWindow) continue;
 
-              nextTimes.push(draft.times[i]);
-              nextValues.push(draft.values[i]);
-            }
+            nextTimes.push(draft.times[i]);
+            nextValues.push(draft.values[i]);
+          }
 
-            draft.times = nextTimes;
-            draft.values = nextValues;
+          draft.times = nextTimes;
+          draft.values = nextValues;
 
-            if (draft.times.length > MAX_WS_READINGS_GUARD_POINTS) {
-              draft.times.splice(MAX_WS_READINGS_GUARD_POINTS);
-              draft.values.splice(MAX_WS_READINGS_GUARD_POINTS);
-            }
-          },
-        ),
+          if (draft.times.length > MAX_WS_READINGS_GUARD_POINTS) {
+            draft.times.splice(MAX_WS_READINGS_GUARD_POINTS);
+            draft.values.splice(MAX_WS_READINGS_GUARD_POINTS);
+          }
+        }),
       );
     }
   };
 }
-

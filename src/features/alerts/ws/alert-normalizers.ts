@@ -34,7 +34,11 @@ export function normalizeSeverity(value: unknown): AlertSeverity {
 
 export function normalizeAlertAction(value: unknown): AlertLifecycleAction {
   const normalized = toNonEmptyString(value)?.toLowerCase();
-  if (normalized === "open" || normalized === "update" || normalized === "resolve") {
+  if (
+    normalized === "open" ||
+    normalized === "update" ||
+    normalized === "resolve"
+  ) {
     return normalized;
   }
   return "open";
@@ -70,7 +74,10 @@ export function buildAlertFingerprint(alert: LiveAlert): string {
 }
 
 export function findCachedSensorName(
-  apiQueries: Record<string, { endpointName?: string; data?: unknown } | undefined>,
+  apiQueries: Record<
+    string,
+    { endpointName?: string; data?: unknown } | undefined
+  >,
   sensorId: string,
 ): string | null {
   if (!sensorId || sensorId === "unknown-sensor") return null;
@@ -82,7 +89,9 @@ export function findCachedSensorName(
 
     if (entry.endpointName === "getSensors") {
       const data = entry.data as PaginatedResponse<Sensor> | undefined;
-      const sensorName = data?.items?.find((sensor) => sensor.id === sensorId)?.name;
+      const sensorName = data?.items?.find(
+        (sensor) => sensor.id === sensorId,
+      )?.name;
       if (sensorName) {
         return sensorName;
       }
@@ -99,4 +108,3 @@ export function findCachedSensorName(
 
   return null;
 }
-

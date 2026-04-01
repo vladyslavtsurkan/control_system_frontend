@@ -14,4 +14,3 @@ export interface PaginationQueryParams {
 export interface ItemsResponse<T> {
   items: T[];
 }
-

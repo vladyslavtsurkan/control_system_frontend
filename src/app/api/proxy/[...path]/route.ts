@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { BACKEND_API_URL, AUTH_COOKIE_NAME, TENANT_COOKIE_NAME } from "@/config/constants";
+import {
+  BACKEND_API_URL,
+  AUTH_COOKIE_NAME,
+  TENANT_COOKIE_NAME,
+} from "@/config/constants";
 
 // Catch-all proxy: /api/proxy/v1/... → BACKEND_API_URL/api/v1/...
 // Reads the httpOnly access-token cookie and injects Authorization header server-side.
@@ -69,10 +73,15 @@ async function handler(
     return NextResponse.json(responseBody, { status: backendRes.status });
   }
 
-  return new NextResponse(typeof responseBody === "string" ? responseBody : String(responseBody), {
-    status: backendRes.status,
-    headers: responseContentType ? { "content-type": responseContentType } : undefined,
-  });
+  return new NextResponse(
+    typeof responseBody === "string" ? responseBody : String(responseBody),
+    {
+      status: backendRes.status,
+      headers: responseContentType
+        ? { "content-type": responseContentType }
+        : undefined,
+    },
+  );
 }
 
 export const GET = handler;

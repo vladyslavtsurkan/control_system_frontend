@@ -4,8 +4,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { forgotPasswordSchema, resetPasswordSchema } from "@/features/auth/schemas";
-import { getApiErrorMessage, mapZodIssuesToFieldErrors } from "@/features/auth/components/auth-form-helpers";
+import {
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "@/features/auth/schemas";
+import {
+  getApiErrorMessage,
+  mapZodIssuesToFieldErrors,
+} from "@/features/auth/components/auth-form-helpers";
 import {
   Card,
   CardContent,
@@ -99,7 +105,9 @@ export default function ForgotPasswordPageClient() {
   return (
     <Card className="w-full max-w-sm shadow-lg">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Reset your password</CardTitle>
+        <CardTitle className="text-2xl font-bold">
+          Reset your password
+        </CardTitle>
         <CardDescription>
           {step === "request"
             ? "Enter your email and we will send a reset code"
@@ -120,13 +128,18 @@ export default function ForgotPasswordPageClient() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
               />
-              {fieldErrors.email && <p className="text-xs text-red-500">{fieldErrors.email}</p>}
+              {fieldErrors.email && (
+                <p className="text-xs text-red-500">{fieldErrors.email}</p>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Sending code..." : "Send reset code"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
-              Back to <Link href="/login" className="hover:text-foreground">sign in</Link>
+              Back to{" "}
+              <Link href="/login" className="hover:text-foreground">
+                sign in
+              </Link>
             </p>
           </form>
         ) : (
@@ -141,7 +154,9 @@ export default function ForgotPasswordPageClient() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-              {fieldErrors.email && <p className="text-xs text-red-500">{fieldErrors.email}</p>}
+              {fieldErrors.email && (
+                <p className="text-xs text-red-500">{fieldErrors.email}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="reset-code">Reset code</Label>
@@ -152,7 +167,9 @@ export default function ForgotPasswordPageClient() {
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="Enter code"
               />
-              {fieldErrors.code && <p className="text-xs text-red-500">{fieldErrors.code}</p>}
+              {fieldErrors.code && (
+                <p className="text-xs text-red-500">{fieldErrors.code}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="new-password">New password</Label>
@@ -165,7 +182,9 @@ export default function ForgotPasswordPageClient() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="........"
               />
-              {fieldErrors.password && <p className="text-xs text-red-500">{fieldErrors.password}</p>}
+              {fieldErrors.password && (
+                <p className="text-xs text-red-500">{fieldErrors.password}</p>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Updating password..." : "Reset password"}
@@ -181,7 +200,10 @@ export default function ForgotPasswordPageClient() {
               >
                 Send new code
               </button>
-              <Link href="/login" className="text-muted-foreground hover:text-foreground">
+              <Link
+                href="/login"
+                className="text-muted-foreground hover:text-foreground"
+              >
                 Back to sign in
               </Link>
             </div>
@@ -191,5 +213,3 @@ export default function ForgotPasswordPageClient() {
     </Card>
   );
 }
-
-

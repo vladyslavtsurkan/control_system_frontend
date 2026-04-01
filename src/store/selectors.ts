@@ -9,7 +9,8 @@ export const selectActiveOrgId = (state: RootState) => state.auth.activeOrgId;
 // ─── WebSocket selectors ─────────────────────────────────────────────────────
 export const selectWsStatus = (state: RootState) => state.ws.connectionStatus;
 export const selectLiveAlerts = (state: RootState) => state.ws.liveAlerts;
-export const selectResolvedLiveAlerts = (state: RootState) => state.ws.resolvedAlerts;
+export const selectResolvedLiveAlerts = (state: RootState) =>
+  state.ws.resolvedAlerts;
 export const selectWsError = (state: RootState) => state.ws.lastError;
 
 export const selectActiveAlertCount = createSelector(
@@ -21,5 +22,3 @@ export const selectResolvedAlertCount = createSelector(
   selectResolvedLiveAlerts,
   (alerts) => alerts.length,
 );
-
-

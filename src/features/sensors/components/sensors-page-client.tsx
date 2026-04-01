@@ -9,8 +9,14 @@ import { SensorTable } from "@/features/sensors/components/sensor-table";
 import { SensorFormDialog } from "@/features/sensors/components/sensor-form-dialog";
 import { SensorsListControls } from "@/features/sensors/components/sensors-list-controls";
 import { SensorsToolbar } from "@/features/sensors/components/sensors-toolbar";
-import { getOffsetLimitPaginationMeta, useOffsetLimitPagination } from "@/hooks/use-offset-limit-pagination";
-import { LIST_PAGE_SIZE_FALLBACK, LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
+import {
+  getOffsetLimitPaginationMeta,
+  useOffsetLimitPagination,
+} from "@/hooks/use-offset-limit-pagination";
+import {
+  LIST_PAGE_SIZE_FALLBACK,
+  LIST_PAGE_SIZE_OPTIONS,
+} from "@/config/constants";
 import type { Sensor } from "@/features/sensors/types";
 
 interface SensorsPageClientProps {
@@ -49,15 +55,16 @@ export default function SensorsPageClient({
 
   const sensors = data?.items ?? [];
   const servers = serversData?.items ?? [];
-  const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } = getOffsetLimitPaginationMeta({
-    count: data?.count,
-    perPage: data?.per_page,
-    totalPages: data?.total_pages,
-    page: data?.page,
-    offset: pagination.offset,
-    requestedLimit: pagination.limit,
-    fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
-  });
+  const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } =
+    getOffsetLimitPaginationMeta({
+      count: data?.count,
+      perPage: data?.per_page,
+      totalPages: data?.total_pages,
+      page: data?.page,
+      offset: pagination.offset,
+      requestedLimit: pagination.limit,
+      fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
+    });
 
   function openCreate() {
     setEditTarget(null);
@@ -110,7 +117,10 @@ export default function SensorsPageClient({
         />
       )}
 
-      <SensorsListControls shownCount={sensors.length} totalCount={totalCount} />
+      <SensorsListControls
+        shownCount={sensors.length}
+        totalCount={totalCount}
+      />
 
       <ListPaginationFooter
         currentPage={currentPage}
@@ -132,6 +142,3 @@ export default function SensorsPageClient({
     </div>
   );
 }
-
-
-

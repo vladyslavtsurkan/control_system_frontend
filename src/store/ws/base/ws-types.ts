@@ -1,5 +1,9 @@
 import type { MiddlewareAPI } from "@reduxjs/toolkit";
-import type { WsAlertEvent, WsEvent, WsTelemetryEvent } from "@/features/ws/types";
+import type {
+  WsAlertEvent,
+  WsEvent,
+  WsTelemetryEvent,
+} from "@/features/ws/types";
 
 export interface WsHandlerContext {
   storeApi: MiddlewareAPI;
@@ -27,4 +31,3 @@ export interface WsManagerOptions {
 }
 
 export type ParsedWsEvent = WsEvent;
-

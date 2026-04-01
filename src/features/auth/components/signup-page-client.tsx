@@ -5,7 +5,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { signUpSchema, signUpVerifySchema } from "@/features/auth/schemas";
-import { getApiErrorMessage, mapZodIssuesToFieldErrors } from "@/features/auth/components/auth-form-helpers";
+import {
+  getApiErrorMessage,
+  mapZodIssuesToFieldErrors,
+} from "@/features/auth/components/auth-form-helpers";
 import {
   Card,
   CardContent,
@@ -94,7 +97,9 @@ export default function SignUpPageClient() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        toast.error(getApiErrorMessage(data, "Verification failed. Please try again."));
+        toast.error(
+          getApiErrorMessage(data, "Verification failed. Please try again."),
+        );
         return;
       }
 
@@ -110,7 +115,9 @@ export default function SignUpPageClient() {
   return (
     <Card className="w-full max-w-sm shadow-lg">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Create your account</CardTitle>
+        <CardTitle className="text-2xl font-bold">
+          Create your account
+        </CardTitle>
         <CardDescription>
           {step === "signup"
             ? "Sign up and we will email you a verification code"
@@ -131,7 +138,9 @@ export default function SignUpPageClient() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
               />
-              {fieldErrors.email && <p className="text-xs text-red-500">{fieldErrors.email}</p>}
+              {fieldErrors.email && (
+                <p className="text-xs text-red-500">{fieldErrors.email}</p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
@@ -143,7 +152,11 @@ export default function SignUpPageClient() {
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="Optional"
                 />
-                {fieldErrors.first_name && <p className="text-xs text-red-500">{fieldErrors.first_name}</p>}
+                {fieldErrors.first_name && (
+                  <p className="text-xs text-red-500">
+                    {fieldErrors.first_name}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="last-name">Last name</Label>
@@ -154,7 +167,11 @@ export default function SignUpPageClient() {
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Optional"
                 />
-                {fieldErrors.last_name && <p className="text-xs text-red-500">{fieldErrors.last_name}</p>}
+                {fieldErrors.last_name && (
+                  <p className="text-xs text-red-500">
+                    {fieldErrors.last_name}
+                  </p>
+                )}
               </div>
             </div>
             <div className="space-y-2">
@@ -168,13 +185,18 @@ export default function SignUpPageClient() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="........"
               />
-              {fieldErrors.password && <p className="text-xs text-red-500">{fieldErrors.password}</p>}
+              {fieldErrors.password && (
+                <p className="text-xs text-red-500">{fieldErrors.password}</p>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Creating account..." : "Create account"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
-              Already have an account? <Link href="/login" className="hover:text-foreground">Sign in</Link>
+              Already have an account?{" "}
+              <Link href="/login" className="hover:text-foreground">
+                Sign in
+              </Link>
             </p>
           </form>
         ) : (
@@ -189,7 +211,9 @@ export default function SignUpPageClient() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-              {fieldErrors.email && <p className="text-xs text-red-500">{fieldErrors.email}</p>}
+              {fieldErrors.email && (
+                <p className="text-xs text-red-500">{fieldErrors.email}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="code">Verification code</Label>
@@ -200,7 +224,9 @@ export default function SignUpPageClient() {
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="Enter code"
               />
-              {fieldErrors.code && <p className="text-xs text-red-500">{fieldErrors.code}</p>}
+              {fieldErrors.code && (
+                <p className="text-xs text-red-500">{fieldErrors.code}</p>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Verifying..." : "Verify and sign in"}
@@ -216,7 +242,10 @@ export default function SignUpPageClient() {
               >
                 Edit details
               </button>
-              <Link href="/login" className="text-muted-foreground hover:text-foreground">
+              <Link
+                href="/login"
+                className="text-muted-foreground hover:text-foreground"
+              >
                 Back to sign in
               </Link>
             </div>
@@ -226,5 +255,3 @@ export default function SignUpPageClient() {
     </Card>
   );
 }
-
-

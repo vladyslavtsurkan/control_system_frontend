@@ -8,8 +8,14 @@ import {
 import { skipToken } from "@reduxjs/toolkit/query/react";
 import { useAppSelector } from "@/store/hooks";
 import { selectLiveAlerts } from "@/store/selectors";
-import { getOffsetLimitPaginationMeta, useOffsetLimitPagination } from "@/hooks/use-offset-limit-pagination";
-import { LIST_PAGE_SIZE_FALLBACK, LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
+import {
+  getOffsetLimitPaginationMeta,
+  useOffsetLimitPagination,
+} from "@/hooks/use-offset-limit-pagination";
+import {
+  LIST_PAGE_SIZE_FALLBACK,
+  LIST_PAGE_SIZE_OPTIONS,
+} from "@/config/constants";
 import {
   SensorAlertsCard,
   SensorDetailHeader,
@@ -86,7 +92,11 @@ export default function SensorPageClient({
   });
 
   const { data: readingsPage, isLoading: readingsLoading } =
-    useGetReadingsQuery(readingsArgs as Parameters<typeof useGetReadingsQuery>[0] | typeof skipToken);
+    useGetReadingsQuery(
+      readingsArgs as
+        | Parameters<typeof useGetReadingsQuery>[0]
+        | typeof skipToken,
+    );
 
   const {
     data: alertsPage,
@@ -162,7 +172,11 @@ export default function SensorPageClient({
 
   return (
     <div className="space-y-6">
-      <SensorDetailHeader sensor={sensor} onEdit={openEdit} onDelete={handleDelete} />
+      <SensorDetailHeader
+        sensor={sensor}
+        onEdit={openEdit}
+        onDelete={handleDelete}
+      />
 
       <SensorReadingsFiltersCard
         activePreset={activePreset}
@@ -180,7 +194,11 @@ export default function SensorPageClient({
         onBucketIntervalChange={onBucketIntervalChange}
       />
 
-      <SensorReadingsStats stats={stats} unit={unit} isLoading={readingsLoading} />
+      <SensorReadingsStats
+        stats={stats}
+        unit={unit}
+        isLoading={readingsLoading}
+      />
 
       <SensorReadingsChartCard
         isLoading={readingsLoading}
@@ -223,7 +241,3 @@ export default function SensorPageClient({
     </div>
   );
 }
-
-
-
-

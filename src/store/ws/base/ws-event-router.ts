@@ -1,4 +1,7 @@
-import type { WsEventHandlers, WsHandlerContext } from "@/store/ws/base/ws-types";
+import type {
+  WsEventHandlers,
+  WsHandlerContext,
+} from "@/store/ws/base/ws-types";
 import { decodeWsFrame, parseWsEvent } from "@/store/ws/base/ws-frame";
 
 export async function routeWsEvent(
@@ -25,4 +28,3 @@ export async function routeWsEvent(
     await handlers.alert?.(event, ctx);
   }
 }
-

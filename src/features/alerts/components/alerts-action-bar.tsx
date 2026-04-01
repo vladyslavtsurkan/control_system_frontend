@@ -11,7 +11,12 @@ interface AlertsActionBarProps {
 export function AlertsActionBar({ onRefresh, onCreate }: AlertsActionBarProps) {
   return (
     <div className="flex justify-end gap-2">
-      <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh">
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={onRefresh}
+        aria-label="Refresh"
+      >
         <RefreshCw className="size-4" />
       </Button>
       <Button onClick={onCreate}>
@@ -21,4 +26,3 @@ export function AlertsActionBar({ onRefresh, onCreate }: AlertsActionBarProps) {
     </div>
   );
 }
-

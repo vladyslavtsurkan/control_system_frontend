@@ -27,9 +27,14 @@ export default async function AlertsPage({ searchParams }: AlertsPageProps) {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Alert Rules</h1>
-        <p className="text-sm text-muted-foreground">Configure threshold-based alerts for your sensors.</p>
+        <p className="text-sm text-muted-foreground">
+          Configure threshold-based alerts for your sensors.
+        </p>
       </div>
-      <AlertsPageClient initialPage={initialPage} initialPerPage={initialPerPage} />
+      <AlertsPageClient
+        initialPage={initialPage}
+        initialPerPage={initialPerPage}
+      />
     </div>
   );
 }
