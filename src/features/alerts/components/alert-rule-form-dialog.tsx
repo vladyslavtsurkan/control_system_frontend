@@ -45,6 +45,7 @@ import {
   parseNonNegativeInteger,
   ruleToForm,
 } from "@/features/alerts/lib/alert-rule-helpers";
+import { MAX_ALERT_RULE_ACTIONS } from "@/config/constants";
 
 const SEVERITIES: AlertSeverity[] = ["info", "warning", "critical", "fatal"];
 
@@ -95,6 +96,7 @@ export function AlertRuleFormDialog({
     control: actionsForm.control,
     name: "actions",
   });
+  const isAtActionLimit = fields.length >= MAX_ALERT_RULE_ACTIONS;
   const watchedActions = useWatch({
     control: actionsForm.control,
     name: "actions",
@@ -183,6 +185,13 @@ export function AlertRuleFormDialog({
     );
     if (!threshold) {
       toast.error(error ?? "Threshold is invalid.");
+      return;
+    }
+
+    if ((watchedActions?.length ?? 0) > MAX_ALERT_RULE_ACTIONS) {
+      toast.error(
+        `You can add up to ${MAX_ALERT_RULE_ACTIONS} automated actions per rule.`,
+      );
       return;
     }
 
@@ -446,19 +455,26 @@ export function AlertRuleFormDialog({
               <div>
                 <Label>Automated Actions</Label>
                 <p className="text-xs text-muted-foreground">
-                  Optional commands sent when this alert triggers or resolves.
+                  Optional commands sent when this alert triggers or resolves ({fields.length}/{MAX_ALERT_RULE_ACTIONS}).
                 </p>
               </div>
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
+                disabled={isAtActionLimit}
+                onClick={() => {
+                  if (isAtActionLimit) {
+                    toast.error(
+                      `You can add up to ${MAX_ALERT_RULE_ACTIONS} automated actions per rule.`,
+                    );
+                    return;
+                  }
                   append({
                     target_sensor_id: "",
                     trigger_value: "",
                     resolve_value: "",
-                  })
-                }
+                  });
+                }}
               >
                 Add Action
               </Button>

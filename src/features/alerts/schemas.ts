@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_ALERT_RULE_ACTIONS } from "@/config/constants";
 
 const alertSeverity = z.enum(["info", "warning", "critical", "fatal"]);
 const alertCondition = z.enum([
@@ -63,7 +64,10 @@ export const alertRuleFormSchema = z.object({
     .int("Trigger delay must be a whole number")
     .min(0, "Trigger delay cannot be negative")
     .default(0),
-  actions: z.array(alertActionFormSchema).default([]),
+  actions: z
+    .array(alertActionFormSchema)
+    .max(MAX_ALERT_RULE_ACTIONS, `You can add up to ${MAX_ALERT_RULE_ACTIONS} actions`)
+    .default([]),
 });
 
 export const createAlertRuleSchema = z.object({
@@ -77,7 +81,10 @@ export const createAlertRuleSchema = z.object({
     .int("Trigger delay must be a whole number")
     .min(0, "Trigger delay cannot be negative")
     .default(0),
-  actions: z.array(alertActionFormSchema).default([]),
+  actions: z
+    .array(alertActionFormSchema)
+    .max(MAX_ALERT_RULE_ACTIONS, `You can add up to ${MAX_ALERT_RULE_ACTIONS} actions`)
+    .default([]),
 });
 
 export const updateAlertRuleSchema = z.object({
@@ -91,7 +98,10 @@ export const updateAlertRuleSchema = z.object({
     .min(0, "Trigger delay cannot be negative")
     .optional(),
   is_active: z.boolean().optional(),
-  actions: z.array(alertActionFormSchema).optional(),
+  actions: z
+    .array(alertActionFormSchema)
+    .max(MAX_ALERT_RULE_ACTIONS, `You can add up to ${MAX_ALERT_RULE_ACTIONS} actions`)
+    .optional(),
 });
 
 export type CreateAlertRuleFormData = z.infer<typeof createAlertRuleSchema>;

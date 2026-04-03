@@ -23,6 +23,9 @@ export const MAX_LIVE_ALERTS = 100;
 // Max data points kept in RTK Query readings cache per sensor
 export const MAX_CHART_POINTS = 2_000;
 
+// Max automated actions per alert rule
+export const MAX_ALERT_RULE_ACTIONS = 20;
+
 // Dashboard sparkline keeps live websocket points within this time window.
 export const DASHBOARD_LIVE_KPI_WINDOW_MS = 15 * 60 * 1000;
 
