@@ -455,7 +455,8 @@ export function AlertRuleFormDialog({
               <div>
                 <Label>Automated Actions</Label>
                 <p className="text-xs text-muted-foreground">
-                  Optional commands sent when this alert triggers or resolves ({fields.length}/{MAX_ALERT_RULE_ACTIONS}).
+                  Optional commands sent when this alert triggers or resolves (
+                  {fields.length}/{MAX_ALERT_RULE_ACTIONS}).
                 </p>
               </div>
               <Button

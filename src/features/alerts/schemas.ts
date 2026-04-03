@@ -66,7 +66,10 @@ export const alertRuleFormSchema = z.object({
     .default(0),
   actions: z
     .array(alertActionFormSchema)
-    .max(MAX_ALERT_RULE_ACTIONS, `You can add up to ${MAX_ALERT_RULE_ACTIONS} actions`)
+    .max(
+      MAX_ALERT_RULE_ACTIONS,
+      `You can add up to ${MAX_ALERT_RULE_ACTIONS} actions`,
+    )
     .default([]),
 });
 
@@ -83,7 +86,10 @@ export const createAlertRuleSchema = z.object({
     .default(0),
   actions: z
     .array(alertActionFormSchema)
-    .max(MAX_ALERT_RULE_ACTIONS, `You can add up to ${MAX_ALERT_RULE_ACTIONS} actions`)
+    .max(
+      MAX_ALERT_RULE_ACTIONS,
+      `You can add up to ${MAX_ALERT_RULE_ACTIONS} actions`,
+    )
     .default([]),
 });
 
@@ -100,7 +106,10 @@ export const updateAlertRuleSchema = z.object({
   is_active: z.boolean().optional(),
   actions: z
     .array(alertActionFormSchema)
-    .max(MAX_ALERT_RULE_ACTIONS, `You can add up to ${MAX_ALERT_RULE_ACTIONS} actions`)
+    .max(
+      MAX_ALERT_RULE_ACTIONS,
+      `You can add up to ${MAX_ALERT_RULE_ACTIONS} actions`,
+    )
     .optional(),
 });
 
