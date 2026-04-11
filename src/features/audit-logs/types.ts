@@ -38,4 +38,3 @@ export interface GetAuditLogsParams {
   offset?: number;
   limit?: number;
 }
-

@@ -57,7 +57,10 @@ function ExtraDataDialog({ entry, open, onOpenChange }: ExtraDataDialogProps) {
           <div className="flex flex-col gap-1 text-sm">
             <span className="text-muted-foreground text-xs">Action</span>
             <Badge
-              className={cn("w-fit font-normal text-xs", actionBadgeClass(entry.action))}
+              className={cn(
+                "w-fit font-normal text-xs",
+                actionBadgeClass(entry.action),
+              )}
             >
               {getActionSentence(entry)}
             </Badge>
@@ -65,7 +68,9 @@ function ExtraDataDialog({ entry, open, onOpenChange }: ExtraDataDialogProps) {
 
           <div className="flex flex-col gap-1 text-sm">
             <span className="text-muted-foreground text-xs">Timestamp</span>
-            <span>{formatDateTime24(entry.created_at, { withSeconds: true })}</span>
+            <span>
+              {formatDateTime24(entry.created_at, { withSeconds: true })}
+            </span>
           </div>
 
           <div className="flex flex-col gap-1 text-sm">
@@ -73,7 +78,9 @@ function ExtraDataDialog({ entry, open, onOpenChange }: ExtraDataDialogProps) {
             <span>
               {entry.actor_email}
               {entry.actor_id === null && (
-                <span className="ml-1 text-muted-foreground">(deleted user)</span>
+                <span className="ml-1 text-muted-foreground">
+                  (deleted user)
+                </span>
               )}
             </span>
           </div>
@@ -85,7 +92,9 @@ function ExtraDataDialog({ entry, open, onOpenChange }: ExtraDataDialogProps) {
                 {JSON.stringify(entry.extra_data, null, 2)}
               </pre>
             ) : (
-              <span className="text-sm text-muted-foreground">No extra data</span>
+              <span className="text-sm text-muted-foreground">
+                No extra data
+              </span>
             )}
           </div>
         </div>
@@ -97,7 +106,9 @@ function ExtraDataDialog({ entry, open, onOpenChange }: ExtraDataDialogProps) {
 }
 
 export function AuditLogTable({ entries, isLoading }: AuditLogTableProps) {
-  const [selectedEntry, setSelectedEntry] = useState<AuditLogEntry | null>(null);
+  const [selectedEntry, setSelectedEntry] = useState<AuditLogEntry | null>(
+    null,
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
 
   function openDetails(entry: AuditLogEntry) {
@@ -152,7 +163,9 @@ export function AuditLogTable({ entries, isLoading }: AuditLogTableProps) {
                           {formatRelativeTime(entry.created_at)}
                         </TooltipTrigger>
                         <TooltipContent>
-                          {formatDateTime24(entry.created_at, { withSeconds: true })}
+                          {formatDateTime24(entry.created_at, {
+                            withSeconds: true,
+                          })}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -197,7 +210,8 @@ export function AuditLogTable({ entries, isLoading }: AuditLogTableProps) {
 
                   {/* Details */}
                   <TableCell className="text-right">
-                    {entry.extra_data && Object.keys(entry.extra_data).length > 0 ? (
+                    {entry.extra_data &&
+                    Object.keys(entry.extra_data).length > 0 ? (
                       <Button
                         variant="outline"
                         size="sm"

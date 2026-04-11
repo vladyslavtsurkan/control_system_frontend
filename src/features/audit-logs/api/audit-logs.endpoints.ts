@@ -1,5 +1,8 @@
 import { api } from "@/store/api/base-api";
-import type { AuditLogEntry, GetAuditLogsParams } from "@/features/audit-logs/types";
+import type {
+  AuditLogEntry,
+  GetAuditLogsParams,
+} from "@/features/audit-logs/types";
 import type { PaginatedResponse } from "@/shared/types/pagination";
 
 const auditLogsApi = api.injectEndpoints({
@@ -10,7 +13,8 @@ const auditLogsApi = api.injectEndpoints({
     >({
       query: (args) => {
         const params = new URLSearchParams();
-        if (args?.resource_type) params.set("resource_type", args.resource_type);
+        if (args?.resource_type)
+          params.set("resource_type", args.resource_type);
         if (args?.action) params.set("action", args.action);
         if (args?.actor_id) params.set("actor_id", args.actor_id);
         if (args?.offset != null) params.set("offset", String(args.offset));
@@ -33,4 +37,3 @@ const auditLogsApi = api.injectEndpoints({
 });
 
 export const { useGetAuditLogsQuery } = auditLogsApi;
-

@@ -1,4 +1,8 @@
-import type { AuditLogAction, AuditLogEntry, AuditLogResourceType } from "@/features/audit-logs/types";
+import type {
+  AuditLogAction,
+  AuditLogEntry,
+  AuditLogResourceType,
+} from "@/features/audit-logs/types";
 
 // ─── Labels ──────────────────────────────────────────────────────────────────
 
@@ -31,13 +35,8 @@ function resourceLabel(type: AuditLogResourceType): string {
 }
 
 export function getActionSentence(entry: AuditLogEntry): string {
-  const {
-    action,
-    resource_type,
-    resource_name,
-    resource_id,
-    extra_data,
-  } = entry;
+  const { action, resource_type, resource_name, resource_id, extra_data } =
+    entry;
 
   const name = resource_name ?? resource_id ?? "unknown";
 
@@ -110,4 +109,3 @@ export function actionBadgeClass(action: AuditLogAction): string {
       return "bg-zinc-100 text-zinc-700 border-transparent dark:bg-zinc-800 dark:text-zinc-300";
   }
 }
-

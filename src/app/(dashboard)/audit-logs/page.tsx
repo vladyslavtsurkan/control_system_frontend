@@ -17,7 +17,9 @@ interface AuditLogsPageProps {
   searchParams: Promise<Record<string, SearchParamValue>>;
 }
 
-export default async function AuditLogsPage({ searchParams }: AuditLogsPageProps) {
+export default async function AuditLogsPage({
+  searchParams,
+}: AuditLogsPageProps) {
   const resolvedSearchParams = await searchParams;
   const initialPage = parsePositiveIntParam(
     getFirstSearchParamValue(resolvedSearchParams.page),
@@ -44,4 +46,3 @@ export default async function AuditLogsPage({ searchParams }: AuditLogsPageProps
     </div>
   );
 }
-

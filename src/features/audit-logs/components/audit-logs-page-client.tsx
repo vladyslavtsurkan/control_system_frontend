@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useGetAuditLogsQuery, useGetOrganizationMembersQuery, useGetOrganizationsQuery } from "@/store/api";
+import {
+  useGetAuditLogsQuery,
+  useGetOrganizationMembersQuery,
+  useGetOrganizationsQuery,
+} from "@/store/api";
 import { useAppSelector } from "@/store/hooks";
 import { selectActiveOrgId } from "@/store/selectors";
 import {
@@ -22,7 +26,10 @@ import {
   LIST_PAGE_SIZE_OPTIONS,
 } from "@/config/constants";
 import type { AuditLogFiltersValue } from "@/features/audit-logs/components/audit-log-filters";
-import type { AuditLogAction, AuditLogResourceType } from "@/features/audit-logs/types";
+import type {
+  AuditLogAction,
+  AuditLogResourceType,
+} from "@/features/audit-logs/types";
 
 interface AuditLogsPageClientProps {
   initialPage: number;
@@ -58,7 +65,9 @@ export default function AuditLogsPageClient({
 
   const queryArgs = {
     ...pagination.queryArgs,
-    ...(filters.resource_type ? { resource_type: filters.resource_type as AuditLogResourceType } : {}),
+    ...(filters.resource_type
+      ? { resource_type: filters.resource_type as AuditLogResourceType }
+      : {}),
     ...(filters.action ? { action: filters.action as AuditLogAction } : {}),
     ...(filters.actor_id ? { actor_id: filters.actor_id } : {}),
   };
@@ -150,7 +159,3 @@ export default function AuditLogsPageClient({
     </div>
   );
 }
-
-
-
-

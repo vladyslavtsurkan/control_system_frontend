@@ -80,10 +80,7 @@ const serversApi = api.injectEndpoints({
       ],
     }),
 
-    revokeApiKey: builder.mutation<
-      void,
-      { serverId: string; keyId: string }
-    >({
+    revokeApiKey: builder.mutation<void, { serverId: string; keyId: string }>({
       query: ({ serverId, keyId }) => ({
         url: `/v1/opc-servers/${serverId}/api-keys/${keyId}`,
         method: "DELETE",

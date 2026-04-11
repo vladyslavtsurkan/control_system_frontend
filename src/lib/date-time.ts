@@ -88,4 +88,3 @@ export function formatRelativeTime(value: DateInput): string {
   const diffYear = Math.round(diffSec / (86_400 * 365));
   return rtf.format(diffYear, "year");
 }
-

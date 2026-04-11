@@ -68,7 +68,6 @@ export interface SensorUpdateRequest {
   is_writable?: boolean;
 }
 
-
 export interface GetReadingsParams {
   sensorId: string;
   startTime?: string;
@@ -81,7 +80,6 @@ export interface SensorReading {
   value: number;
   sensor_id: string;
 }
-
 
 export interface LiveKpi {
   sensor_id: string;

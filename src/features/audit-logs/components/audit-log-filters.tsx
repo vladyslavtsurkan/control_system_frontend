@@ -10,7 +10,10 @@ import {
   ACTION_LABELS,
   RESOURCE_TYPE_LABELS,
 } from "@/features/audit-logs/lib/audit-log-helpers";
-import type { AuditLogAction, AuditLogResourceType } from "@/features/audit-logs/types";
+import type {
+  AuditLogAction,
+  AuditLogResourceType,
+} from "@/features/audit-logs/types";
 import type { OrganizationMember } from "@/features/organizations/types";
 import { cn } from "@/lib/utils";
 
@@ -26,10 +29,16 @@ interface AuditLogFiltersProps {
   onChange: (next: AuditLogFiltersValue) => void;
 }
 
-const RESOURCE_TYPES = Object.keys(RESOURCE_TYPE_LABELS) as AuditLogResourceType[];
+const RESOURCE_TYPES = Object.keys(
+  RESOURCE_TYPE_LABELS,
+) as AuditLogResourceType[];
 const ACTIONS = Object.keys(ACTION_LABELS) as AuditLogAction[];
 
-export function AuditLogFilters({ value, members, onChange }: AuditLogFiltersProps) {
+export function AuditLogFilters({
+  value,
+  members,
+  onChange,
+}: AuditLogFiltersProps) {
   function set<K extends keyof AuditLogFiltersValue>(
     key: K,
     val: AuditLogFiltersValue[K],
@@ -45,7 +54,10 @@ export function AuditLogFilters({ value, members, onChange }: AuditLogFiltersPro
       <Select
         value={value.resource_type || "__all__"}
         onValueChange={(v) =>
-          set("resource_type", v === "__all__" ? "" : (v as AuditLogResourceType))
+          set(
+            "resource_type",
+            v === "__all__" ? "" : (v as AuditLogResourceType),
+          )
         }
       >
         <SelectTrigger className="h-8 min-w-44">
@@ -91,7 +103,9 @@ export function AuditLogFilters({ value, members, onChange }: AuditLogFiltersPro
       {members.length > 0 && (
         <Select
           value={value.actor_id || "__all__"}
-          onValueChange={(v) => set("actor_id", v == null || v === "__all__" ? "" : v)}
+          onValueChange={(v) =>
+            set("actor_id", v == null || v === "__all__" ? "" : v)
+          }
         >
           <SelectTrigger className="h-8 min-w-52">
             <span className={cn(!value.actor_id && "text-muted-foreground")}>
