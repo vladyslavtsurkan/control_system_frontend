@@ -3,8 +3,8 @@ import { DEFAULT_BUCKET_INTERVAL } from "@/features/sensors/types";
 import type {
   Sensor,
   GetSensorsParams,
-  CreateSensorRequest,
-  UpdateSensorRequest,
+  SensorCreateRequest,
+  SensorUpdateRequest,
   ReadingsBucketedResponse,
   GetReadingsParams,
 } from "@/features/sensors/types";
@@ -65,7 +65,7 @@ const sensorsApi = api.injectEndpoints({
       providesTags: (_r, _e, sensorId) => [{ type: "Sensors", id: sensorId }],
     }),
 
-    createSensor: builder.mutation<Sensor, CreateSensorRequest>({
+    createSensor: builder.mutation<Sensor, SensorCreateRequest>({
       query: (body) => ({ url: "/v1/sensors/", method: "POST", body }),
       invalidatesTags: (_r, _e, { opc_server_id }) => [
         { type: "Sensors", id: "LIST" },
@@ -73,7 +73,7 @@ const sensorsApi = api.injectEndpoints({
       ],
     }),
 
-    updateSensor: builder.mutation<Sensor, UpdateSensorRequest>({
+    updateSensor: builder.mutation<Sensor, SensorUpdateRequest>({
       query: ({ id, ...body }) => ({
         url: `/v1/sensors/${id}`,
         method: "PATCH",

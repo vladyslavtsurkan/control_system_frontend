@@ -9,6 +9,7 @@ const TAGS = [
   "Readings",
   "Alerts",
   "AlertRules",
+  "AuditLogs",
 ] as const;
 
 export const api = createApi({

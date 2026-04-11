@@ -42,7 +42,7 @@ export interface UpdateOpcServerRequest {
 }
 
 export interface ApiKeyCreateResponse {
-  key_prefix: string;
+  key_id: string;
   secret_key: string;
   created_at: string;
 }
@@ -51,7 +51,7 @@ export interface ApiKeyInfoResponse {
   id: string;
   created_at: string;
   opc_server_id: string;
-  key_prefix: string;
+  key_id: string;
   last_used_at: string | null;
   updated_at: string;
 }

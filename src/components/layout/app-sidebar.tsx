@@ -13,6 +13,7 @@ import {
   UserCircle,
   LogOut,
   Copy,
+  ClipboardList,
 } from "lucide-react";
 import {
   Sidebar,
@@ -247,6 +248,20 @@ export function AppSidebar() {
                 ) : null}
               </SidebarMenuItem>
             ))}
+
+            {/* Audit Log — owners and admins only */}
+            {(activeOrg?.role === "owner" || activeOrg?.role === "admin") && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={pathname === "/audit-logs"}
+                  tooltip="Audit Log"
+                  render={<Link href="/audit-logs" />}
+                >
+                  <ClipboardList className="size-4" />
+                  <span>Audit Log</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { clearLiveAlerts } from "@/store/ws-slice";
 import { selectLiveAlerts } from "@/store/selectors";
@@ -43,8 +43,8 @@ export function ActiveAlertsTable() {
     return map;
   }, [sensorsData]);
 
-  const getDisplaySensorName = useMemo(
-    () => (sensorId: string, sensorName: string) => {
+  const getDisplaySensorName = useCallback(
+    (sensorId: string, sensorName: string) => {
       if (sensorName && sensorName !== sensorId) {
         return sensorName;
       }

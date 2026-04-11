@@ -68,8 +68,6 @@ export interface SensorUpdateRequest {
   is_writable?: boolean;
 }
 
-export type CreateSensorRequest = SensorCreateRequest;
-export type UpdateSensorRequest = SensorUpdateRequest;
 
 export interface GetReadingsParams {
   sensorId: string;
@@ -84,12 +82,6 @@ export interface SensorReading {
   sensor_id: string;
 }
 
-export interface GetSensorReadingsParams {
-  sensorId: string;
-  from?: string;
-  to?: string;
-  bucketInterval?: BucketInterval;
-}
 
 export interface LiveKpi {
   sensor_id: string;

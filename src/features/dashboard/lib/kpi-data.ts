@@ -1,7 +1,5 @@
 import type { LiveKpi, Sensor, SensorReading } from "@/features/sensors";
 
-export const DASHBOARD_LIVE_WINDOW_MS = 15 * 60 * 1000;
-
 function parseTimeMs(value: string): number | null {
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) ? parsed : null;

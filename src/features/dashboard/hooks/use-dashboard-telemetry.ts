@@ -3,10 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { subscribeTelemetry } from "@/features/sensors";
 import type { LiveKpi, SensorReading } from "@/features/sensors";
-import {
-  DASHBOARD_LIVE_WINDOW_MS,
-  upsertLiveReading,
-} from "@/features/dashboard/lib/kpi-data";
+import { DASHBOARD_LIVE_WINDOW_MS } from "@/config/constants";
+import { upsertLiveReading } from "@/features/dashboard/lib/kpi-data";
 
 interface DashboardTelemetryState {
   latestBySensor: Record<string, LiveKpi>;

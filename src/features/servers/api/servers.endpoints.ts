@@ -69,9 +69,9 @@ const serversApi = api.injectEndpoints({
           : [{ type: "Servers", id: "APIKEY-LIST" }],
     }),
 
-    createOrRotateApiKey: builder.mutation<ApiKeyCreateResponse, string>({
+    createApiKey: builder.mutation<ApiKeyCreateResponse, string>({
       query: (serverId) => ({
-        url: `/v1/opc-servers/${serverId}/api-key`,
+        url: `/v1/opc-servers/${serverId}/api-keys`,
         method: "POST",
       }),
       invalidatesTags: (_r, _e, serverId) => [
@@ -80,12 +80,15 @@ const serversApi = api.injectEndpoints({
       ],
     }),
 
-    revokeApiKey: builder.mutation<void, string>({
-      query: (serverId) => ({
-        url: `/v1/opc-servers/${serverId}/api-key`,
+    revokeApiKey: builder.mutation<
+      void,
+      { serverId: string; keyId: string }
+    >({
+      query: ({ serverId, keyId }) => ({
+        url: `/v1/opc-servers/${serverId}/api-keys/${keyId}`,
         method: "DELETE",
       }),
-      invalidatesTags: (_r, _e, serverId) => [
+      invalidatesTags: (_r, _e, { serverId }) => [
         { type: "Servers", id: `APIKEY-${serverId}` },
         { type: "Servers", id: "APIKEY-LIST" },
       ],
@@ -100,6 +103,6 @@ export const {
   useUpdateServerMutation,
   useDeleteServerMutation,
   useGetApiKeysQuery,
-  useCreateOrRotateApiKeyMutation,
+  useCreateApiKeyMutation,
   useRevokeApiKeyMutation,
 } = serversApi;

@@ -175,12 +175,8 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
     [dedupedData],
   );
 
-  const sparklineBounds = useMemo(
-    () => getPaddedBounds(dedupedData),
-    [dedupedData],
-  );
-
-  const fullChartBounds = useMemo(
+  // Single bounds computation shared by both sparkline and full chart
+  const chartBounds = useMemo(
     () => getPaddedBounds(dedupedData),
     [dedupedData],
   );
@@ -249,8 +245,8 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
           type: "value",
           show: false,
           scale: true,
-          min: sparklineBounds?.min,
-          max: sparklineBounds?.max,
+          min: chartBounds?.min,
+          max: chartBounds?.max,
         },
         series: [
           {
@@ -339,8 +335,8 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
         axisLabel: { color: palette.axis },
         splitLine: { lineStyle: { type: "dashed", color: palette.split } },
         scale: true,
-        min: fullChartBounds?.min,
-        max: fullChartBounds?.max,
+        min: chartBounds?.min,
+        max: chartBounds?.max,
       },
       series: [
         {
@@ -360,21 +356,18 @@ const TimeSeriesChartInner = memo(function TimeSeriesChartInner({
   }, [
     activeZoom.end,
     activeZoom.start,
+    chartBounds,
     palette,
     sensorName,
     sparkline,
-    sparklineBounds?.max,
-    sparklineBounds?.min,
     sparklineSeriesData,
     timeSeriesData,
     unit,
-    fullChartBounds?.max,
-    fullChartBounds?.min,
   ]);
 
   useEffect(() => {
     const chart = chartInstanceRef.current;
-    if (!chart) {
+    if (!chart || chart.isDisposed()) {
       return;
     }
 

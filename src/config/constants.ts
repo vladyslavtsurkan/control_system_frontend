@@ -26,8 +26,11 @@ export const MAX_CHART_POINTS = 2_000;
 // Max automated actions per alert rule
 export const MAX_ALERT_RULE_ACTIONS = 20;
 
+// Max API keys allowed per OPC server
+export const MAX_API_KEYS_PER_OPC_SERVER = 2;
+
 // Dashboard sparkline keeps live websocket points within this time window.
-export const DASHBOARD_LIVE_KPI_WINDOW_MS = 15 * 60 * 1000;
+export const DASHBOARD_LIVE_WINDOW_MS = 15 * 60 * 1000;
 
 // Dashboard list page sizes (UI defaults) and safe fallback when response metadata is missing.
 export const LIST_PAGE_SIZE_OPTIONS = [25, 50, 100] as const;

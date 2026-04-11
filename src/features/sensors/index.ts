@@ -11,8 +11,5 @@ export type {
   GetSensorsParams,
   SensorCreateRequest,
   SensorUpdateRequest,
-  CreateSensorRequest,
-  UpdateSensorRequest,
   GetReadingsParams,
-  GetSensorReadingsParams,
 } from "@/features/sensors/types";

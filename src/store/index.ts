@@ -1,8 +1,11 @@
 import { configureStore, createListenerMiddleware } from "@reduxjs/toolkit";
 import { api } from "@/store/api";
 import authReducer, { setActiveOrg } from "@/store/auth-slice";
-import wsReducer from "@/store/ws-slice";
-import { resetRealtimeState, wsConnect, wsDisconnect } from "@/store/ws-slice";
+import wsReducer, {
+  resetRealtimeState,
+  wsConnect,
+  wsDisconnect,
+} from "@/store/ws-slice";
 import { wsMiddleware } from "@/store/ws/create-ws-middleware";
 
 // ─── Listener: reset RTK Query cache + reconnect WS on tenant switch ─────────

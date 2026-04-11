@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import SensorsPageClient from "@/features/sensors/components/sensors-page-client";
+import AuditLogsPageClient from "@/features/audit-logs/components/audit-logs-page-client";
 import {
   getFirstSearchParamValue,
   parsePageSizeParam,
@@ -9,15 +9,15 @@ import {
 import { LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
 
 export const metadata: Metadata = {
-  title: "Sensors | IIoT Platform",
-  description: "Manage OPC UA sensor nodes and their metadata.",
+  title: "Audit Log | IIoT Platform",
+  description: "Track every action taken within your organization.",
 };
 
-interface SensorsPageProps {
+interface AuditLogsPageProps {
   searchParams: Promise<Record<string, SearchParamValue>>;
 }
 
-export default async function SensorsPage({ searchParams }: SensorsPageProps) {
+export default async function AuditLogsPage({ searchParams }: AuditLogsPageProps) {
   const resolvedSearchParams = await searchParams;
   const initialPage = parsePositiveIntParam(
     getFirstSearchParamValue(resolvedSearchParams.page),
@@ -28,22 +28,20 @@ export default async function SensorsPage({ searchParams }: SensorsPageProps) {
     LIST_PAGE_SIZE_OPTIONS,
     LIST_PAGE_SIZE_OPTIONS[0],
   );
-  const initialServerFilter =
-    getFirstSearchParamValue(resolvedSearchParams.server_id) ?? "";
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Sensors</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Audit Log</h1>
         <p className="text-sm text-muted-foreground">
-          Manage OPC UA sensor nodes and their metadata.
+          A record of every action taken within this organization.
         </p>
       </div>
-      <SensorsPageClient
+      <AuditLogsPageClient
         initialPage={initialPage}
         initialPerPage={initialPerPage}
-        initialServerFilter={initialServerFilter}
       />
     </div>
   );
 }
+

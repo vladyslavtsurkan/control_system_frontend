@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import AlertsPageClient from "@/features/alerts/components/alerts-page-client";
 import {
   getFirstSearchParamValue,
@@ -6,6 +7,11 @@ import {
   type SearchParamValue,
 } from "@/lib/utils";
 import { LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
+
+export const metadata: Metadata = {
+  title: "Alert Rules | IIoT Platform",
+  description: "Configure threshold-based alerts for your sensors.",
+};
 
 interface AlertsPageProps {
   searchParams: Promise<Record<string, SearchParamValue>>;

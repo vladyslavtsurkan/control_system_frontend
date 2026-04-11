@@ -49,17 +49,23 @@ export function useSensorReadingsChartViewModel({
 
   const stats = useMemo<SensorReadingsStatsData | null>(() => {
     if (!chartData.length) return null;
-    const values = chartData.map((point) => point.value);
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const avg = values.reduce((a, b) => a + b, 0) / values.length;
-    const latest = chartData.reduce(
-      (mostRecent, current) =>
-        Date.parse(current.time) > Date.parse(mostRecent.time)
-          ? current
-          : mostRecent,
-      chartData[0],
-    );
+    let min = chartData[0].value;
+    let max = chartData[0].value;
+    let sum = chartData[0].value;
+    let latestMs = Date.parse(chartData[0].time);
+    let latest = chartData[0];
+    for (let i = 1; i < chartData.length; i++) {
+      const { value, time } = chartData[i];
+      if (value < min) min = value;
+      if (value > max) max = value;
+      sum += value;
+      const ms = Date.parse(time);
+      if (ms > latestMs) {
+        latestMs = ms;
+        latest = chartData[i];
+      }
+    }
+    const avg = sum / chartData.length;
 
     return { min, max, avg, latest, count: chartData.length };
   }, [chartData]);

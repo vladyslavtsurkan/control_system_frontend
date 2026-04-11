@@ -23,7 +23,7 @@ export {
   useUpdateServerMutation,
   useDeleteServerMutation,
   useGetApiKeysQuery,
-  useCreateOrRotateApiKeyMutation,
+  useCreateApiKeyMutation,
   useRevokeApiKeyMutation,
 } from "@/features/servers/api/servers.endpoints";
 
@@ -45,5 +45,7 @@ export {
   useUpdateAlertRuleMutation,
   useDeleteAlertRuleMutation,
 } from "@/features/alerts/api/alerts.endpoints";
+
+export { useGetAuditLogsQuery } from "@/features/audit-logs/api/audit-logs.endpoints";
 
 export { useGetWsTicketQuery } from "@/features/ws/api/ws.endpoints";

@@ -25,7 +25,7 @@ import {
 import type {
   Sensor,
   SensorDataType,
-  CreateSensorRequest,
+  SensorCreateRequest,
 } from "@/features/sensors/types";
 import type { OpcServer } from "@/features/servers";
 
@@ -100,7 +100,7 @@ export function SensorFormDialog({
         }).unwrap();
         toast.success("Sensor updated.");
       } else {
-        const payload: CreateSensorRequest = {
+        const payload: SensorCreateRequest = {
           opc_server_id: form.opc_server_id,
           name: form.name,
           description: form.description || null,

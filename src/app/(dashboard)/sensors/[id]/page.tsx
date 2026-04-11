@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import SensorPageClient from "@/features/sensors/components/sensor-page-client";
 import { LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
 import {
@@ -11,6 +12,16 @@ import {
 interface SensorPageProps {
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, SearchParamValue>>;
+}
+
+export async function generateMetadata({
+  params,
+}: SensorPageProps): Promise<Metadata> {
+  const { id } = await params;
+  return {
+    title: `Sensor ${id} | IIoT Platform`,
+    description: `Live readings and alert history for sensor ${id}.`,
+  };
 }
 
 export default async function SensorPage({

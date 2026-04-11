@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import OrganizationsPageClient from "@/features/organizations/components/organizations-page-client";
 import {
   getFirstSearchParamValue,
@@ -6,6 +7,11 @@ import {
   type SearchParamValue,
 } from "@/lib/utils";
 import { LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
+
+export const metadata: Metadata = {
+  title: "Organizations | IIoT Platform",
+  description: "Manage your organizations and memberships.",
+};
 
 interface OrganizationsPageProps {
   searchParams: Promise<Record<string, SearchParamValue>>;

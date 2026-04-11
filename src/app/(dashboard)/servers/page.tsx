@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import ServersPageClient from "@/features/servers/components/servers-page-client";
 import {
   getFirstSearchParamValue,
@@ -6,6 +7,11 @@ import {
   type SearchParamValue,
 } from "@/lib/utils";
 import { LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
+
+export const metadata: Metadata = {
+  title: "OPC UA Servers | IIoT Platform",
+  description: "Manage your industrial OPC UA server connections.",
+};
 
 interface ServersPageProps {
   searchParams: Promise<Record<string, SearchParamValue>>;
