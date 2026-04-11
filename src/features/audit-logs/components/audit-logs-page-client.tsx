@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   useGetAuditLogsQuery,
   useGetOrganizationMembersQuery,
@@ -10,6 +12,7 @@ import {
 } from "@/store/api";
 import { useAppSelector } from "@/store/hooks";
 import { selectActiveOrgId } from "@/store/selectors";
+import { cn } from "@/lib/utils";
 import {
   ListPaginationFooter,
   ListPageSizeSelect,
@@ -72,7 +75,7 @@ export default function AuditLogsPageClient({
     ...(filters.actor_id ? { actor_id: filters.actor_id } : {}),
   };
 
-  const { data, isLoading, error } = useGetAuditLogsQuery(queryArgs, {
+  const { data, isLoading, isFetching, error, refetch } = useGetAuditLogsQuery(queryArgs, {
     refetchOnMountOrArgChange: true,
     // Skip the query until we know the role to avoid leaking the request
     skip: !isAuthorized,
@@ -126,11 +129,22 @@ export default function AuditLogsPageClient({
 
   return (
     <div className="space-y-4">
-      <AuditLogFilters
-        value={filters}
-        members={members}
-        onChange={handleFiltersChange}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <AuditLogFilters
+          value={filters}
+          members={members}
+          onChange={handleFiltersChange}
+        />
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          aria-label="Refresh"
+        >
+          <RefreshCw className={cn("size-4", isFetching && "animate-spin")} />
+        </Button>
+      </div>
 
       <div className="flex items-center justify-between gap-3">
         <ListResultsSummary
