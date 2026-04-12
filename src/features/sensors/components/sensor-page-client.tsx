@@ -18,6 +18,7 @@ import {
 } from "@/config/constants";
 import {
   SensorAlertsCard,
+  SensorControlDialog,
   SensorDetailHeader,
   SensorEditDialog,
   SensorReadingsChartCard,
@@ -26,6 +27,7 @@ import {
 } from "@/features/sensors/components";
 import {
   useSensorAlertRows,
+  useSensorControl,
   useSensorDetailActions,
   useSensorEditController,
   useSensorReadingsChartViewModel,
@@ -131,12 +133,24 @@ export default function SensorPageClient({
     acknowledgingId,
     handleDelete,
     handleAcknowledge,
-    ConfirmDialog,
+    ConfirmDialog: DeleteConfirmDialog,
   } = useSensorDetailActions({
     sensorId: id,
     sensorName: sensor?.name,
     refetchAlerts,
   });
+
+  const {
+    open: controlOpen,
+    setOpen: setControlOpen,
+    value: controlValue,
+    setValue: setControlValue,
+    sending,
+    canControl,
+    openControl,
+    handleSubmit: handleControlSubmit,
+    ConfirmDialog: ControlConfirmDialog,
+  } = useSensorControl({ sensor });
 
   const {
     totalCount: totalAlerts,
@@ -174,8 +188,10 @@ export default function SensorPageClient({
     <div className="space-y-6">
       <SensorDetailHeader
         sensor={sensor}
+        canControl={canControl}
         onEdit={openEdit}
         onDelete={handleDelete}
+        onControl={openControl}
       />
 
       <SensorReadingsFiltersCard
@@ -237,7 +253,20 @@ export default function SensorPageClient({
         onFormChange={setForm}
       />
 
-      <ConfirmDialog />
+      {sensor && (
+        <SensorControlDialog
+          open={controlOpen}
+          onOpenChange={setControlOpen}
+          sensor={sensor}
+          value={controlValue}
+          sending={sending}
+          onValueChange={setControlValue}
+          onSubmit={handleControlSubmit}
+        />
+      )}
+
+      <DeleteConfirmDialog />
+      <ControlConfirmDialog />
     </div>
   );
 }

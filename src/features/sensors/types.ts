@@ -75,6 +75,15 @@ export interface GetReadingsParams {
   bucketInterval?: BucketInterval;
 }
 
+export interface SensorControlRequest {
+  value: number | boolean | string;
+}
+
+export interface SensorControlResponse {
+  status: string;
+  command_id: string;
+}
+
 export interface SensorReading {
   time: string;
   value: number;

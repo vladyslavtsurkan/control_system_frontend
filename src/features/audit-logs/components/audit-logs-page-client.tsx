@@ -75,11 +75,14 @@ export default function AuditLogsPageClient({
     ...(filters.actor_id ? { actor_id: filters.actor_id } : {}),
   };
 
-  const { data, isLoading, isFetching, error, refetch } = useGetAuditLogsQuery(queryArgs, {
-    refetchOnMountOrArgChange: true,
-    // Skip the query until we know the role to avoid leaking the request
-    skip: !isAuthorized,
-  });
+  const { data, isLoading, isFetching, error, refetch } = useGetAuditLogsQuery(
+    queryArgs,
+    {
+      refetchOnMountOrArgChange: true,
+      // Skip the query until we know the role to avoid leaking the request
+      skip: !isAuthorized,
+    },
+  );
 
   const { data: membersData } = useGetOrganizationMembersQuery(
     activeOrgId ?? "",

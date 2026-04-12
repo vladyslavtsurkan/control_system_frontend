@@ -7,6 +7,7 @@ import type {
   SensorUpdateRequest,
   ReadingsBucketedResponse,
   GetReadingsParams,
+  SensorControlResponse,
 } from "@/features/sensors/types";
 import type { PaginatedResponse } from "@/shared/types/pagination";
 
@@ -107,6 +108,17 @@ const sensorsApi = api.injectEndpoints({
         { type: "Readings", id: sensorId },
       ],
     }),
+
+    sendControlCommand: builder.mutation<
+      SensorControlResponse,
+      { sensorId: string; value: number | boolean | string }
+    >({
+      query: ({ sensorId, value }) => ({
+        url: `/v1/sensors/${sensorId}/control`,
+        method: "POST",
+        body: { value },
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -120,4 +132,5 @@ export const {
   useUpdateSensorMutation,
   useDeleteSensorMutation,
   useGetReadingsQuery,
+  useSendControlCommandMutation,
 } = sensorsApi;

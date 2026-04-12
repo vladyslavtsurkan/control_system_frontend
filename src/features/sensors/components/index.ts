@@ -8,6 +8,7 @@ export { SensorReadingsStats } from "./sensor-readings-stats";
 export { SensorReadingsChartCard } from "./sensor-readings-chart-card";
 export { SensorAlertsCard } from "./sensor-alerts-card";
 export { SensorEditDialog } from "./sensor-edit-dialog";
+export { SensorControlDialog } from "./sensor-control-dialog";
 
 export type {
   EditSensorFormState,

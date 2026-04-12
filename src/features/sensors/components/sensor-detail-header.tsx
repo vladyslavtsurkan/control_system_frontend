@@ -1,21 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Send, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Sensor } from "@/features/sensors/types";
 
 interface SensorDetailHeaderProps {
   sensor?: Sensor;
+  canControl?: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  onControl: () => void;
 }
 
 export function SensorDetailHeader({
   sensor,
+  canControl = false,
   onEdit,
   onDelete,
+  onControl,
 }: SensorDetailHeaderProps) {
   return (
     <div className="flex items-center gap-3">
@@ -48,6 +57,24 @@ export function SensorDetailHeader({
         </p>
       </div>
       <div className="shrink-0 flex gap-1">
+        {/* Write Value button — only for writable sensors and privileged roles */}
+        {sensor?.is_writable && canControl && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={onControl}
+                  disabled={!sensor}
+                />
+              }
+            >
+              <Send className="size-4" />
+            </TooltipTrigger>
+            <TooltipContent>Write value</TooltipContent>
+          </Tooltip>
+        )}
         <Button
           variant="outline"
           size="icon"

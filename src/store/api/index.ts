@@ -34,6 +34,7 @@ export {
   useUpdateSensorMutation,
   useDeleteSensorMutation,
   useGetReadingsQuery,
+  useSendControlCommandMutation,
 } from "@/features/sensors/api/sensors.endpoints";
 
 export {

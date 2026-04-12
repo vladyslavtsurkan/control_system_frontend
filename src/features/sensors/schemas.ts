@@ -22,3 +22,9 @@ export const updateSensorSchema = sensorFormSchema.partial().extend({
 
 export type CreateSensorFormData = z.infer<typeof createSensorSchema>;
 export type UpdateSensorFormData = z.infer<typeof updateSensorSchema>;
+
+export const sensorControlSchema = z.object({
+  value: z.union([z.number(), z.boolean(), z.string()]),
+});
+
+export type SensorControlFormData = z.infer<typeof sensorControlSchema>;
