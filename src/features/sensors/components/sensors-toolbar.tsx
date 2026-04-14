@@ -21,6 +21,7 @@ interface SensorsToolbarProps {
   onPageSizeChange: (next: number) => void;
   onRefresh: () => void;
   onCreate: () => void;
+  canManage: boolean;
 }
 
 export function SensorsToolbar({
@@ -32,6 +33,7 @@ export function SensorsToolbar({
   onPageSizeChange,
   onRefresh,
   onCreate,
+  canManage,
 }: SensorsToolbarProps) {
   const selectedServerName = servers.find(
     (srv) => srv.id === serverFilter,
@@ -76,10 +78,12 @@ export function SensorsToolbar({
       >
         <RefreshCw className="size-4" />
       </Button>
-      <Button onClick={onCreate}>
-        <PlusCircle className="mr-2 size-4" />
-        Add Sensor
-      </Button>
+      {canManage && (
+        <Button onClick={onCreate}>
+          <PlusCircle className="mr-2 size-4" />
+          Add Sensor
+        </Button>
+      )}
     </div>
   );
 }

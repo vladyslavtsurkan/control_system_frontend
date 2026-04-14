@@ -85,7 +85,7 @@ export function SensorFormDialog({
   const selectedServerName =
     servers.find((srv) => srv.id === form.opc_server_id)?.name ?? "";
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
       if (editTarget) {

@@ -36,6 +36,7 @@ interface AlertsTableProps {
   isLoading: boolean;
   onEdit: (rule: AlertRule) => void;
   onDelete: (rule: AlertRule) => void;
+  canManage: boolean;
 }
 
 export function AlertsTable({
@@ -44,6 +45,7 @@ export function AlertsTable({
   isLoading,
   onEdit,
   onDelete,
+  canManage,
 }: AlertsTableProps) {
   if (isLoading) {
     return (
@@ -110,23 +112,27 @@ export function AlertsTable({
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onEdit(rule)}
-                      aria-label="Edit alert rule"
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-red-600 hover:text-red-700"
-                      onClick={() => onDelete(rule)}
-                      aria-label="Delete alert rule"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    {canManage && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onEdit(rule)}
+                        aria-label="Edit alert rule"
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                    )}
+                    {canManage && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => onDelete(rule)}
+                        aria-label="Delete alert rule"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               );

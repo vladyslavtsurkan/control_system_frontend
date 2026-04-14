@@ -99,7 +99,7 @@ export function AppSidebar() {
     setProfileOpen(true);
   }
 
-  async function handleProfileSubmit(e: React.FormEvent) {
+  async function handleProfileSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
       const updated = await updateMe({

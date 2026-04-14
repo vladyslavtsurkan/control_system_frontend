@@ -34,6 +34,7 @@ import {
   useSensorReadingsFilters,
   useSensorReadingsQueryArgs,
 } from "@/features/sensors/hooks";
+import { useOrgPermissions } from "@/features/organizations";
 import type { BucketInterval } from "@/features/sensors/types";
 
 interface SensorPageClientProps {
@@ -184,11 +185,14 @@ export default function SensorPageClient({
 
   const unit = sensor?.units ?? "";
 
+  const { canManage } = useOrgPermissions();
+
   return (
     <div className="space-y-6">
       <SensorDetailHeader
         sensor={sensor}
         canControl={canControl}
+        canManage={canManage}
         onEdit={openEdit}
         onDelete={handleDelete}
         onControl={openControl}

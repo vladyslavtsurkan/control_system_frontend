@@ -34,7 +34,7 @@ export default function SignUpPageClient() {
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  async function handleSignUpSubmit(e: React.FormEvent) {
+  async function handleSignUpSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFieldErrors({});
 
@@ -75,7 +75,7 @@ export default function SignUpPageClient() {
     }
   }
 
-  async function handleVerifySubmit(e: React.FormEvent) {
+  async function handleVerifySubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFieldErrors({});
 

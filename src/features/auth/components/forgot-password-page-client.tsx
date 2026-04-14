@@ -34,7 +34,7 @@ export default function ForgotPasswordPageClient() {
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  async function handleRequestCode(e: React.FormEvent) {
+  async function handleRequestCode(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFieldErrors({});
 
@@ -68,7 +68,7 @@ export default function ForgotPasswordPageClient() {
     }
   }
 
-  async function handleResetPassword(e: React.FormEvent) {
+  async function handleResetPassword(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFieldErrors({});
 

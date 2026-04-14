@@ -89,7 +89,7 @@ export function ServerFormDialog({
       : emptyForm,
   );
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
       if (editTarget) {

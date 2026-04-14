@@ -12,6 +12,7 @@ import { AlertRuleFormDialog } from "@/features/alerts/components/alert-rule-for
 import { AlertsActionBar } from "@/features/alerts/components/alerts-action-bar";
 import { AlertsListControls } from "@/features/alerts/components/alerts-list-controls";
 import { AlertsTable } from "@/features/alerts/components/alerts-table";
+import { useOrgPermissions } from "@/features/organizations";
 import { useConfirm } from "@/hooks/use-confirm";
 import {
   getOffsetLimitPaginationMeta,
@@ -46,6 +47,8 @@ export default function AlertsPageClient({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<AlertRule | null>(null);
   const { confirm, ConfirmDialog } = useConfirm();
+
+  const { canManage } = useOrgPermissions();
 
   const sensors = sensorsData?.items ?? [];
   const rules = data?.items ?? [];
@@ -90,7 +93,11 @@ export default function AlertsPageClient({
 
   return (
     <div className="space-y-6">
-      <AlertsActionBar onRefresh={refetch} onCreate={openCreate} />
+      <AlertsActionBar
+        onRefresh={refetch}
+        onCreate={openCreate}
+        canManage={canManage}
+      />
 
       <AlertsListControls
         shownCount={rules.length}
@@ -106,6 +113,7 @@ export default function AlertsPageClient({
         isLoading={isLoading}
         onEdit={openEdit}
         onDelete={(rule) => handleDelete(rule.id, rule.name)}
+        canManage={canManage}
       />
 
       <ListPaginationFooter

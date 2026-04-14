@@ -161,7 +161,7 @@ export function AlertRuleFormDialog({
     "single_value";
   const booleanThresholdValue = form.sv_value === "false" ? "false" : "true";
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!editTarget && !form.sensor_id) {
       toast.error("Please select a sensor.");

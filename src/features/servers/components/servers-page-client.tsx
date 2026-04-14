@@ -9,6 +9,7 @@ import { ApiKeyDialog } from "@/features/servers/components/api-key-dialog";
 import { ServersActionBar } from "@/features/servers/components/servers-action-bar";
 import { ServersListControls } from "@/features/servers/components/servers-list-controls";
 import { ServersTable } from "@/features/servers/components/servers-table";
+import { useOrgPermissions } from "@/features/organizations";
 import { useConfirm } from "@/hooks/use-confirm";
 import {
   getOffsetLimitPaginationMeta,
@@ -43,6 +44,7 @@ export default function ServersPageClient({
   const [editTarget, setEditTarget] = useState<OpcServer | null>(null);
   const [apiKeyServer, setApiKeyServer] = useState<OpcServer | null>(null);
   const { confirm, ConfirmDialog } = useConfirm();
+  const { canManage } = useOrgPermissions();
 
   const servers = data?.items ?? [];
   const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } =
@@ -86,7 +88,11 @@ export default function ServersPageClient({
 
   return (
     <div className="space-y-6">
-      <ServersActionBar onRefresh={refetch} onCreate={openCreate} />
+      <ServersActionBar
+        onRefresh={refetch}
+        onCreate={openCreate}
+        canManage={canManage}
+      />
 
       <ServersListControls
         shownCount={servers.length}
@@ -102,6 +108,7 @@ export default function ServersPageClient({
         onEdit={openEdit}
         onManageApiKey={setApiKeyServer}
         onDelete={(server) => handleDelete(server.id, server.name)}
+        canManage={canManage}
       />
 
       <ListPaginationFooter

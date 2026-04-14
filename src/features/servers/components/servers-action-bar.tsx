@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 interface ServersActionBarProps {
   onRefresh: () => void;
   onCreate: () => void;
+  canManage: boolean;
 }
 
 export function ServersActionBar({
   onRefresh,
   onCreate,
+  canManage,
 }: ServersActionBarProps) {
   return (
     <div className="flex justify-end gap-2">
@@ -22,10 +24,12 @@ export function ServersActionBar({
       >
         <RefreshCw className="size-4" />
       </Button>
-      <Button onClick={onCreate}>
-        <PlusCircle className="mr-2 size-4" />
-        Add Server
-      </Button>
+      {canManage && (
+        <Button onClick={onCreate}>
+          <PlusCircle className="mr-2 size-4" />
+          Add Server
+        </Button>
+      )}
     </div>
   );
 }

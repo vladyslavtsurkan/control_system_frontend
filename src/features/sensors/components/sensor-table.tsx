@@ -24,6 +24,7 @@ interface SensorTableProps {
   servers: OpcServer[];
   serverFilter: string;
   onEdit: (sensor: Sensor) => void;
+  canManage: boolean;
 }
 
 export function SensorTable({
@@ -31,6 +32,7 @@ export function SensorTable({
   servers,
   serverFilter,
   onEdit,
+  canManage,
 }: SensorTableProps) {
   const [deleteSensor] = useDeleteSensorMutation();
   const { confirm, ConfirmDialog } = useConfirm();
@@ -75,7 +77,9 @@ export function SensorTable({
                 >
                   {serverFilter
                     ? "No sensors found for the selected server."
-                    : 'No sensors found. Click "Add Sensor" to get started.'}
+                    : canManage
+                      ? 'No sensors found. Click "Add Sensor" to get started.'
+                      : "No sensors found."}
                 </TableCell>
               </TableRow>
             ) : (
@@ -183,21 +187,25 @@ export function SensorTable({
                       >
                         <ExternalLink className="size-4" />
                       </Link>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onEdit(s)}
-                      >
-                        <Pencil className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-600 hover:text-red-700"
-                        onClick={() => handleDelete(s.id, s.name)}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
+                      {canManage && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onEdit(s)}
+                        >
+                          <Pencil className="size-4" />
+                        </Button>
+                      )}
+                      {canManage && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => handleDelete(s.id, s.name)}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 );

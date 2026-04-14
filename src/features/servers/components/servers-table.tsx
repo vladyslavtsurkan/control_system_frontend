@@ -21,6 +21,7 @@ interface ServersTableProps {
   onEdit: (server: OpcServer) => void;
   onManageApiKey: (server: OpcServer) => void;
   onDelete: (server: OpcServer) => void;
+  canManage: boolean;
 }
 
 export function ServersTable({
@@ -29,6 +30,7 @@ export function ServersTable({
   onEdit,
   onManageApiKey,
   onDelete,
+  canManage,
 }: ServersTableProps) {
   if (isLoading) {
     return (
@@ -60,7 +62,9 @@ export function ServersTable({
                 colSpan={6}
                 className="py-10 text-center text-sm text-muted-foreground"
               >
-                No servers found. Click &quot;Add Server&quot; to get started.
+                {canManage
+                  ? 'No servers found. Click "Add Server" to get started.'
+                  : "No servers found."}
               </TableCell>
             </TableRow>
           ) : (
@@ -89,31 +93,37 @@ export function ServersTable({
                   {formatDate24(server.created_at)}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onManageApiKey(server)}
-                    aria-label="Manage API key"
-                  >
-                    <KeyRound className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEdit(server)}
-                    aria-label="Edit server"
-                  >
-                    <Pencil className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-red-600 hover:text-red-700"
-                    onClick={() => onDelete(server)}
-                    aria-label="Delete server"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  {canManage && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onManageApiKey(server)}
+                      aria-label="Manage API key"
+                    >
+                      <KeyRound className="size-4" />
+                    </Button>
+                  )}
+                  {canManage && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEdit(server)}
+                      aria-label="Edit server"
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                  )}
+                  {canManage && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() => onDelete(server)}
+                      aria-label="Delete server"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))

@@ -23,7 +23,7 @@ interface SensorControlDialogProps {
   value: string | boolean;
   sending: boolean;
   onValueChange: (v: string | boolean) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
 }
 
 const DATA_TYPE_LABELS: Record<string, string> = {

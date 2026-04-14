@@ -14,6 +14,7 @@ import type { Sensor } from "@/features/sensors/types";
 interface SensorDetailHeaderProps {
   sensor?: Sensor;
   canControl?: boolean;
+  canManage?: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onControl: () => void;
@@ -22,6 +23,7 @@ interface SensorDetailHeaderProps {
 export function SensorDetailHeader({
   sensor,
   canControl = false,
+  canManage = false,
   onEdit,
   onDelete,
   onControl,
@@ -75,23 +77,27 @@ export function SensorDetailHeader({
             <TooltipContent>Write value</TooltipContent>
           </Tooltip>
         )}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={onEdit}
-          disabled={!sensor}
-        >
-          <Pencil className="size-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className="text-red-600 hover:border-red-300 hover:text-red-700"
-          onClick={onDelete}
-          disabled={!sensor}
-        >
-          <Trash2 className="size-4" />
-        </Button>
+        {canManage && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onEdit}
+            disabled={!sensor}
+          >
+            <Pencil className="size-4" />
+          </Button>
+        )}
+        {canManage && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="text-red-600 hover:border-red-300 hover:text-red-700"
+            onClick={onDelete}
+            disabled={!sensor}
+          >
+            <Trash2 className="size-4" />
+          </Button>
+        )}
       </div>
     </div>
   );

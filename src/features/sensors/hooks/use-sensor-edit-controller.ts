@@ -38,7 +38,7 @@ export function useSensorEditController({
     setEditOpen(true);
   }
 
-  async function handleEditSubmit(e: React.FormEvent) {
+  async function handleEditSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
 
     try {

@@ -1,8 +1,6 @@
 "use client";
 
-import { LogOut as LeaveIcon, Pencil, Trash2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -13,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate24 } from "@/lib/date-time";
+import { OrgRowActions } from "@/features/organizations/components/org-row-actions";
 import type { OrganizationWithRole } from "@/features/organizations/types";
 
 const ROLE_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
@@ -100,46 +99,13 @@ export function OrganizationsTable({
                   {formatDate24(org.created_at)}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onManageMembers(org)}
-                    aria-label="Manage members"
-                  >
-                    <Users className="size-4" />
-                  </Button>
-                  {(org.role === "owner" || org.role === "admin") && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onEdit(org)}
-                      aria-label="Edit organization"
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-                  )}
-                  {org.role === "owner" && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-red-600 hover:text-red-700"
-                      onClick={() => onDelete(org)}
-                      aria-label="Delete organization"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  )}
-                  {org.role !== "owner" && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-orange-500 hover:text-orange-600"
-                      onClick={() => onLeave(org)}
-                      aria-label="Leave organization"
-                    >
-                      <LeaveIcon className="size-4" />
-                    </Button>
-                  )}
+                  <OrgRowActions
+                    org={org}
+                    onManageMembers={onManageMembers}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    onLeave={onLeave}
+                  />
                 </TableCell>
               </TableRow>
             ))

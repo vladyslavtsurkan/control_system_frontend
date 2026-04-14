@@ -26,7 +26,7 @@ interface SensorEditDialogProps {
   onOpenChange: (open: boolean) => void;
   form: EditSensorFormState;
   updating: boolean;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
   onFormChange: (next: EditSensorFormState) => void;
 }
 

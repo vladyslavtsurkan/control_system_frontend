@@ -73,7 +73,7 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
   const isOwner = org.role === "owner";
   const isAdminOrOwner = org.role === "owner" || org.role === "admin";
 
-  async function handleAdd(e: React.FormEvent) {
+  async function handleAdd(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     const trimmed = addUserId.trim();
     if (!trimmed) return;
@@ -103,7 +103,20 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
     }
   }
 
-  async function handleRoleChange(userId: string, role: UserRoleInOrg) {
+  async function handleRoleChange(
+    userId: string,
+    role: UserRoleInOrg,
+    memberEmail: string,
+  ) {
+    if (role === "owner") {
+      const confirmed = await confirm({
+        title: "Transfer ownership",
+        description: `Are you sure you want to transfer ownership of "${org.name}" to ${memberEmail}? You will lose your owner privileges.`,
+        confirmLabel: "Transfer",
+        destructive: true,
+      });
+      if (!confirmed) return;
+    }
     try {
       await changeRole({ orgId: org.id, userId, role }).unwrap();
       toast.success("Role updated.");
@@ -178,7 +191,7 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
                             value={m.role}
                             onValueChange={(v) => {
                               if (isUserRoleInOrg(v)) {
-                                void handleRoleChange(m.id, v);
+                                void handleRoleChange(m.id, v, m.email);
                               }
                             }}
                           >

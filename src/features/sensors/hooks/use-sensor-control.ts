@@ -1,12 +1,9 @@
 import { useState } from "react";
+import type { SyntheticEvent } from "react";
 import { toast } from "sonner";
-import {
-  useSendControlCommandMutation,
-  useGetOrganizationsQuery,
-} from "@/store/api";
+import { useSendControlCommandMutation } from "@/store/api";
 import { useConfirm } from "@/hooks/use-confirm";
-import { useAppSelector } from "@/store/hooks";
-import { selectActiveOrgId } from "@/store/selectors";
+import { useOrgPermissions } from "@/features/organizations";
 import type { Sensor } from "@/features/sensors/types";
 
 interface UseSensorControlParams {
@@ -22,10 +19,8 @@ export function useSensorControl({ sensor }: UseSensorControlParams) {
   const { confirm, ConfirmDialog } = useConfirm();
 
   // Role-gating: only owner/admin may send control commands
-  const activeOrgId = useAppSelector(selectActiveOrgId);
-  const { data: orgsPage } = useGetOrganizationsQuery();
-  const activeOrgRole = orgsPage?.items.find((o) => o.id === activeOrgId)?.role;
-  const canControl = activeOrgRole === "owner" || activeOrgRole === "admin";
+  const { canManage } = useOrgPermissions();
+  const canControl = canManage;
 
   function openControl() {
     if (!sensor) return;
@@ -33,7 +28,7 @@ export function useSensorControl({ sensor }: UseSensorControlParams) {
     setOpen(true);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!sensor) return;
 

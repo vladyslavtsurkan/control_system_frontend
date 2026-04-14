@@ -9,6 +9,7 @@ import { SensorTable } from "@/features/sensors/components/sensor-table";
 import { SensorFormDialog } from "@/features/sensors/components/sensor-form-dialog";
 import { SensorsListControls } from "@/features/sensors/components/sensors-list-controls";
 import { SensorsToolbar } from "@/features/sensors/components/sensors-toolbar";
+import { useOrgPermissions } from "@/features/organizations";
 import {
   getOffsetLimitPaginationMeta,
   useOffsetLimitPagination,
@@ -52,6 +53,8 @@ export default function SensorsPageClient({
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Sensor | null>(null);
+
+  const { canManage } = useOrgPermissions();
 
   const sensors = data?.items ?? [];
   const servers = serversData?.items ?? [];
@@ -100,6 +103,7 @@ export default function SensorsPageClient({
         onPageSizeChange={pagination.setLimitAndReset}
         onRefresh={refetch}
         onCreate={openCreate}
+        canManage={canManage}
       />
 
       {isLoading ? (
@@ -114,6 +118,7 @@ export default function SensorsPageClient({
           servers={servers}
           serverFilter={serverFilter}
           onEdit={openEdit}
+          canManage={canManage}
         />
       )}
 
