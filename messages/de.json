@@ -357,7 +357,11 @@
       "fatal": "Fatal"
     },
     "durationInstant": "Sofort",
-    "durationDelay": "{seconds} Sek. Verzögerung"
+    "durationDelay": "{seconds} Sek. Verzgerung",
+    "statuses": {
+      "active": "Aktiv",
+      "resolved": "Gelöst"
+    }
   },
   "organizations": {
     "title": "Organisationen",
