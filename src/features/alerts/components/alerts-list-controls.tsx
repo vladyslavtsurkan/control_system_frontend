@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   ListPageSizeSelect,
   ListResultsSummary,
@@ -20,12 +21,13 @@ export function AlertsListControls({
   pageSizeOptions,
   onPageSizeChange,
 }: AlertsListControlsProps) {
+  const t = useTranslations("alerts");
   return (
     <div className="flex items-center justify-between gap-3">
       <ListResultsSummary
         shownCount={shownCount}
         totalCount={totalCount}
-        noun="alert rules"
+        noun={t("noun")}
       />
       <ListPageSizeSelect
         id="alert-rules-page-size"

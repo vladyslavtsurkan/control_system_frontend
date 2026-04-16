@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { type SyntheticEvent } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,7 +28,7 @@ interface SensorEditDialogProps {
   onOpenChange: (open: boolean) => void;
   form: EditSensorFormState;
   updating: boolean;
-  onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
+  onSubmit: (e: SyntheticEvent<HTMLFormElement>) => void;
   onFormChange: (next: EditSensorFormState) => void;
 }
 
@@ -38,15 +40,17 @@ export function SensorEditDialog({
   onSubmit,
   onFormChange,
 }: SensorEditDialogProps) {
+  const t = useTranslations("sensors");
+  const tCommon = useTranslations("common");
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit Sensor</DialogTitle>
+          <DialogTitle>{t("editSensor")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="edit-sensor-name">Name</Label>
+            <Label htmlFor="edit-sensor-name">{t("name")}</Label>
             <Input
               id="edit-sensor-name"
               required
@@ -56,7 +60,7 @@ export function SensorEditDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-sensor-node-id">Node ID</Label>
+            <Label htmlFor="edit-sensor-node-id">{t("nodeId")}</Label>
             <Input
               id="edit-sensor-node-id"
               required
@@ -69,7 +73,7 @@ export function SensorEditDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label>Data Type</Label>
+            <Label>{t("dataType")}</Label>
             <Select
               value={form.data_type}
               onValueChange={(value) =>
@@ -80,29 +84,29 @@ export function SensorEditDialog({
               }
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue>{t(form.data_type)}</SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="numeric">Numeric</SelectItem>
-                <SelectItem value="boolean">Boolean</SelectItem>
-                <SelectItem value="string">String</SelectItem>
+                <SelectItem value="numeric">{t("numeric")}</SelectItem>
+                <SelectItem value="boolean">{t("boolean")}</SelectItem>
+                <SelectItem value="string">{t("string")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="edit-sensor-desc">Description</Label>
+              <Label htmlFor="edit-sensor-desc">{t("description")}</Label>
               <Input
                 id="edit-sensor-desc"
                 value={form.description}
                 onChange={(e) =>
                   onFormChange({ ...form, description: e.target.value })
                 }
-                placeholder="Optional"
+                placeholder={tCommon("optional")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-sensor-units">Units</Label>
+              <Label htmlFor="edit-sensor-units">{t("units")}</Label>
               <Input
                 id="edit-sensor-units"
                 value={form.units}
@@ -115,9 +119,11 @@ export function SensorEditDialog({
           </div>
           <div className="flex flex-row items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <Label htmlFor="edit-sensor-is-writable">Writable Node</Label>
+              <Label htmlFor="edit-sensor-is-writable">
+                {t("writableNode")}
+              </Label>
               <p className="text-sm text-muted-foreground">
-                Allow control commands to be sent to this sensor
+                {t("writableNodeHelp")}
               </p>
             </div>
             <Switch
@@ -130,10 +136,10 @@ export function SensorEditDialog({
           </div>
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>
-              Cancel
+              {tCommon("cancel")}
             </DialogClose>
             <Button type="submit" disabled={updating}>
-              Save Changes
+              {tCommon("saveChanges")}
             </Button>
           </DialogFooter>
         </form>

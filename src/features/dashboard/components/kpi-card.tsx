@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Activity } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { TimeSeriesChart } from "@/features/sensors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,6 +25,7 @@ export function KpiCard({
   kpi,
   readings,
 }: KpiCardProps) {
+  const t = useTranslations("dashboard");
   const hasKpiValue =
     typeof kpi?.value === "number" && Number.isFinite(kpi.value);
   const hasKpiTime =
@@ -47,7 +49,7 @@ export function KpiCard({
                 <div className="flex items-center gap-2">
                   <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.18)] motion-safe:animate-pulse" />
                   <span className="text-[11px] font-medium uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
-                    Live
+                    {t("live")}
                   </span>
                 </div>
                 <div className="text-3xl font-bold tabular-nums">
@@ -59,7 +61,9 @@ export function KpiCard({
                   ) : null}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Last updated: {formatTime24(kpi.time, { withSeconds: true })}
+                  {t("lastUpdated", {
+                    time: formatTime24(kpi.time, { withSeconds: true }),
+                  })}
                 </p>
               </>
             ) : (
@@ -68,7 +72,7 @@ export function KpiCard({
                   --
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Waiting for telemetry...
+                  {t("waitingForTelemetry")}
                 </p>
               </>
             )
@@ -94,7 +98,7 @@ export function KpiCard({
           </div>
 
           <p className="text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
-            View full chart {"->"}
+            {t("viewFullChart")}
           </p>
         </CardContent>
       </Card>

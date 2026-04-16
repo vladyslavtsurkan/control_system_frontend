@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   useCreateOrganizationMutation,
   useUpdateOrganizationMutation,
@@ -44,6 +45,8 @@ export function OrganizationFormDialog({
   editTarget,
   activeOrgId,
 }: OrganizationFormDialogProps) {
+  const t = useTranslations("organizations");
+  const tCommon = useTranslations("common");
   const dispatch = useAppDispatch();
   const [createOrg, { isLoading: creating }] = useCreateOrganizationMutation();
   const [updateOrg, { isLoading: updating }] = useUpdateOrganizationMutation();
@@ -53,7 +56,7 @@ export function OrganizationFormDialog({
       : emptyForm,
   );
 
-  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
       if (editTarget) {
@@ -65,7 +68,7 @@ export function OrganizationFormDialog({
         if (editTarget.id === activeOrgId) {
           dispatch(setActiveOrg(updated));
         }
-        toast.success("Organization updated.");
+        toast.success(t("orgUpdated"));
       } else {
         const payload: CreateOrganizationRequest = {
           name: form.name,
@@ -75,11 +78,11 @@ export function OrganizationFormDialog({
         if (!activeOrgId) {
           dispatch(setActiveOrg(created));
         }
-        toast.success("Organization created.");
+        toast.success(t("orgCreated"));
       }
       onOpenChange(false);
     } catch {
-      toast.error("Operation failed. Please try again.");
+      toast.error(tCommon("operationFailed"));
     }
   }
 
@@ -88,37 +91,37 @@ export function OrganizationFormDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {editTarget ? "Edit Organization" : "New Organization"}
+            {editTarget ? t("editOrganization") : t("newOrganization")}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="org-name">Name</Label>
+            <Label htmlFor="org-name">{t("name")}</Label>
             <Input
               id="org-name"
               required
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              placeholder="Acme Corp"
+              placeholder={t("namePlaceholder")}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="org-desc">Description</Label>
+            <Label htmlFor="org-desc">{t("description")}</Label>
             <Input
               id="org-desc"
               value={form.description}
               onChange={(e) =>
                 setForm((f) => ({ ...f, description: e.target.value }))
               }
-              placeholder="Optional description"
+              placeholder={t("descriptionPlaceholder")}
             />
           </div>
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>
-              Cancel
+              {tCommon("cancel")}
             </DialogClose>
             <Button type="submit" disabled={creating || updating}>
-              {editTarget ? "Save Changes" : "Create"}
+              {editTarget ? tCommon("saveChanges") : tCommon("create")}
             </Button>
           </DialogFooter>
         </form>

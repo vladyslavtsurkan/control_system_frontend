@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { signUpSchema, signUpVerifySchema } from "@/features/auth/schemas";
 import {
@@ -24,6 +25,8 @@ type SignUpStep = "signup" | "verify";
 
 export default function SignUpPageClient() {
   const router = useRouter();
+  const t = useTranslations("auth.signup");
+  const tCommon = useTranslations("common");
 
   const [step, setStep] = useState<SignUpStep>("signup");
   const [email, setEmail] = useState("");
@@ -34,7 +37,7 @@ export default function SignUpPageClient() {
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  async function handleSignUpSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleSignUpSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFieldErrors({});
 
@@ -62,20 +65,20 @@ export default function SignUpPageClient() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        toast.error(getApiErrorMessage(data, "Could not create your account."));
+        toast.error(getApiErrorMessage(data, t("couldNotCreateAccount")));
         return;
       }
 
-      toast.success("Verification code sent to your email.");
+      toast.success(t("verificationCodeSent"));
       setStep("verify");
     } catch {
-      toast.error("Network error. Please try again.");
+      toast.error(tCommon("networkError"));
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleVerifySubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleVerifySubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFieldErrors({});
 
@@ -97,16 +100,14 @@ export default function SignUpPageClient() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        toast.error(
-          getApiErrorMessage(data, "Verification failed. Please try again."),
-        );
+        toast.error(getApiErrorMessage(data, tCommon("operationFailed")));
         return;
       }
 
-      toast.success("Account verified.");
+      toast.success(t("accountVerified"));
       router.push("/");
     } catch {
-      toast.error("Network error. Please try again.");
+      toast.error(tCommon("networkError"));
     } finally {
       setLoading(false);
     }
@@ -115,20 +116,16 @@ export default function SignUpPageClient() {
   return (
     <Card className="w-full max-w-sm shadow-lg">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">
-          Create your account
-        </CardTitle>
+        <CardTitle className="text-2xl font-bold">{t("title")}</CardTitle>
         <CardDescription>
-          {step === "signup"
-            ? "Sign up and we will email you a verification code"
-            : "Enter the verification code sent to your email"}
+          {step === "signup" ? t("subtitleSignup") : t("subtitleVerify")}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {step === "signup" ? (
           <form onSubmit={handleSignUpSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -136,7 +133,7 @@ export default function SignUpPageClient() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
+                placeholder={t("emailPlaceholder")}
               />
               {fieldErrors.email && (
                 <p className="text-xs text-red-500">{fieldErrors.email}</p>
@@ -144,13 +141,13 @@ export default function SignUpPageClient() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="first-name">First name</Label>
+                <Label htmlFor="first-name">{t("firstName")}</Label>
                 <Input
                   id="first-name"
                   autoComplete="given-name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Optional"
+                  placeholder={tCommon("optional")}
                 />
                 {fieldErrors.first_name && (
                   <p className="text-xs text-red-500">
@@ -159,13 +156,13 @@ export default function SignUpPageClient() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="last-name">Last name</Label>
+                <Label htmlFor="last-name">{t("lastName")}</Label>
                 <Input
                   id="last-name"
                   autoComplete="family-name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Optional"
+                  placeholder={tCommon("optional")}
                 />
                 {fieldErrors.last_name && (
                   <p className="text-xs text-red-500">
@@ -175,7 +172,7 @@ export default function SignUpPageClient() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -190,19 +187,19 @@ export default function SignUpPageClient() {
               )}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating account..." : "Create account"}
+              {loading ? t("creatingAccount") : t("createAccount")}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
+              {t("alreadyHaveAccount")}{" "}
               <Link href="/login" className="hover:text-foreground">
-                Sign in
+                {t("signIn")}
               </Link>
             </p>
           </form>
         ) : (
           <form onSubmit={handleVerifySubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="verify-email">Email</Label>
+              <Label htmlFor="verify-email">{t("email")}</Label>
               <Input
                 id="verify-email"
                 type="email"
@@ -216,20 +213,20 @@ export default function SignUpPageClient() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="code">Verification code</Label>
+              <Label htmlFor="code">{t("verificationCode")}</Label>
               <Input
                 id="code"
                 required
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="Enter code"
+                placeholder={t("verificationCodePlaceholder")}
               />
               {fieldErrors.code && (
                 <p className="text-xs text-red-500">{fieldErrors.code}</p>
               )}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Verifying..." : "Verify and sign in"}
+              {loading ? t("verifying") : t("verifyAndSignIn")}
             </Button>
             <div className="flex items-center justify-between text-sm">
               <button
@@ -240,13 +237,13 @@ export default function SignUpPageClient() {
                   setStep("signup");
                 }}
               >
-                Edit details
+                {t("editDetails")}
               </button>
               <Link
                 href="/login"
                 className="text-muted-foreground hover:text-foreground"
               >
-                Back to sign in
+                {t("backToSignIn")}
               </Link>
             </div>
           </form>

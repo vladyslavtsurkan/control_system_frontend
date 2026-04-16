@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   forgotPasswordSchema,
@@ -27,6 +28,9 @@ type ResetStep = "request" | "reset";
 
 export default function ForgotPasswordPageClient() {
   const router = useRouter();
+  const t = useTranslations("auth.forgotPassword");
+  const tCommon = useTranslations("common");
+
   const [step, setStep] = useState<ResetStep>("request");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -34,7 +38,7 @@ export default function ForgotPasswordPageClient() {
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  async function handleRequestCode(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleRequestCode(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFieldErrors({});
 
@@ -55,20 +59,20 @@ export default function ForgotPasswordPageClient() {
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast.error(getApiErrorMessage(data, "Could not send reset code."));
+        toast.error(getApiErrorMessage(data, t("couldNotSendResetCode")));
         return;
       }
 
-      toast.success("Reset code sent to your email.");
+      toast.success(t("resetCodeSent"));
       setStep("reset");
     } catch {
-      toast.error("Network error. Please try again.");
+      toast.error(tCommon("networkError"));
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleResetPassword(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleResetPassword(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFieldErrors({});
 
@@ -89,14 +93,14 @@ export default function ForgotPasswordPageClient() {
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast.error(getApiErrorMessage(data, "Could not reset password."));
+        toast.error(getApiErrorMessage(data, t("couldNotResetPassword")));
         return;
       }
 
-      toast.success("Password updated. Please sign in.");
+      toast.success(t("passwordUpdated"));
       router.push("/login");
     } catch {
-      toast.error("Network error. Please try again.");
+      toast.error(tCommon("networkError"));
     } finally {
       setLoading(false);
     }
@@ -105,20 +109,16 @@ export default function ForgotPasswordPageClient() {
   return (
     <Card className="w-full max-w-sm shadow-lg">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">
-          Reset your password
-        </CardTitle>
+        <CardTitle className="text-2xl font-bold">{t("title")}</CardTitle>
         <CardDescription>
-          {step === "request"
-            ? "Enter your email and we will send a reset code"
-            : "Enter the code from your email and choose a new password"}
+          {step === "request" ? t("subtitleRequest") : t("subtitleReset")}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {step === "request" ? (
           <form onSubmit={handleRequestCode} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -126,26 +126,26 @@ export default function ForgotPasswordPageClient() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
+                placeholder={t("emailPlaceholder")}
               />
               {fieldErrors.email && (
                 <p className="text-xs text-red-500">{fieldErrors.email}</p>
               )}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Sending code..." : "Send reset code"}
+              {loading ? t("sendingCode") : t("sendResetCode")}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
-              Back to{" "}
+              {t("backTo")}{" "}
               <Link href="/login" className="hover:text-foreground">
-                sign in
+                {t("signIn")}
               </Link>
             </p>
           </form>
         ) : (
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="reset-email">Email</Label>
+              <Label htmlFor="reset-email">{t("email")}</Label>
               <Input
                 id="reset-email"
                 type="email"
@@ -159,20 +159,20 @@ export default function ForgotPasswordPageClient() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="reset-code">Reset code</Label>
+              <Label htmlFor="reset-code">{t("resetCode")}</Label>
               <Input
                 id="reset-code"
                 required
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="Enter code"
+                placeholder={t("resetCodePlaceholder")}
               />
               {fieldErrors.code && (
                 <p className="text-xs text-red-500">{fieldErrors.code}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-password">New password</Label>
+              <Label htmlFor="new-password">{t("newPassword")}</Label>
               <Input
                 id="new-password"
                 type="password"
@@ -187,7 +187,7 @@ export default function ForgotPasswordPageClient() {
               )}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Updating password..." : "Reset password"}
+              {loading ? t("updatingPassword") : t("resetPassword")}
             </Button>
             <div className="flex items-center justify-between text-sm">
               <button
@@ -198,13 +198,13 @@ export default function ForgotPasswordPageClient() {
                   setStep("request");
                 }}
               >
-                Send new code
+                {t("sendNewCode")}
               </button>
               <Link
                 href="/login"
                 className="text-muted-foreground hover:text-foreground"
               >
-                Back to sign in
+                {t("backToSignIn")}
               </Link>
             </div>
           </form>

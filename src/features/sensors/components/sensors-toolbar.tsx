@@ -1,6 +1,7 @@
 "use client";
 
 import { PlusCircle, RefreshCw } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ListPageSizeSelect } from "@/components/ui/list-pagination";
 import {
@@ -35,6 +36,7 @@ export function SensorsToolbar({
   onCreate,
   canManage,
 }: SensorsToolbarProps) {
+  const t = useTranslations("sensors");
   const selectedServerName = servers.find(
     (srv) => srv.id === serverFilter,
   )?.name;
@@ -48,12 +50,12 @@ export function SensorsToolbar({
         <SelectTrigger className="w-48">
           <SelectValue>
             {serverFilter
-              ? (selectedServerName ?? "All servers")
-              : "All servers"}
+              ? (selectedServerName ?? t("allServers"))
+              : t("allServers")}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">All servers</SelectItem>
+          <SelectItem value="">{t("allServers")}</SelectItem>
           {servers.map((srv) => (
             <SelectItem key={srv.id} value={srv.id}>
               {srv.name}
@@ -74,14 +76,14 @@ export function SensorsToolbar({
         variant="outline"
         size="icon"
         onClick={onRefresh}
-        aria-label="Refresh"
+        aria-label={t("allServers")}
       >
         <RefreshCw className="size-4" />
       </Button>
       {canManage && (
         <Button onClick={onCreate}>
           <PlusCircle className="mr-2 size-4" />
-          Add Sensor
+          {t("addSensor")}
         </Button>
       )}
     </div>

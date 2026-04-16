@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   useDeleteAlertRuleMutation,
   useGetAlertRulesQuery,
@@ -33,6 +34,8 @@ export default function AlertsPageClient({
   initialPage,
   initialPerPage,
 }: AlertsPageClientProps) {
+  const t = useTranslations("alerts");
+  const tCommon = useTranslations("common");
   const pagination = useOffsetLimitPagination({
     initialLimit: initialPerPage,
     initialPage,
@@ -76,7 +79,7 @@ export default function AlertsPageClient({
   async function handleDelete(id: string, name: string) {
     if (
       !(await confirm({
-        description: `Delete alert rule "${name}"?`,
+        description: t("deleteRule", { name }),
         destructive: true,
       }))
     ) {
@@ -85,9 +88,9 @@ export default function AlertsPageClient({
 
     try {
       await deleteRule(id).unwrap();
-      toast.success("Alert rule deleted.");
+      toast.success(t("ruleDeleted"));
     } catch {
-      toast.error("Delete failed.");
+      toast.error(tCommon("deleteFailed"));
     }
   }
 

@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type SyntheticEvent } from "react";
 import { X } from "lucide-react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   useCreateAlertRuleMutation,
   useGetSensorsQuery,
@@ -41,7 +42,6 @@ import {
   CONDITIONS,
   CONDITIONS_BY_SENSOR_TYPE,
   buildThresholdForSubmit,
-  durationSecondsLabel,
   parseNonNegativeInteger,
   ruleToForm,
 } from "@/features/alerts/lib/alert-rule-helpers";
@@ -78,6 +78,8 @@ export function AlertRuleFormDialog({
   editTarget,
   sensors,
 }: AlertRuleFormDialogProps) {
+  const t = useTranslations("alerts");
+  const tCommon = useTranslations("common");
   const [createRule, { isLoading: creating }] = useCreateAlertRuleMutation();
   const [updateRule, { isLoading: updating }] = useUpdateAlertRuleMutation();
   const { data: sensorsData } = useGetSensorsQuery({
@@ -161,10 +163,10 @@ export function AlertRuleFormDialog({
     "single_value";
   const booleanThresholdValue = form.sv_value === "false" ? "false" : "true";
 
-  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!editTarget && !form.sensor_id) {
-      toast.error("Please select a sensor.");
+      toast.error(t("pleaseSelectSensor"));
       return;
     }
 
@@ -175,7 +177,7 @@ export function AlertRuleFormDialog({
 
     const durationSeconds = parseNonNegativeInteger(nextForm.duration_seconds);
     if (durationSeconds === null) {
-      toast.error("Trigger delay must be a non-negative whole number.");
+      toast.error(t("triggerDelayMustBeWhole"));
       return;
     }
 
@@ -184,14 +186,12 @@ export function AlertRuleFormDialog({
       selectedSensorType,
     );
     if (!threshold) {
-      toast.error(error ?? "Threshold is invalid.");
+      toast.error(error ?? t("thresholdInvalid"));
       return;
     }
 
     if ((watchedActions?.length ?? 0) > MAX_ALERT_RULE_ACTIONS) {
-      toast.error(
-        `You can add up to ${MAX_ALERT_RULE_ACTIONS} automated actions per rule.`,
-      );
+      toast.error(t("tooManyActions", { max: MAX_ALERT_RULE_ACTIONS }));
       return;
     }
 
@@ -221,7 +221,7 @@ export function AlertRuleFormDialog({
           payload.duration_seconds = durationSeconds;
         }
         await updateRule(payload).unwrap();
-        toast.success("Alert rule updated.");
+        toast.success(t("ruleUpdated"));
       } else {
         const payload: CreateAlertRuleRequest = {
           sensor_id: nextForm.sensor_id,
@@ -233,11 +233,11 @@ export function AlertRuleFormDialog({
           actions: transformedActions,
         };
         await createRule(payload).unwrap();
-        toast.success("Alert rule created.");
+        toast.success(t("ruleCreated"));
       }
       onOpenChange(false);
     } catch {
-      toast.error("Operation failed. Please try again.");
+      toast.error(tCommon("operationFailed"));
     }
   }
 
@@ -246,7 +246,7 @@ export function AlertRuleFormDialog({
       <DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>
-            {editTarget ? "Edit Alert Rule" : "Create Alert Rule"}
+            {editTarget ? t("editRuleTitle") : t("createRuleTitle")}
           </DialogTitle>
         </DialogHeader>
         <form
@@ -254,7 +254,7 @@ export function AlertRuleFormDialog({
           className="flex max-h-[calc(90vh-5rem)] flex-col gap-4 overflow-y-auto pr-1"
         >
           <div className="space-y-2">
-            <Label htmlFor="rule-name">Rule Name</Label>
+            <Label htmlFor="rule-name">{t("ruleName")}</Label>
             <Input
               id="rule-name"
               required
@@ -266,7 +266,7 @@ export function AlertRuleFormDialog({
 
           {!editTarget && (
             <div className="space-y-2">
-              <Label>Sensor</Label>
+              <Label>{t("sensor")}</Label>
               <Select
                 value={form.sensor_id}
                 onValueChange={(v) =>
@@ -292,7 +292,7 @@ export function AlertRuleFormDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Severity</Label>
+              <Label>{t("severity")}</Label>
               <Select
                 value={form.severity}
                 onValueChange={(v) =>
@@ -300,19 +300,19 @@ export function AlertRuleFormDialog({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>{t(`severities.${form.severity}`)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {SEVERITIES.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {s}
+                      {t(`severities.${s}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Condition</Label>
+              <Label>{t("condition")}</Label>
               <Select
                 value={activeCondition}
                 onValueChange={(v) =>
@@ -320,12 +320,14 @@ export function AlertRuleFormDialog({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>
+                    {t(`conditions.${activeCondition}`)}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {allowedConditions.map((c) => (
                     <SelectItem key={c.value} value={c.value}>
-                      {c.label}
+                      {t(`conditions.${c.value}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -334,7 +336,7 @@ export function AlertRuleFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="trigger-delay">Trigger Delay (seconds)</Label>
+            <Label htmlFor="trigger-delay">{t("triggerDelay")}</Label>
             <Input
               id="trigger-delay"
               type="number"
@@ -348,23 +350,27 @@ export function AlertRuleFormDialog({
               placeholder="0"
             />
             <p className="text-xs text-muted-foreground">
-              0 = trigger immediately
+              {t("triggerDelayImmediate")}
             </p>
             <p className="text-xs text-muted-foreground">
-              &gt;0 = trigger only if condition is continuously violated for
-              this duration
+              {t("triggerDelayDuration")}
             </p>
             <p className="text-xs text-muted-foreground">
-              Mode:{" "}
-              {durationSecondsLabel(
-                parseNonNegativeInteger(form.duration_seconds) ?? 0,
-              )}
+              {t("triggerDelayMode", {
+                mode: (() => {
+                  const secs =
+                    parseNonNegativeInteger(form.duration_seconds) ?? 0;
+                  return secs === 0
+                    ? t("durationInstant")
+                    : t("durationDelay", { seconds: String(secs) });
+                })(),
+              })}
             </p>
           </div>
 
           {currentThresholdType === "single_value" && (
             <div className="space-y-2">
-              <Label htmlFor="sv-value">Threshold Value</Label>
+              <Label htmlFor="sv-value">{t("thresholdValue")}</Label>
               {selectedSensorType === "boolean" ? (
                 <Select
                   value={booleanThresholdValue}
@@ -403,7 +409,7 @@ export function AlertRuleFormDialog({
           {currentThresholdType === "range" && (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="range-min">Min</Label>
+                <Label htmlFor="range-min">{t("min")}</Label>
                 <Input
                   id="range-min"
                   type="number"
@@ -417,7 +423,7 @@ export function AlertRuleFormDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="range-max">Max</Label>
+                <Label htmlFor="range-max">{t("max")}</Label>
                 <Input
                   id="range-max"
                   type="number"
@@ -435,7 +441,7 @@ export function AlertRuleFormDialog({
 
           {currentThresholdType === "no_data" && (
             <div className="space-y-2">
-              <Label htmlFor="nodata-timeout">No-Data Timeout (seconds)</Label>
+              <Label htmlFor="nodata-timeout">{t("noDataTimeout")}</Label>
               <Input
                 id="nodata-timeout"
                 type="number"
@@ -453,10 +459,12 @@ export function AlertRuleFormDialog({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <Label>Automated Actions</Label>
+                <Label>{t("automatedActions")}</Label>
                 <p className="text-xs text-muted-foreground">
-                  Optional commands sent when this alert triggers or resolves (
-                  {fields.length}/{MAX_ALERT_RULE_ACTIONS}).
+                  {t("automatedActionsHelp", {
+                    count: fields.length,
+                    max: MAX_ALERT_RULE_ACTIONS,
+                  })}
                 </p>
               </div>
               <Button
@@ -466,7 +474,7 @@ export function AlertRuleFormDialog({
                 onClick={() => {
                   if (isAtActionLimit) {
                     toast.error(
-                      `You can add up to ${MAX_ALERT_RULE_ACTIONS} automated actions per rule.`,
+                      t("tooManyActions", { max: MAX_ALERT_RULE_ACTIONS }),
                     );
                     return;
                   }
@@ -477,20 +485,22 @@ export function AlertRuleFormDialog({
                   });
                 }}
               >
-                Add Action
+                {t("addAction")}
               </Button>
             </div>
 
             {fields.length === 0 && (
               <Card className="border-dashed p-4 text-sm text-muted-foreground">
-                No automated actions configured.
+                {t("noActions")}
               </Card>
             )}
 
             {fields.map((field, index) => (
               <Card key={field.id} className="space-y-3 p-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">Action {index + 1}</p>
+                  <p className="text-sm font-medium">
+                    {t("actionLabel", { index: index + 1 })}
+                  </p>
                   <Button
                     type="button"
                     variant="ghost"
@@ -503,7 +513,7 @@ export function AlertRuleFormDialog({
 
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Target Writable Sensor</Label>
+                    <Label>{t("targetSensor")}</Label>
                     <Select
                       value={watchedActions?.[index]?.target_sensor_id ?? ""}
                       onValueChange={(value) =>
@@ -514,7 +524,7 @@ export function AlertRuleFormDialog({
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select sensor...">
+                        <SelectValue placeholder={t("selectSensor")}>
                           {sensorLabelById.get(
                             watchedActions?.[index]?.target_sensor_id ?? "",
                           ) || undefined}
@@ -532,7 +542,7 @@ export function AlertRuleFormDialog({
 
                   <div className="space-y-2">
                     <Label htmlFor={`trigger-value-${index}`}>
-                      Trigger Value
+                      {t("triggerValue")}
                     </Label>
                     <Input
                       id={`trigger-value-${index}`}
@@ -548,7 +558,7 @@ export function AlertRuleFormDialog({
 
                   <div className="space-y-2">
                     <Label htmlFor={`resolve-value-${index}`}>
-                      Resolve Value (Optional)
+                      {t("resolveValue")}
                     </Label>
                     <Input
                       id={`resolve-value-${index}`}
@@ -577,16 +587,16 @@ export function AlertRuleFormDialog({
                   setForm((f) => ({ ...f, is_active: e.target.checked }))
                 }
               />
-              <Label htmlFor="is-active">Rule is active</Label>
+              <Label htmlFor="is-active">{t("ruleIsActive")}</Label>
             </div>
           )}
 
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>
-              Cancel
+              {tCommon("cancel")}
             </DialogClose>
             <Button type="submit" disabled={creating || updating}>
-              {editTarget ? "Save Changes" : "Create Rule"}
+              {editTarget ? tCommon("saveChanges") : t("createRuleTitle")}
             </Button>
           </DialogFooter>
         </form>

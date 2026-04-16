@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { wsConnect, wsDisconnect } from "@/store/ws-slice";
@@ -22,7 +22,7 @@ function getPersistedTenantId(): string | null {
  * Verifies the session via BFF, loads orgs, connects WS, and redirects
  * to /login if unauthenticated. Shows a spinner while loading.
  */
-export function AuthGuard({ children }: { children: React.ReactNode }) {
+export function AuthGuard({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const authStatus = useAppSelector(selectAuthStatus);

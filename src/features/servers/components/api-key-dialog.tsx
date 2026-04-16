@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Trash2, Copy, KeyRound, Eye, EyeOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   useGetApiKeysQuery,
   useCreateApiKeyMutation,
@@ -35,6 +36,8 @@ export function ApiKeyDialog({
   open,
   onOpenChange,
 }: ApiKeyDialogProps) {
+  const t = useTranslations("servers");
+  const tCommon = useTranslations("common");
   const { data: allKeys, isLoading: keysLoading } = useGetApiKeysQuery();
   const [createApiKey, { isLoading: creating }] = useCreateApiKeyMutation();
   const [revokeApiKey, { isLoading: revoking }] = useRevokeApiKeyMutation();
@@ -53,11 +56,11 @@ export function ApiKeyDialog({
       const result = await createApiKey(server.id).unwrap();
       setRevealedSecret(result);
       setSecretVisible(false);
-      toast.success("API key created.");
+      toast.success(t("keyCreated"));
     } catch (err: unknown) {
       const msg =
         (err as { data?: { detail?: string } })?.data?.detail ??
-        "Failed to create API key. Please try again.";
+        tCommon("operationFailed");
       toast.error(msg);
     }
   }
@@ -65,25 +68,25 @@ export function ApiKeyDialog({
   async function handleRevoke(keyId: string) {
     if (
       !(await confirm({
-        title: "Revoke API key?",
-        description: `Revoke key ${keyId} for "${server.name}"? This cannot be undone.`,
-        confirmLabel: "Revoke",
+        title: t("revokeKeyTitle"),
+        description: t("revokeKeyDescription", { keyId, name: server.name }),
+        confirmLabel: t("revoke"),
         destructive: true,
       }))
     )
       return;
     try {
       await revokeApiKey({ serverId: server.id, keyId }).unwrap();
-      toast.success("API key revoked.");
+      toast.success(t("keyRevoked"));
     } catch {
-      toast.error("Revoke failed. Please try again.");
+      toast.error(t("revokeFailed"));
     }
   }
 
-  function copyToClipboard(value: string, label: string) {
+  function copyToClipboard(value: string, successMessage: string) {
     navigator.clipboard
       .writeText(value)
-      .then(() => toast.success(`${label} copied to clipboard.`));
+      .then(() => toast.success(successMessage));
   }
 
   return (
@@ -97,13 +100,17 @@ export function ApiKeyDialog({
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>API Keys — {server.name}</DialogTitle>
+            <DialogTitle>
+              {t("apiKeysTitle", { name: server.name })}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 overflow-y-auto max-h-[60vh]">
             {/* Key count / cap indicator */}
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Active keys</span>
+              <span className="text-sm text-muted-foreground">
+                {t("activeKeys")}
+              </span>
               <Badge variant={atCap ? "destructive" : "secondary"}>
                 {keysLoading ? "…" : serverKeys.length} /{" "}
                 {MAX_API_KEYS_PER_OPC_SERVER}
@@ -118,7 +125,7 @@ export function ApiKeyDialog({
               </div>
             ) : serverKeys.length === 0 ? (
               <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-                No API keys exist for this server yet.
+                {t("noApiKeys")}
               </div>
             ) : (
               <div className="space-y-2">
@@ -137,24 +144,24 @@ export function ApiKeyDialog({
                         className="shrink-0 text-red-600 hover:text-red-700 size-7"
                         onClick={() => handleRevoke(key.key_id)}
                         disabled={revoking}
-                        aria-label={`Revoke key ${key.key_id}`}
+                        aria-label={`${t("revoke")} ${key.key_id}`}
                       >
                         <Trash2 className="size-3.5" />
                       </Button>
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                       <span>
-                        Created&nbsp;
+                        {t("createdAt")}&nbsp;
                         <span className="text-foreground">
                           {formatDateTime24(key.created_at)}
                         </span>
                       </span>
                       <span>
-                        Last used&nbsp;
+                        {t("lastUsed")}&nbsp;
                         <span className="text-foreground">
                           {key.last_used_at
                             ? formatDateTime24(key.last_used_at)
-                            : "Never"}
+                            : t("never")}
                         </span>
                       </span>
                     </div>
@@ -167,14 +174,13 @@ export function ApiKeyDialog({
             {revealedSecret && (
               <div className="rounded-lg border border-yellow-400/50 bg-yellow-50 dark:bg-yellow-950/20 p-4 space-y-3">
                 <p className="text-xs font-medium text-yellow-700 dark:text-yellow-400">
-                  ⚠ Copy both values now — the Secret Key will not be shown
-                  again.
+                  {t("keyWarning")}
                 </p>
 
                 {/* Key ID row */}
                 <div className="space-y-1">
                   <span className="text-xs text-muted-foreground font-medium">
-                    Key ID
+                    {t("keyId")}
                   </span>
                   <div className="flex items-center gap-2">
                     <code className="flex-1 rounded bg-background border px-2 py-1.5 text-xs font-mono break-all">
@@ -184,9 +190,9 @@ export function ApiKeyDialog({
                       variant="outline"
                       size="icon-sm"
                       onClick={() =>
-                        copyToClipboard(revealedSecret.key_id, "Key ID")
+                        copyToClipboard(revealedSecret.key_id, t("keyIdCopied"))
                       }
-                      aria-label="Copy Key ID"
+                      aria-label={t("copyKeyId")}
                     >
                       <Copy className="size-3.5" />
                     </Button>
@@ -196,7 +202,7 @@ export function ApiKeyDialog({
                 {/* Secret Key row */}
                 <div className="space-y-1">
                   <span className="text-xs text-muted-foreground font-medium">
-                    Secret Key
+                    {t("secretKey")}
                   </span>
                   <div className="flex items-center gap-2">
                     <code className="flex-1 rounded bg-background border px-2 py-1.5 text-xs font-mono break-all">
@@ -209,7 +215,7 @@ export function ApiKeyDialog({
                         variant="outline"
                         size="icon-sm"
                         onClick={() => setSecretVisible((v) => !v)}
-                        aria-label={secretVisible ? "Hide key" : "Show key"}
+                        aria-label={secretVisible ? t("hideKey") : t("showKey")}
                       >
                         {secretVisible ? (
                           <EyeOff className="size-3.5" />
@@ -223,10 +229,10 @@ export function ApiKeyDialog({
                         onClick={() =>
                           copyToClipboard(
                             revealedSecret.secret_key,
-                            "Secret Key",
+                            t("secretKeyCopied"),
                           )
                         }
-                        aria-label="Copy Secret Key"
+                        aria-label={t("copySecretKey")}
                       >
                         <Copy className="size-3.5" />
                       </Button>
@@ -239,19 +245,19 @@ export function ApiKeyDialog({
 
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>
-              Close
+              {tCommon("close")}
             </DialogClose>
             <Button
               onClick={handleCreate}
               disabled={creating || revoking || atCap}
               title={
                 atCap
-                  ? `Maximum of ${MAX_API_KEYS_PER_OPC_SERVER} keys reached`
+                  ? t("maxKeysReached", { max: MAX_API_KEYS_PER_OPC_SERVER })
                   : undefined
               }
             >
               <KeyRound className="mr-1.5 size-3.5" />
-              Create Key
+              {t("createKey")}
             </Button>
           </DialogFooter>
         </DialogContent>

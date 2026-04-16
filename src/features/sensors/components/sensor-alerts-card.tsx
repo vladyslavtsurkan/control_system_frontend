@@ -1,6 +1,7 @@
 "use client";
 
 import { BellRing, CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -75,21 +76,21 @@ export function SensorAlertsCard({
   onNext,
   onAcknowledge,
 }: SensorAlertsCardProps) {
+  const t = useTranslations("sensors");
   return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-3">
         <div>
           <CardTitle className="flex items-center gap-2 text-base">
             <BellRing className="size-4" />
-            Sensor Alerts
+            {t("detail.sensorAlerts")}
           </CardTitle>
           <CardDescription>
-            Loaded from REST on page entry and enriched with live WebSocket
-            updates.
+            {t("detail.sensorAlertsDescription")}
           </CardDescription>
         </div>
         <Button type="button" variant="outline" size="sm" onClick={onRefresh}>
-          Refresh
+          {t("detail.refresh")}
         </Button>
       </CardHeader>
       <CardContent className="space-y-4 p-4">
@@ -97,7 +98,7 @@ export function SensorAlertsCard({
           <ListResultsSummary
             shownCount={rows.length}
             totalCount={totalCount}
-            noun="alerts"
+            noun={t("noun")}
           />
           <ListPageSizeSelect
             id="sensor-alerts-page-size"
@@ -115,18 +116,20 @@ export function SensorAlertsCard({
           </div>
         ) : rows.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No alerts for this sensor yet.
+            {t("detail.noAlerts")}
           </p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Severity</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Ack</TableHead>
-                <TableHead>Message</TableHead>
-                <TableHead className="text-right">Updated</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("detail.severity")}</TableHead>
+                <TableHead>{t("detail.status")}</TableHead>
+                <TableHead>{t("detail.ack")}</TableHead>
+                <TableHead>{t("detail.message")}</TableHead>
+                <TableHead className="text-right">
+                  {t("detail.updated")}
+                </TableHead>
+                <TableHead className="text-right">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -150,7 +153,7 @@ export function SensorAlertsCard({
                           {row.severity}
                         </Badge>
                       ) : (
-                        <Badge variant="outline">unknown</Badge>
+                        <Badge variant="outline">{t("detail.unknown")}</Badge>
                       )}
                     </TableCell>
                     <TableCell>
@@ -159,17 +162,21 @@ export function SensorAlertsCard({
                           row.status === "active" ? "destructive" : "outline"
                         }
                       >
-                        {row.status}
+                        {row.status === "active"
+                          ? t("detail.active")
+                          : t("detail.resolved")}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       {row.isAcknowledged === null ? (
-                        <Badge variant="outline">live</Badge>
+                        <Badge variant="outline">{t("detail.liveTag")}</Badge>
                       ) : (
                         <Badge
                           variant={row.isAcknowledged ? "secondary" : "outline"}
                         >
-                          {row.isAcknowledged ? "acknowledged" : "pending"}
+                          {row.isAcknowledged
+                            ? t("detail.acknowledged")
+                            : t("detail.pending")}
                         </Badge>
                       )}
                     </TableCell>
@@ -191,11 +198,11 @@ export function SensorAlertsCard({
                           onClick={() => onAcknowledge(row.restAlertId!)}
                         >
                           <CheckCircle2 className="mr-1.5 size-3.5" />
-                          Acknowledge
+                          {t("detail.acknowledge")}
                         </Button>
                       ) : (
                         <span className="text-xs text-muted-foreground">
-                          {row.source === "live" ? "Live-only" : "-"}
+                          {row.source === "live" ? t("detail.liveOnly") : "-"}
                         </span>
                       )}
                     </TableCell>

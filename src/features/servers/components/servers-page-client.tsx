@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { useGetServersQuery, useDeleteServerMutation } from "@/store/api";
 import { ListPaginationFooter } from "@/components/ui/list-pagination";
 import { ServerFormDialog } from "@/features/servers/components/server-form-dialog";
@@ -30,6 +31,8 @@ export default function ServersPageClient({
   initialPage,
   initialPerPage,
 }: ServersPageClientProps) {
+  const t = useTranslations("servers");
+  const tCommon = useTranslations("common");
   const pagination = useOffsetLimitPagination({
     initialLimit: initialPerPage,
     initialPage,
@@ -71,7 +74,7 @@ export default function ServersPageClient({
   async function handleDelete(id: string, name: string) {
     if (
       !(await confirm({
-        description: `Delete server "${name}"?`,
+        description: t("deleteServer", { name }),
         destructive: true,
       }))
     ) {
@@ -80,9 +83,9 @@ export default function ServersPageClient({
 
     try {
       await deleteServer(id).unwrap();
-      toast.success("Server deleted.");
+      toast.success(t("serverDeleted"));
     } catch {
-      toast.error("Delete failed.");
+      toast.error(tCommon("deleteFailed"));
     }
   }
 

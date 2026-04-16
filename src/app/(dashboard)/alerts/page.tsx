@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import AlertsPageClient from "@/features/alerts/components/alerts-page-client";
 import {
   getFirstSearchParamValue,
@@ -19,6 +20,7 @@ interface AlertsPageProps {
 
 export default async function AlertsPage({ searchParams }: AlertsPageProps) {
   const resolvedSearchParams = await searchParams;
+  const t = await getTranslations("alerts");
   const initialPage = parsePositiveIntParam(
     getFirstSearchParamValue(resolvedSearchParams.page),
     1,
@@ -32,10 +34,8 @@ export default async function AlertsPage({ searchParams }: AlertsPageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Alert Rules</h1>
-        <p className="text-sm text-muted-foreground">
-          Configure threshold-based alerts for your sensors.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
       <AlertsPageClient
         initialPage={initialPage}

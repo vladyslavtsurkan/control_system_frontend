@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import AuditLogsPageClient from "@/features/audit-logs/components/audit-logs-page-client";
 import {
   getFirstSearchParamValue,
@@ -21,6 +22,7 @@ export default async function AuditLogsPage({
   searchParams,
 }: AuditLogsPageProps) {
   const resolvedSearchParams = await searchParams;
+  const t = await getTranslations("auditLogs");
   const initialPage = parsePositiveIntParam(
     getFirstSearchParamValue(resolvedSearchParams.page),
     1,
@@ -34,10 +36,8 @@ export default async function AuditLogsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Audit Log</h1>
-        <p className="text-sm text-muted-foreground">
-          A record of every action taken within this organization.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
       <AuditLogsPageClient
         initialPage={initialPage}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ListResultsSummary } from "@/components/ui/list-pagination";
 
 interface SensorsListControlsProps {
@@ -11,11 +12,12 @@ export function SensorsListControls({
   shownCount,
   totalCount,
 }: SensorsListControlsProps) {
+  const t = useTranslations("sensors");
   return (
     <ListResultsSummary
       shownCount={shownCount}
       totalCount={totalCount}
-      noun="sensors"
+      noun={t("noun")}
     />
   );
 }

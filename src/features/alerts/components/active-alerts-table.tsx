@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { clearLiveAlerts } from "@/store/ws-slice";
 import { selectLiveAlerts } from "@/store/selectors";
@@ -31,6 +32,8 @@ const severityVariant: Record<
 };
 
 export function ActiveAlertsTable() {
+  const t = useTranslations("dashboard");
+  const tAlerts = useTranslations("alerts");
   const dispatch = useAppDispatch();
   const alerts = useAppSelector(selectLiveAlerts);
   const { data: sensorsData } = useGetSensorsQuery({ limit: 100, offset: 0 });
@@ -67,7 +70,7 @@ export function ActiveAlertsTable() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Live Alerts</CardTitle>
+        <CardTitle className="text-base">{t("liveAlerts")}</CardTitle>
         {rows.length > 0 && (
           <Button
             variant="ghost"
@@ -75,24 +78,24 @@ export function ActiveAlertsTable() {
             onClick={() => dispatch(clearLiveAlerts())}
           >
             <Trash2 className="mr-1 size-3" />
-            Clear
+            {t("clearAlerts")}
           </Button>
         )}
       </CardHeader>
       <CardContent className="p-0">
         {rows.length === 0 ? (
           <p className="px-6 py-8 text-center text-sm text-muted-foreground">
-            No active alerts. All systems nominal.
+            {t("noAlerts")}
           </p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Severity</TableHead>
-                <TableHead>Sensor</TableHead>
-                <TableHead>Message</TableHead>
-                <TableHead>State</TableHead>
-                <TableHead className="text-right">Last Change</TableHead>
+                <TableHead>{t("severity")}</TableHead>
+                <TableHead>{t("sensor")}</TableHead>
+                <TableHead>{t("message")}</TableHead>
+                <TableHead>{t("state")}</TableHead>
+                <TableHead className="text-right">{t("lastChange")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -105,7 +108,7 @@ export function ActiveAlertsTable() {
                 >
                   <TableCell>
                     <Badge variant={severityVariant[alert.severity]}>
-                      {alert.severity}
+                      {tAlerts(`severities.${alert.severity}`)}
                     </Badge>
                   </TableCell>
                   <TableCell className="font-medium">
@@ -120,7 +123,7 @@ export function ActiveAlertsTable() {
                         alert.status === "resolved" ? "outline" : "destructive"
                       }
                     >
-                      {alert.status}
+                      {tAlerts(`statuses.${alert.status}`)}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right text-xs text-muted-foreground">

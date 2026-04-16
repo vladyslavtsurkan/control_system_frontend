@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { useCreateSensorMutation, useUpdateSensorMutation } from "@/store/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +67,8 @@ export function SensorFormDialog({
   servers,
   defaultServerId = "",
 }: SensorFormDialogProps) {
+  const t = useTranslations("sensors");
+  const tCommon = useTranslations("common");
   const [createSensor, { isLoading: creating }] = useCreateSensorMutation();
   const [updateSensor, { isLoading: updating }] = useUpdateSensorMutation();
   const [form, setForm] = useState<SensorFormState>(() =>
@@ -85,7 +88,7 @@ export function SensorFormDialog({
   const selectedServerName =
     servers.find((srv) => srv.id === form.opc_server_id)?.name ?? "";
 
-  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
       if (editTarget) {
@@ -98,7 +101,7 @@ export function SensorFormDialog({
           units: form.units || null,
           is_writable: form.is_writable,
         }).unwrap();
-        toast.success("Sensor updated.");
+        toast.success(t("sensorUpdated"));
       } else {
         const payload: SensorCreateRequest = {
           opc_server_id: form.opc_server_id,
@@ -110,11 +113,11 @@ export function SensorFormDialog({
           is_writable: form.is_writable,
         };
         await createSensor(payload).unwrap();
-        toast.success("Sensor created.");
+        toast.success(t("sensorCreated"));
       }
       onOpenChange(false);
     } catch {
-      toast.error("Operation failed. Please try again.");
+      toast.error(tCommon("operationFailed"));
     }
   }
 
@@ -122,12 +125,14 @@ export function SensorFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editTarget ? "Edit Sensor" : "Add Sensor"}</DialogTitle>
+          <DialogTitle>
+            {editTarget ? t("editSensor") : t("addSensor")}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {!editTarget && (
             <div className="space-y-2">
-              <Label>OPC UA Server</Label>
+              <Label>{t("opcUaServer")}</Label>
               <Select
                 value={form.opc_server_id}
                 onValueChange={(v) =>
@@ -136,7 +141,7 @@ export function SensorFormDialog({
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select OPC UA server…">
+                  <SelectValue placeholder={t("selectServer")}>
                     {selectedServerName || undefined}
                   </SelectValue>
                 </SelectTrigger>
@@ -152,7 +157,7 @@ export function SensorFormDialog({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="sensor-name">Name</Label>
+            <Label htmlFor="sensor-name">{t("name")}</Label>
             <Input
               id="sensor-name"
               required
@@ -163,7 +168,7 @@ export function SensorFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="sensor-node-id">Node ID</Label>
+            <Label htmlFor="sensor-node-id">{t("nodeId")}</Label>
             <Input
               id="sensor-node-id"
               required
@@ -177,7 +182,7 @@ export function SensorFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Data Type</Label>
+            <Label>{t("dataType")}</Label>
             <Select
               value={form.data_type}
               onValueChange={(v) =>
@@ -185,30 +190,30 @@ export function SensorFormDialog({
               }
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue>{t(form.data_type)}</SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="numeric">Numeric</SelectItem>
-                <SelectItem value="boolean">Boolean</SelectItem>
-                <SelectItem value="string">String</SelectItem>
+                <SelectItem value="numeric">{t("numeric")}</SelectItem>
+                <SelectItem value="boolean">{t("boolean")}</SelectItem>
+                <SelectItem value="string">{t("string")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="sensor-desc">Description</Label>
+              <Label htmlFor="sensor-desc">{t("description")}</Label>
               <Input
                 id="sensor-desc"
                 value={form.description}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, description: e.target.value }))
                 }
-                placeholder="Optional"
+                placeholder={tCommon("optional")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sensor-units">Units</Label>
+              <Label htmlFor="sensor-units">{t("units")}</Label>
               <Input
                 id="sensor-units"
                 value={form.units}
@@ -222,9 +227,9 @@ export function SensorFormDialog({
 
           <div className="flex flex-row items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <Label htmlFor="sensor-is-writable">Writable Node</Label>
+              <Label htmlFor="sensor-is-writable">{t("writableNode")}</Label>
               <p className="text-sm text-muted-foreground">
-                Allow control commands to be sent to this sensor
+                {t("writableNodeHelp")}
               </p>
             </div>
             <Switch
@@ -238,7 +243,7 @@ export function SensorFormDialog({
 
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>
-              Cancel
+              {tCommon("cancel")}
             </DialogClose>
             <Button
               type="submit"
@@ -246,7 +251,7 @@ export function SensorFormDialog({
                 creating || updating || (!editTarget && !form.opc_server_id)
               }
             >
-              {editTarget ? "Save Changes" : "Create Sensor"}
+              {editTarget ? tCommon("saveChanges") : t("createSensor")}
             </Button>
           </DialogFooter>
         </form>

@@ -67,14 +67,17 @@ export function formatDate24(
 /**
  * Returns a human-friendly relative string such as "2 hours ago" or "in 5 minutes".
  * Uses the browser's built-in Intl.RelativeTimeFormat — no extra dependency needed.
+ * Pass `locale` to match the app's current locale (e.g. "uk", "en").
  */
-export function formatRelativeTime(value: DateInput): string {
+export function formatRelativeTime(value: DateInput, locale?: string): string {
   const date = toValidDate(value);
   if (!date) return "";
 
   const diffSec = Math.round((date.getTime() - Date.now()) / 1000);
   const absSec = Math.abs(diffSec);
-  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+  const rtf = new Intl.RelativeTimeFormat(locale ?? undefined, {
+    numeric: "auto",
+  });
 
   if (absSec < 60) return rtf.format(diffSec, "second");
   const diffMin = Math.round(diffSec / 60);

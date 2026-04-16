@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -39,6 +40,8 @@ export function OrganizationsTable({
   onDelete,
   onLeave,
 }: OrganizationsTableProps) {
+  const t = useTranslations("organizations");
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -54,10 +57,10 @@ export function OrganizationsTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{t("name")}</TableHead>
+            <TableHead>{t("role")}</TableHead>
+            <TableHead>{t("created")}</TableHead>
+            <TableHead className="text-right">{t("actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -67,8 +70,7 @@ export function OrganizationsTable({
                 colSpan={4}
                 className="py-10 text-center text-sm text-muted-foreground"
               >
-                No organizations found. Click &quot;New Organization&quot; to
-                create one.
+                {t("noOrganizations")}
               </TableCell>
             </TableRow>
           ) : (
@@ -82,7 +84,7 @@ export function OrganizationsTable({
                     {org.name}
                     {org.id === activeOrgId && (
                       <Badge variant="outline" className="text-xs">
-                        active
+                        {t("active")}
                       </Badge>
                     )}
                   </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   useDeleteOrganizationMutation,
   useGetOrganizationsQuery,
@@ -35,6 +36,8 @@ export default function OrganizationsPageClient({
   initialPage,
   initialPerPage,
 }: OrganizationsPageClientProps) {
+  const t = useTranslations("organizations");
+  const tCommon = useTranslations("common");
   const activeOrgId = useAppSelector(selectActiveOrgId);
   const pagination = useOffsetLimitPagination({
     initialLimit: initialPerPage,
@@ -81,7 +84,7 @@ export default function OrganizationsPageClient({
   async function handleDelete(org: OrganizationWithRole) {
     if (
       !(await confirm({
-        description: `Delete "${org.name}"? This cannot be undone.`,
+        description: t("deleteOrg", { name: org.name }),
         destructive: true,
       }))
     ) {
@@ -90,18 +93,18 @@ export default function OrganizationsPageClient({
 
     try {
       await deleteOrg(org.id).unwrap();
-      toast.success("Organization deleted.");
+      toast.success(t("orgDeleted"));
     } catch {
-      toast.error("Delete failed.");
+      toast.error(tCommon("deleteFailed"));
     }
   }
 
   async function handleLeave(org: OrganizationWithRole) {
     if (
       !(await confirm({
-        title: "Leave organization?",
-        description: `Leave "${org.name}"?`,
-        confirmLabel: "Leave",
+        title: t("leaveOrg"),
+        description: t("leaveOrgDescription", { name: org.name }),
+        confirmLabel: t("leave"),
       }))
     ) {
       return;
@@ -109,9 +112,9 @@ export default function OrganizationsPageClient({
 
     try {
       await leaveOrg(org.id).unwrap();
-      toast.success(`Left "${org.name}".`);
+      toast.success(t("leftOrg", { name: org.name }));
     } catch {
-      toast.error("Failed to leave organization.");
+      toast.error(t("failedToLeave"));
     }
   }
 

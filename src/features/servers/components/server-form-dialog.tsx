@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { useCreateServerMutation, useUpdateServerMutation } from "@/store/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,11 +28,6 @@ import type {
   SecurityPolicy,
   CreateOpcServerRequest,
 } from "@/features/servers/types";
-
-const AUTH_METHODS: { value: AuthMethod; label: string }[] = [
-  { value: "anonymous", label: "Anonymous" },
-  { value: "username", label: "Username / Password" },
-];
 
 const SECURITY_POLICIES: { value: SecurityPolicy; label: string }[] = [
   { value: "None", label: "None (no encryption)" },
@@ -73,6 +69,12 @@ export function ServerFormDialog({
   onOpenChange,
   editTarget,
 }: ServerFormDialogProps) {
+  const t = useTranslations("servers");
+  const tCommon = useTranslations("common");
+  const AUTH_METHODS: { value: AuthMethod; label: string }[] = [
+    { value: "anonymous", label: t("authMethod.anonymous") },
+    { value: "username", label: t("authMethod.username") },
+  ];
   const [createServer, { isLoading: creating }] = useCreateServerMutation();
   const [updateServer, { isLoading: updating }] = useUpdateServerMutation();
   const [form, setForm] = useState<ServerFormState>(() =>
@@ -89,7 +91,7 @@ export function ServerFormDialog({
       : emptyForm,
   );
 
-  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
       if (editTarget) {
@@ -103,7 +105,7 @@ export function ServerFormDialog({
           username: form.username || null,
           password: form.password || null,
         }).unwrap();
-        toast.success("Server updated.");
+        toast.success(t("serverUpdated"));
       } else {
         const payload: CreateOpcServerRequest = {
           name: form.name,
@@ -115,11 +117,11 @@ export function ServerFormDialog({
           password: form.password || null,
         };
         await createServer(payload).unwrap();
-        toast.success("Server created.");
+        toast.success(t("serverCreated"));
       }
       onOpenChange(false);
     } catch {
-      toast.error("Operation failed. Please try again.");
+      toast.error(tCommon("operationFailed"));
     }
   }
 
@@ -136,12 +138,12 @@ export function ServerFormDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {editTarget ? "Edit OPC UA Server" : "Add OPC UA Server"}
+            {editTarget ? t("editServerTitle") : t("addServerTitle")}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="server-name">Name</Label>
+            <Label htmlFor="server-name">{t("name")}</Label>
             <Input
               id="server-name"
               required
@@ -151,18 +153,18 @@ export function ServerFormDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="server-desc">Description</Label>
+            <Label htmlFor="server-desc">{t("description")}</Label>
             <Input
               id="server-desc"
               value={form.description}
               onChange={(e) =>
                 setForm((f) => ({ ...f, description: e.target.value }))
               }
-              placeholder="Optional description"
+              placeholder={tCommon("optional")}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="endpoint-url">Endpoint URL</Label>
+            <Label htmlFor="endpoint-url">{t("endpointUrl")}</Label>
             <Input
               id="endpoint-url"
               required
@@ -173,7 +175,7 @@ export function ServerFormDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Security Policy</Label>
+              <Label>{t("securityPolicy")}</Label>
               <Select
                 value={form.security_policy}
                 onValueChange={(v) =>
@@ -184,7 +186,7 @@ export function ServerFormDialog({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select security policy...">
+                  <SelectValue placeholder={t("securityPolicy")}>
                     {selectedSecurityPolicyLabel || undefined}
                   </SelectValue>
                 </SelectTrigger>
@@ -198,7 +200,7 @@ export function ServerFormDialog({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Authentication</Label>
+              <Label>{t("authentication")}</Label>
               <Select
                 value={form.authentication_method}
                 onValueChange={(v) =>
@@ -209,7 +211,7 @@ export function ServerFormDialog({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select authentication...">
+                  <SelectValue placeholder={t("authentication")}>
                     {selectedAuthMethodLabel || undefined}
                   </SelectValue>
                 </SelectTrigger>
@@ -226,7 +228,7 @@ export function ServerFormDialog({
           {showCredentials && (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="opc-username">Username</Label>
+                <Label htmlFor="opc-username">{t("username")}</Label>
                 <Input
                   id="opc-username"
                   autoComplete="off"
@@ -239,7 +241,7 @@ export function ServerFormDialog({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="opc-password">
-                  Password{editTarget ? " (leave blank to keep)" : ""}
+                  {editTarget ? t("passwordKeep") : t("password")}
                 </Label>
                 <Input
                   id="opc-password"
@@ -256,10 +258,10 @@ export function ServerFormDialog({
           )}
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>
-              Cancel
+              {tCommon("cancel")}
             </DialogClose>
             <Button type="submit" disabled={creating || updating}>
-              {editTarget ? "Save Changes" : "Create Server"}
+              {editTarget ? tCommon("saveChanges") : t("createServer")}
             </Button>
           </DialogFooter>
         </form>

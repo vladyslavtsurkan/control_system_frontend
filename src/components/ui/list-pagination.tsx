@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -25,14 +26,15 @@ export function ListPageSizeSelect({
   value,
   options,
   onChange,
-  label = "Rows",
+  label,
   triggerClassName = "h-8 w-20",
   wrapperClassName = "flex items-center gap-2",
 }: ListPageSizeSelectProps) {
+  const t = useTranslations("pagination");
   return (
     <div className={wrapperClassName}>
       <Label htmlFor={id} className="text-xs text-muted-foreground">
-        {label}
+        {label ?? t("rows")}
       </Label>
       <Select
         value={String(value)}
@@ -64,9 +66,10 @@ export function ListResultsSummary({
   totalCount,
   noun,
 }: ListResultsSummaryProps) {
+  const t = useTranslations("pagination");
   return (
     <p className="text-sm text-muted-foreground">
-      Showing {shownCount} of {totalCount} {noun}
+      {t("showing", { shown: shownCount, total: totalCount, noun })}
     </p>
   );
 }
@@ -88,10 +91,11 @@ export function ListPaginationFooter({
   onPrev,
   onNext,
 }: ListPaginationFooterProps) {
+  const t = useTranslations("pagination");
   return (
     <div className="flex items-center justify-between gap-2">
       <p className="text-sm text-muted-foreground">
-        Page {currentPage} of {totalPages}
+        {t("page", { current: currentPage, total: totalPages })}
       </p>
       <div className="flex items-center gap-2">
         <Button
@@ -100,7 +104,7 @@ export function ListPaginationFooter({
           disabled={!canGoPrev}
           onClick={onPrev}
         >
-          Previous
+          {t("previous")}
         </Button>
         <Button
           variant="outline"
@@ -108,7 +112,7 @@ export function ListPaginationFooter({
           disabled={!canGoNext}
           onClick={onNext}
         >
-          Next
+          {t("next")}
         </Button>
       </div>
     </div>

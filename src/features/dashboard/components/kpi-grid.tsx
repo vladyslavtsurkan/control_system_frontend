@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { useTranslations } from "next-intl";
 import { useGetSensorsQuery } from "@/store/api";
 import { KpiCard } from "./kpi-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,6 +45,7 @@ const SensorKpiCard = memo(function SensorKpiCard({
 });
 
 export function KpiGrid() {
+  const t = useTranslations("dashboard");
   const { latestBySensor, readingsBySensor } = useDashboardTelemetry();
 
   const { data: sensorsData, isLoading } = useGetSensorsQuery({
@@ -78,7 +80,7 @@ export function KpiGrid() {
       ))}
       {sensors.length === 0 && (
         <p className="col-span-full text-sm text-muted-foreground">
-          No sensors found. Add an OPC UA Server and sensors first.
+          {t("noSensors")}
         </p>
       )}
     </div>

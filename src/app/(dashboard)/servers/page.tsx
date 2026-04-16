@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import ServersPageClient from "@/features/servers/components/servers-page-client";
 import {
   getFirstSearchParamValue,
@@ -19,6 +20,7 @@ interface ServersPageProps {
 
 export default async function ServersPage({ searchParams }: ServersPageProps) {
   const resolvedSearchParams = await searchParams;
+  const t = await getTranslations("servers");
   const initialPage = parsePositiveIntParam(
     getFirstSearchParamValue(resolvedSearchParams.page),
     1,
@@ -32,12 +34,8 @@ export default async function ServersPage({ searchParams }: ServersPageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          OPC UA Servers
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Manage your industrial OPC UA server connections.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
       <ServersPageClient
         initialPage={initialPage}

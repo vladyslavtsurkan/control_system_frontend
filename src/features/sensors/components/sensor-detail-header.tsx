@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft, Pencil, Send, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +29,7 @@ export function SensorDetailHeader({
   onDelete,
   onControl,
 }: SensorDetailHeaderProps) {
+  const t = useTranslations("sensors");
   return (
     <div className="flex items-center gap-3">
       <Link
@@ -41,7 +43,7 @@ export function SensorDetailHeader({
           {sensor?.name ?? "Sensor"}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Node ID:{" "}
+          {t("nodeIdLabel")}{" "}
           <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">
             {sensor?.node_id ?? "-"}
           </code>
@@ -74,7 +76,7 @@ export function SensorDetailHeader({
             >
               <Send className="size-4" />
             </TooltipTrigger>
-            <TooltipContent>Write value</TooltipContent>
+            <TooltipContent>{t("detail.writeValueTooltip")}</TooltipContent>
           </Tooltip>
         )}
         {canManage && (

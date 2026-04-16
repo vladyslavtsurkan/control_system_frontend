@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,13 +66,15 @@ export function SensorReadingsFiltersCard({
   onEndTimeChange,
   onBucketIntervalChange,
 }: SensorReadingsFiltersCardProps) {
+  const t = useTranslations("sensors");
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Readings Filters</CardTitle>
+        <CardTitle className="text-base">
+          {t("detail.readingsFilters")}
+        </CardTitle>
         <CardDescription>
-          Use presets for speed or pick custom local dates. Leave end time empty
-          for live mode. Maximum window is {maxWindowHours} hours.
+          {t("detail.readingsFiltersDescription", { maxWindowHours })}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -83,15 +86,19 @@ export function SensorReadingsFiltersCard({
             }
           >
             <SelectTrigger className="h-8 w-40">
-              <SelectValue />
+              <SelectValue>
+                {activePreset === "custom"
+                  ? t("detail.custom")
+                  : t(`detail.rangePresets.${activePreset}`)}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {SENSOR_RANGE_PRESETS.map((preset) => (
                 <SelectItem key={preset.key} value={preset.key}>
-                  {preset.label}
+                  {t(`detail.rangePresets.${preset.key}`)}
                 </SelectItem>
               ))}
-              <SelectItem value="custom">Custom</SelectItem>
+              <SelectItem value="custom">{t("detail.custom")}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -101,7 +108,7 @@ export function SensorReadingsFiltersCard({
             className="h-8 px-3 text-xs"
             onClick={onLiveMode}
           >
-            Live
+            {t("detail.liveMode")}
           </Button>
 
           <Button
@@ -110,7 +117,7 @@ export function SensorReadingsFiltersCard({
             className="h-8 px-3 text-xs"
             onClick={onUseNowAsEndTime}
           >
-            End = now
+            {t("detail.endNow")}
           </Button>
 
           <Button
@@ -119,13 +126,13 @@ export function SensorReadingsFiltersCard({
             className="h-8 px-2 text-xs"
             onClick={onClear}
           >
-            Clear
+            {t("detail.clear")}
           </Button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="start-time">Start time (optional)</Label>
+            <Label htmlFor="start-time">{t("detail.startTime")}</Label>
             <Input
               id="start-time"
               type="datetime-local"
@@ -134,7 +141,7 @@ export function SensorReadingsFiltersCard({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="end-time">End time (optional)</Label>
+            <Label htmlFor="end-time">{t("detail.endTime")}</Label>
             <Input
               id="end-time"
               type="datetime-local"
@@ -143,7 +150,9 @@ export function SensorReadingsFiltersCard({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="bucket-interval">Bucket interval</Label>
+            <Label htmlFor="bucket-interval">
+              {t("detail.bucketInterval")}
+            </Label>
             <Select
               value={bucketInterval}
               onValueChange={(value) =>
@@ -164,9 +173,7 @@ export function SensorReadingsFiltersCard({
           </div>
         </div>
 
-        <p className="text-xs text-muted-foreground">
-          Display/edit uses local time; requests are sent as UTC ISO.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("detail.utcNote")}</p>
 
         {rangeError ? (
           <p className="text-sm text-red-600">{rangeError}</p>

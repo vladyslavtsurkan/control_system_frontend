@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import SensorsPageClient from "@/features/sensors/components/sensors-page-client";
 import {
   getFirstSearchParamValue,
@@ -19,6 +20,7 @@ interface SensorsPageProps {
 
 export default async function SensorsPage({ searchParams }: SensorsPageProps) {
   const resolvedSearchParams = await searchParams;
+  const t = await getTranslations("sensors");
   const initialPage = parsePositiveIntParam(
     getFirstSearchParamValue(resolvedSearchParams.page),
     1,
@@ -34,10 +36,8 @@ export default async function SensorsPage({ searchParams }: SensorsPageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Sensors</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage OPC UA sensor nodes and their metadata.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
       <SensorsPageClient
         initialPage={initialPage}

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   useAddOrganizationMemberMutation,
   useRemoveOrganizationMemberMutation,
@@ -60,6 +61,8 @@ interface MembersDialogProps {
 }
 
 export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
+  const t = useTranslations("organizations");
+  const tCommon = useTranslations("common");
   const { data, isLoading } = useGetOrganizationMembersQuery(org.id, {
     skip: !open,
   });
@@ -73,33 +76,33 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
   const isOwner = org.role === "owner";
   const isAdminOrOwner = org.role === "owner" || org.role === "admin";
 
-  async function handleAdd(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleAdd(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     const trimmed = addUserId.trim();
     if (!trimmed) return;
     try {
       await addMember({ orgId: org.id, userId: trimmed }).unwrap();
       setAddUserId("");
-      toast.success("Member added.");
+      toast.success(t("memberAdded"));
     } catch {
-      toast.error("Failed to add member. Check that the user ID is correct.");
+      toast.error(t("memberAddFailed"));
     }
   }
 
   async function handleRemove(userId: string, email: string) {
     if (
       !(await confirm({
-        description: `Remove "${email}" from ${org.name}?`,
-        confirmLabel: "Remove",
+        description: t("removeConfirm", { email, org: org.name }),
+        confirmLabel: t("remove"),
         destructive: true,
       }))
     )
       return;
     try {
       await removeMember({ orgId: org.id, userId }).unwrap();
-      toast.success(`Removed ${email}.`);
+      toast.success(t("memberRemoved", { email }));
     } catch {
-      toast.error("Failed to remove member.");
+      toast.error(t("memberRemoveFailed"));
     }
   }
 
@@ -110,18 +113,21 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
   ) {
     if (role === "owner") {
       const confirmed = await confirm({
-        title: "Transfer ownership",
-        description: `Are you sure you want to transfer ownership of "${org.name}" to ${memberEmail}? You will lose your owner privileges.`,
-        confirmLabel: "Transfer",
+        title: t("transferOwnership"),
+        description: t("transferOwnershipDescription", {
+          name: org.name,
+          email: memberEmail,
+        }),
+        confirmLabel: t("transfer"),
         destructive: true,
       });
       if (!confirmed) return;
     }
     try {
       await changeRole({ orgId: org.id, userId, role }).unwrap();
-      toast.success("Role updated.");
+      toast.success(t("roleUpdated"));
     } catch {
-      toast.error("Failed to change role.");
+      toast.error(t("roleUpdateFailed"));
     }
   }
 
@@ -130,14 +136,14 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Members — {org.name}</DialogTitle>
+            <DialogTitle>{t("membersTitle", { name: org.name })}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 overflow-y-auto max-h-[60vh]">
             {isAdminOrOwner && (
               <form onSubmit={handleAdd} className="flex gap-2">
                 <Input
                   className="flex-1 font-mono text-xs"
-                  placeholder="Paste user UUID to add…"
+                  placeholder={t("addMemberPlaceholder")}
                   value={addUserId}
                   onChange={(e) => setAddUserId(e.target.value)}
                 />
@@ -147,7 +153,7 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
                   disabled={adding || !addUserId.trim()}
                 >
                   <UserPlus className="mr-1.5 size-3.5" />
-                  Add
+                  {t("add")}
                 </Button>
               </form>
             )}
@@ -159,14 +165,14 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
               </div>
             ) : members.length === 0 ? (
               <p className="py-6 text-center text-sm text-muted-foreground">
-                No members found.
+                {t("noMembers")}
               </p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name / Email</TableHead>
-                    <TableHead>Role</TableHead>
+                    <TableHead>{t("nameEmail")}</TableHead>
+                    <TableHead>{t("role")}</TableHead>
                     {isAdminOrOwner && <TableHead className="w-10" />}
                   </TableRow>
                 </TableHeader>
@@ -196,18 +202,20 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
                             }}
                           >
                             <SelectTrigger className="h-7 w-28 text-xs">
-                              <SelectValue>{m.role}</SelectValue>
+                              <SelectValue>{t(`roles.${m.role}`)}</SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                               {ROLES.map((r) => (
                                 <SelectItem key={r} value={r}>
-                                  {r}
+                                  {t(`roles.${r}`)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge variant={ROLE_VARIANT[m.role]}>{m.role}</Badge>
+                          <Badge variant={ROLE_VARIANT[m.role]}>
+                            {t(`roles.${m.role}`)}
+                          </Badge>
                         )}
                       </TableCell>
                       {isAdminOrOwner && (
@@ -233,7 +241,7 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
           </div>
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>
-              Close
+              {tCommon("close")}
             </DialogClose>
           </DialogFooter>
         </DialogContent>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   useGetAuditLogsQuery,
@@ -49,6 +50,7 @@ export default function AuditLogsPageClient({
   initialPage,
   initialPerPage,
 }: AuditLogsPageClientProps) {
+  const t = useTranslations("auditLogs");
   const router = useRouter();
   const activeOrgId = useAppSelector(selectActiveOrgId);
 
@@ -89,23 +91,23 @@ export default function AuditLogsPageClient({
     { skip: !activeOrgId || !isAuthorized },
   );
 
-  // Handle API-level errors (403/404 should be rare due to UI guard, but handle gracefully)
+  // Handle API-level errors
   if (error) {
     const status = "status" in error ? (error as { status: number }).status : 0;
     if (status === 403) {
-      toast.error("Access denied. Only owners and admins can view audit logs.");
+      toast.error(t("accessDenied"));
     } else if (status === 404) {
       router.replace("/organizations");
     }
   }
 
-  // Role guard — show a clear message when the org list has loaded but role is insufficient
+  // Role guard
   if (orgsData && !isAuthorized) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <p className="text-lg font-medium">Access Restricted</p>
+        <p className="text-lg font-medium">{t("accessRestricted")}</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Only organization owners and admins can view the audit log.
+          {t("accessRestrictedDescription")}
         </p>
       </div>
     );
@@ -143,7 +145,7 @@ export default function AuditLogsPageClient({
           size="icon"
           onClick={() => refetch()}
           disabled={isFetching}
-          aria-label="Refresh"
+          aria-label={t("action")}
         >
           <RefreshCw className={cn("size-4", isFetching && "animate-spin")} />
         </Button>
@@ -153,7 +155,7 @@ export default function AuditLogsPageClient({
         <ListResultsSummary
           shownCount={entries.length}
           totalCount={totalCount}
-          noun="entries"
+          noun={t("noun")}
         />
         <ListPageSizeSelect
           id="audit-log-page-size"

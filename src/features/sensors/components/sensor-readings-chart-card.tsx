@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { TimeSeriesChart } from "@/features/sensors/components/time-series-chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -28,19 +29,17 @@ export function SensorReadingsChartCard({
   unit,
   sensorName,
 }: SensorReadingsChartCardProps) {
+  const t = useTranslations("sensors");
   const emptyStateMessage =
     sensorDataType && sensorDataType !== "numeric"
-      ? "No numeric data for this sensor type."
-      : "No readings found for this sensor yet.";
+      ? t("detail.noNumericData")
+      : t("detail.noReadings");
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Time-Series Chart</CardTitle>
-        <CardDescription>
-          Readings from selected time window - live updates apply only when end
-          time is unset
-        </CardDescription>
+        <CardTitle className="text-base">{t("detail.chartTitle")}</CardTitle>
+        <CardDescription>{t("detail.chartDescription")}</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,11 +37,12 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const t = useTranslations("common");
   const title =
-    options.title ?? (options.destructive ? "Are you sure?" : "Confirm");
+    options.title ?? (options.destructive ? t("areYouSure") : t("confirm"));
   const confirmLabel =
-    options.confirmLabel ?? (options.destructive ? "Delete" : "Confirm");
-  const cancelLabel = options.cancelLabel ?? "Cancel";
+    options.confirmLabel ?? (options.destructive ? t("delete") : t("confirm"));
+  const cancelLabel = options.cancelLabel ?? t("cancel");
 
   return (
     <Dialog

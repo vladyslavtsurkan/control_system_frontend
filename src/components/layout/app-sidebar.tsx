@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type SyntheticEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   LayoutDashboard,
   Server,
@@ -58,20 +59,6 @@ import { useLogout } from "@/features/auth/hooks/use-logout";
 import { toast } from "sonner";
 import type { OrganizationWithRole } from "@/features/organizations/types";
 
-const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/servers", label: "OPC UA Servers", icon: Server },
-  { href: "/sensors", label: "Sensors", icon: Activity },
-  { href: "/alerts", label: "Alert Rules", icon: BellRing },
-  { href: "/organizations", label: "Organizations", icon: Building2 },
-];
-
-const ROLE_LABELS: Record<string, string> = {
-  owner: "Owner",
-  admin: "Admin",
-  member: "Member",
-};
-
 export function AppSidebar() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
@@ -79,6 +66,17 @@ export function AppSidebar() {
   const activeOrgId = useAppSelector(selectActiveOrgId);
   const wsStatus = useAppSelector(selectWsStatus);
   const activeAlertCount = useAppSelector(selectActiveAlertCount);
+  const t = useTranslations("nav");
+  const tProfile = useTranslations("profile");
+  const tCommon = useTranslations("common");
+
+  const navItems = [
+    { href: "/", label: t("dashboard"), icon: LayoutDashboard },
+    { href: "/servers", label: t("servers"), icon: Server },
+    { href: "/sensors", label: t("sensors"), icon: Activity },
+    { href: "/alerts", label: t("alerts"), icon: BellRing },
+    { href: "/organizations", label: t("organizations"), icon: Building2 },
+  ];
 
   const { data: orgsData } = useGetOrganizationsQuery();
   const orgs = orgsData?.items ?? [];
@@ -99,7 +97,7 @@ export function AppSidebar() {
     setProfileOpen(true);
   }
 
-  async function handleProfileSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleProfileSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
       const updated = await updateMe({
@@ -107,10 +105,10 @@ export function AppSidebar() {
         last_name: form.last_name || null,
       }).unwrap();
       dispatch(setUser(updated));
-      toast.success("Profile updated.");
+      toast.success(t("profileUpdated"));
       setProfileOpen(false);
     } catch {
-      toast.error("Failed to update profile.");
+      toast.error(t("profileUpdateFailed"));
     }
   }
 
@@ -120,7 +118,9 @@ export function AppSidebar() {
     }
 
     pendingOrgNameRef.current = org.name;
-    orgSwitchToastIdRef.current = toast.loading(`Switching to ${org.name}...`);
+    orgSwitchToastIdRef.current = toast.loading(
+      t("switchingToOrg", { name: org.name }),
+    );
     dispatch(setActiveOrg(org));
   }
 
@@ -132,7 +132,7 @@ export function AppSidebar() {
     if (wsStatus === "connected") {
       const orgName =
         pendingOrgNameRef.current ?? activeOrg?.name ?? "selected organization";
-      toast.success(`Switched to ${orgName}. Live stream reconnected.`, {
+      toast.success(t("switchedTo", { name: orgName }), {
         id: orgSwitchToastIdRef.current,
       });
       orgSwitchToastIdRef.current = null;
@@ -141,13 +141,13 @@ export function AppSidebar() {
     }
 
     if (wsStatus === "error") {
-      toast.error("Organization switched, but live stream reconnect failed.", {
+      toast.error(t("switchFailed"), {
         id: orgSwitchToastIdRef.current,
       });
       orgSwitchToastIdRef.current = null;
       pendingOrgNameRef.current = null;
     }
-  }, [activeOrg?.name, wsStatus]);
+  }, [activeOrg?.name, wsStatus, t]);
 
   const displayName = user
     ? [user.first_name, user.last_name].filter(Boolean).join(" ") || user.email
@@ -177,18 +177,16 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
-              {/* Render trigger content inline — avoids <button> inside <button> because
-                  DropdownMenuTrigger (base-ui) already renders a <button> itself */}
               <DropdownMenuTrigger className="flex w-full items-center gap-2 rounded-md p-1 text-left hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
                   <Building2 className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
-                    {activeOrg?.name ?? "Select organization"}
+                    {activeOrg?.name ?? t("selectOrganization")}
                   </span>
                   <span className="truncate text-xs text-muted-foreground">
-                    {activeOrg ? ROLE_LABELS[activeOrg.role] : ""}
+                    {activeOrg ? t(`roles.${activeOrg.role}`) : ""}
                   </span>
                 </div>
                 <ChevronDown className="ml-auto size-4" />
@@ -204,12 +202,14 @@ export function AppSidebar() {
                     <Building2 className="mr-2 size-4" />
                     <span className="flex-1 truncate">{org.name}</span>
                     <span className="ml-2 text-xs text-muted-foreground">
-                      {ROLE_LABELS[org.role]}
+                      {t(`roles.${org.role}`)}
                     </span>
                   </DropdownMenuItem>
                 ))}
                 {orgs.length === 0 && (
-                  <DropdownMenuItem disabled>No organizations</DropdownMenuItem>
+                  <DropdownMenuItem disabled>
+                    {t("noOrganizations")}
+                  </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-xs text-muted-foreground">
@@ -224,7 +224,7 @@ export function AppSidebar() {
       {/* Nav */}
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("platform")}</SidebarGroupLabel>
           <SidebarMenu>
             {navItems.map(({ href, label, icon: Icon }) => (
               <SidebarMenuItem key={href}>
@@ -254,11 +254,11 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   isActive={pathname === "/audit-logs"}
-                  tooltip="Audit Log"
+                  tooltip={t("auditLog")}
                   render={<Link href="/audit-logs" />}
                 >
                   <ClipboardList className="size-4" />
-                  <span>Audit Log</span>
+                  <span>{t("auditLog")}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
@@ -284,7 +284,7 @@ export function AppSidebar() {
           <DropdownMenuContent className="w-56" align="start" side="top">
             <DropdownMenuItem onClick={openProfile}>
               <UserCircle className="mr-2 size-4" />
-              Edit Profile
+              {t("editProfile")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -292,7 +292,7 @@ export function AppSidebar() {
               className="text-red-600 focus:text-red-600 dark:text-red-400"
             >
               <LogOut className="mr-2 size-4" />
-              Log out
+              {t("logOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -303,8 +303,8 @@ export function AppSidebar() {
             <span
               className={`inline-block size-2 shrink-0 rounded-full ${statusColor[wsStatus] ?? "bg-zinc-400"}`}
             />
-            WS: {wsStatus}
-            {isOrgSwitchPending ? " (switching org...)" : ""}
+            {t("wsStatus", { status: wsStatus })}
+            {isOrgSwitchPending ? ` ${t("switchingOrg")}` : ""}
           </span>
         </div>
       </SidebarFooter>
@@ -313,11 +313,11 @@ export function AppSidebar() {
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Edit Profile</DialogTitle>
+            <DialogTitle>{tProfile("title")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleProfileSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="profile-email">Email</Label>
+              <Label htmlFor="profile-email">{tProfile("email")}</Label>
               <Input
                 id="profile-email"
                 value={user?.email ?? ""}
@@ -327,9 +327,9 @@ export function AppSidebar() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="profile-uuid">Your User ID</Label>
+              <Label htmlFor="profile-uuid">{tProfile("userId")}</Label>
               <p className="text-xs text-muted-foreground">
-                Share this ID so others can add you to their organization.
+                {tProfile("userIdHelp")}
               </p>
               <div className="flex items-center gap-2">
                 <Input
@@ -344,9 +344,9 @@ export function AppSidebar() {
                   size="icon-sm"
                   onClick={() => {
                     navigator.clipboard.writeText(user?.id ?? "");
-                    toast.success("User ID copied to clipboard.");
+                    toast.success(tProfile("userIdCopied"));
                   }}
-                  aria-label="Copy user ID"
+                  aria-label={tProfile("copyUserId")}
                 >
                   <Copy className="size-3.5" />
                 </Button>
@@ -355,34 +355,34 @@ export function AppSidebar() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="profile-first">First Name</Label>
+                <Label htmlFor="profile-first">{tProfile("firstName")}</Label>
                 <Input
                   id="profile-first"
                   value={form.first_name}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, first_name: e.target.value }))
                   }
-                  placeholder="Jane"
+                  placeholder={tProfile("firstNamePlaceholder")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="profile-last">Last Name</Label>
+                <Label htmlFor="profile-last">{tProfile("lastName")}</Label>
                 <Input
                   id="profile-last"
                   value={form.last_name}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, last_name: e.target.value }))
                   }
-                  placeholder="Doe"
+                  placeholder={tProfile("lastNamePlaceholder")}
                 />
               </div>
             </div>
             <DialogFooter>
               <DialogClose render={<Button type="button" variant="outline" />}>
-                Cancel
+                {tCommon("cancel")}
               </DialogClose>
               <Button type="submit" disabled={saving}>
-                Save Changes
+                {tCommon("saveChanges")}
               </Button>
             </DialogFooter>
           </form>

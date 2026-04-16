@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { type SyntheticEvent } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,14 +25,8 @@ interface SensorControlDialogProps {
   value: string | boolean;
   sending: boolean;
   onValueChange: (v: string | boolean) => void;
-  onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
+  onSubmit: (e: SyntheticEvent<HTMLFormElement>) => void;
 }
-
-const DATA_TYPE_LABELS: Record<string, string> = {
-  numeric: "Numeric",
-  boolean: "Boolean",
-  string: "String",
-};
 
 export function SensorControlDialog({
   open,
@@ -41,13 +37,21 @@ export function SensorControlDialog({
   onValueChange,
   onSubmit,
 }: SensorControlDialogProps) {
+  const t = useTranslations("sensors");
+  const tCommon = useTranslations("common");
+  const DATA_TYPE_LABELS: Record<string, string> = {
+    numeric: t("numeric"),
+    boolean: t("boolean"),
+    string: t("string"),
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Write Value to Sensor</DialogTitle>
+          <DialogTitle>{t("detail.writeValue")}</DialogTitle>
           <DialogDescription>
-            This command will be dispatched to the OPC UA node immediately.
+            {t("detail.writeValueDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -70,7 +74,9 @@ export function SensorControlDialog({
               /* Boolean — toggle */
               <div className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <Label htmlFor="control-value-bool">Value</Label>
+                  <Label htmlFor="control-value-bool">
+                    {t("detail.value")}
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     {(value as boolean) ? "true" : "false"}
                   </p>
@@ -85,7 +91,8 @@ export function SensorControlDialog({
               /* Numeric — number input */
               <div className="space-y-2">
                 <Label htmlFor="control-value-num">
-                  Value{sensor.units ? ` (${sensor.units})` : ""}
+                  {t("detail.value")}
+                  {sensor.units ? ` (${sensor.units})` : ""}
                 </Label>
                 <Input
                   id="control-value-num"
@@ -101,7 +108,7 @@ export function SensorControlDialog({
             ) : (
               /* String — text input */
               <div className="space-y-2">
-                <Label htmlFor="control-value-str">Value</Label>
+                <Label htmlFor="control-value-str">{t("detail.value")}</Label>
                 <Input
                   id="control-value-str"
                   type="text"
@@ -116,10 +123,10 @@ export function SensorControlDialog({
 
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>
-              Cancel
+              {tCommon("cancel")}
             </DialogClose>
             <Button type="submit" disabled={sending}>
-              {sending ? "Sending…" : "Send Command"}
+              {sending ? t("detail.sending") : t("detail.sendCommand")}
             </Button>
           </DialogFooter>
         </form>

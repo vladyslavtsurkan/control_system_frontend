@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { SyntheticEvent } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { useSendControlCommandMutation } from "@/store/api";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useOrgPermissions } from "@/features/organizations";
@@ -13,6 +14,7 @@ interface UseSensorControlParams {
 export function useSensorControl({ sensor }: UseSensorControlParams) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState<string | boolean>("");
+  const t = useTranslations("sensors");
 
   const [sendControlCommand, { isLoading: sending }] =
     useSendControlCommandMutation();
@@ -37,7 +39,7 @@ export function useSensorControl({ sensor }: UseSensorControlParams) {
     if (sensor.data_type === "numeric") {
       const n = Number(value);
       if (isNaN(n)) {
-        toast.error("Please enter a valid number.");
+        toast.error(t("detail.controlInvalidNumber"));
         return;
       }
       parsedValue = n;
@@ -54,7 +56,11 @@ export function useSensorControl({ sensor }: UseSensorControlParams) {
         : String(parsedValue);
 
     const ok = await confirm({
-      description: `Write ${displayValue} to "${sensor.name}" (${sensor.node_id})? This will immediately affect the physical device.`,
+      description: t("detail.controlConfirm", {
+        value: displayValue,
+        name: sensor.name,
+        nodeId: sensor.node_id,
+      }),
     });
     if (!ok) return;
 
@@ -63,18 +69,18 @@ export function useSensorControl({ sensor }: UseSensorControlParams) {
         sensorId: sensor.id,
         value: parsedValue,
       }).unwrap();
-      toast.success(`Command dispatched (ID: ${result.command_id})`);
+      toast.success(t("detail.controlDispatched", { id: result.command_id }));
       setOpen(false);
     } catch (err: unknown) {
       const status = (err as { status?: number })?.status;
       if (status === 400) {
-        toast.error("This sensor does not accept write commands.");
+        toast.error(t("detail.controlNotWritable"));
       } else if (status === 404) {
-        toast.error("Sensor not found.");
+        toast.error(t("detail.controlSensorNotFound"));
       } else if (status === 401 || status === 403) {
-        toast.error("You do not have permission to send control commands.");
+        toast.error(t("detail.controlPermission"));
       } else {
-        toast.error("Failed to dispatch command. Please try again.");
+        toast.error(t("detail.controlFailed"));
       }
     }
   }

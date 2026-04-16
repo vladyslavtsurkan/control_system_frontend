@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   ListPageSizeSelect,
   ListResultsSummary,
@@ -20,12 +21,13 @@ export function OrganizationsListControls({
   pageSizeOptions,
   onPageSizeChange,
 }: OrganizationsListControlsProps) {
+  const t = useTranslations("organizations");
   return (
     <div className="flex items-center justify-between gap-3">
       <ListResultsSummary
         shownCount={shownCount}
         totalCount={totalCount}
-        noun="organizations"
+        noun={t("noun")}
       />
       <ListPageSizeSelect
         id="organizations-page-size"

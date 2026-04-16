@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { loginSchema } from "@/features/auth/schemas";
 import {
@@ -18,13 +19,14 @@ import { Label } from "@/components/ui/label";
 
 export default function LoginPageClient() {
   const router = useRouter();
+  const t = useTranslations("auth.login");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFieldErrors({});
 
@@ -52,13 +54,13 @@ export default function LoginPageClient() {
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data?.detail ?? "Login failed. Check your credentials.");
+        toast.error(data?.detail ?? t("loginFailed"));
         return;
       }
 
       router.push("/");
     } catch {
-      toast.error("Network error. Please try again.");
+      toast.error(t("loginFailed"));
     } finally {
       setLoading(false);
     }
@@ -67,13 +69,13 @@ export default function LoginPageClient() {
   return (
     <Card className="w-full max-w-sm shadow-lg">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">IIoT Platform</CardTitle>
-        <CardDescription>Sign in to your organization account</CardDescription>
+        <CardTitle className="text-2xl font-bold">{t("title")}</CardTitle>
+        <CardDescription>{t("subtitle")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("email")}</Label>
             <Input
               id="email"
               type="email"
@@ -81,14 +83,14 @@ export default function LoginPageClient() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@company.com"
+              placeholder={t("emailPlaceholder")}
             />
             {fieldErrors.email && (
               <p className="text-xs text-red-500">{fieldErrors.email}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t("password")}</Label>
             <Input
               id="password"
               type="password"
@@ -103,20 +105,20 @@ export default function LoginPageClient() {
             )}
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? t("signingIn") : t("signIn")}
           </Button>
           <div className="flex items-center justify-between text-sm">
             <Link
               href="/forgot-password"
               className="text-muted-foreground hover:text-foreground"
             >
-              Forgot password?
+              {t("forgotPassword")}
             </Link>
             <Link
               href="/signup"
               className="text-muted-foreground hover:text-foreground"
             >
-              Create account
+              {t("createAccount")}
             </Link>
           </div>
         </form>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Pencil, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,11 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  CONDITIONS,
-  durationSecondsLabel,
-  thresholdLabel,
-} from "@/features/alerts/lib/alert-rule-helpers";
+import { thresholdLabel } from "@/features/alerts/lib/alert-rule-helpers";
 import type { AlertRule, AlertSeverity } from "@/features/alerts/types";
 import type { Sensor } from "@/features/sensors";
 
@@ -47,6 +44,14 @@ export function AlertsTable({
   onDelete,
   canManage,
 }: AlertsTableProps) {
+  const t = useTranslations("alerts");
+
+  function durationLabel(secs: number): string {
+    const n = Number.isInteger(secs) && secs > 0 ? secs : 0;
+    return n === 0
+      ? t("durationInstant")
+      : t("durationDelay", { seconds: String(n) });
+  }
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -62,14 +67,14 @@ export function AlertsTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Sensor</TableHead>
-            <TableHead>Condition</TableHead>
-            <TableHead>Threshold</TableHead>
-            <TableHead>Debounce</TableHead>
-            <TableHead>Severity</TableHead>
-            <TableHead>Active</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{t("name")}</TableHead>
+            <TableHead>{t("sensor")}</TableHead>
+            <TableHead>{t("condition")}</TableHead>
+            <TableHead>{t("threshold")}</TableHead>
+            <TableHead>{t("debounce")}</TableHead>
+            <TableHead>{t("severity")}</TableHead>
+            <TableHead>{t("active")}</TableHead>
+            <TableHead className="text-right">{t("actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -79,36 +84,33 @@ export function AlertsTable({
                 colSpan={8}
                 className="py-10 text-center text-sm text-muted-foreground"
               >
-                No alert rules configured yet.
+                {t("noRules")}
               </TableCell>
             </TableRow>
           ) : (
             rules.map((rule) => {
               const sensor = sensors.find((s) => s.id === rule.sensor_id);
-              const condMeta = CONDITIONS.find(
-                (c) => c.value === rule.condition,
-              );
               return (
                 <TableRow key={rule.id}>
                   <TableCell className="font-medium">{rule.name}</TableCell>
                   <TableCell>{sensor?.name ?? rule.sensor_id}</TableCell>
                   <TableCell className="text-sm">
-                    {condMeta?.label ?? rule.condition}
+                    {t(`conditions.${rule.condition}`)}
                   </TableCell>
                   <TableCell className="font-mono text-xs">
                     {thresholdLabel(rule.threshold)}
                   </TableCell>
                   <TableCell className="text-sm">
-                    {durationSecondsLabel(rule.duration_seconds ?? 0)}
+                    {durationLabel(rule.duration_seconds ?? 0)}
                   </TableCell>
                   <TableCell>
                     <Badge variant={severityVariant[rule.severity]}>
-                      {rule.severity}
+                      {t(`severities.${rule.severity}`)}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <Badge variant={rule.is_active ? "default" : "outline"}>
-                      {rule.is_active ? "active" : "paused"}
+                      {rule.is_active ? t("activeBadge") : t("paused")}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -117,7 +119,7 @@ export function AlertsTable({
                         variant="ghost"
                         size="icon"
                         onClick={() => onEdit(rule)}
-                        aria-label="Edit alert rule"
+                        aria-label={t("editRuleTitle")}
                       >
                         <Pencil className="size-4" />
                       </Button>
@@ -128,7 +130,7 @@ export function AlertsTable({
                         size="icon"
                         className="text-red-600 hover:text-red-700"
                         onClick={() => onDelete(rule)}
-                        aria-label="Delete alert rule"
+                        aria-label={t("deleteRule", { name: rule.name })}
                       >
                         <Trash2 className="size-4" />
                       </Button>

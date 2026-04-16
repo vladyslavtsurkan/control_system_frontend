@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { toast } from "sonner";
 import { useUpdateSensorMutation } from "@/store/api";
 import type { EditSensorFormState } from "@/features/sensors/components";
@@ -38,7 +38,7 @@ export function useSensorEditController({
     setEditOpen(true);
   }
 
-  async function handleEditSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleEditSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
 
     try {

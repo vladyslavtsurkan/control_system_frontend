@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -39,6 +40,30 @@ export function AuditLogFilters({
   members,
   onChange,
 }: AuditLogFiltersProps) {
+  const t = useTranslations("auditLogs");
+
+  // Translated labels for dropdowns
+  const translatedResourceTypeLabels: Record<AuditLogResourceType, string> = {
+    organization: t("resourceTypes.organization"),
+    opc_server: t("resourceTypes.opc_server"),
+    sensor: t("resourceTypes.sensor"),
+    alert_rule: t("resourceTypes.alert_rule"),
+    member: t("resourceTypes.member"),
+    api_key: t("resourceTypes.api_key"),
+  };
+  const translatedActionLabels: Record<AuditLogAction, string> = {
+    created: t("actionLabels.created"),
+    updated: t("actionLabels.updated"),
+    deleted: t("actionLabels.deleted"),
+    member_added: t("actionLabels.member_added"),
+    member_removed: t("actionLabels.member_removed"),
+    member_left: t("actionLabels.member_left"),
+    role_changed: t("actionLabels.role_changed"),
+    api_key_created: t("actionLabels.api_key_created"),
+    api_key_revoked: t("actionLabels.api_key_revoked"),
+    control_command_sent: t("actionLabels.control_command_sent"),
+  };
+
   function set<K extends keyof AuditLogFiltersValue>(
     key: K,
     val: AuditLogFiltersValue[K],
@@ -63,15 +88,15 @@ export function AuditLogFilters({
         <SelectTrigger className="h-8 min-w-44">
           <span className={cn(!value.resource_type && "text-muted-foreground")}>
             {value.resource_type
-              ? RESOURCE_TYPE_LABELS[value.resource_type]
-              : "All resource types"}
+              ? translatedResourceTypeLabels[value.resource_type]
+              : t("allResourceTypes")}
           </span>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="__all__">All resource types</SelectItem>
+          <SelectItem value="__all__">{t("allResourceTypes")}</SelectItem>
           {RESOURCE_TYPES.map((rt) => (
             <SelectItem key={rt} value={rt}>
-              {RESOURCE_TYPE_LABELS[rt]}
+              {translatedResourceTypeLabels[rt]}
             </SelectItem>
           ))}
         </SelectContent>
@@ -86,14 +111,16 @@ export function AuditLogFilters({
       >
         <SelectTrigger className="h-8 min-w-44">
           <span className={cn(!value.action && "text-muted-foreground")}>
-            {value.action ? ACTION_LABELS[value.action] : "All actions"}
+            {value.action
+              ? translatedActionLabels[value.action]
+              : t("allActions")}
           </span>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="__all__">All actions</SelectItem>
+          <SelectItem value="__all__">{t("allActions")}</SelectItem>
           {ACTIONS.map((a) => (
             <SelectItem key={a} value={a}>
-              {ACTION_LABELS[a]}
+              {translatedActionLabels[a]}
             </SelectItem>
           ))}
         </SelectContent>
@@ -109,11 +136,11 @@ export function AuditLogFilters({
         >
           <SelectTrigger className="h-8 min-w-52">
             <span className={cn(!value.actor_id && "text-muted-foreground")}>
-              {selectedMember ? selectedMember.email : "All users"}
+              {selectedMember ? selectedMember.email : t("allUsers")}
             </span>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="__all__">All users</SelectItem>
+            <SelectItem value="__all__">{t("allUsers")}</SelectItem>
             {members.map((m) => (
               <SelectItem key={m.id} value={m.id}>
                 {m.email}

@@ -1,6 +1,7 @@
 "use client";
 
 import { KeyRound, Pencil, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,6 +33,8 @@ export function ServersTable({
   onDelete,
   canManage,
 }: ServersTableProps) {
+  const t = useTranslations("servers");
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -47,12 +50,12 @@ export function ServersTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>URL</TableHead>
-            <TableHead>Auth</TableHead>
-            <TableHead>Security Policy</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{t("name")}</TableHead>
+            <TableHead>{t("url")}</TableHead>
+            <TableHead>{t("auth")}</TableHead>
+            <TableHead>{t("securityPolicy")}</TableHead>
+            <TableHead>{t("created")}</TableHead>
+            <TableHead className="text-right">{t("actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -62,9 +65,7 @@ export function ServersTable({
                 colSpan={6}
                 className="py-10 text-center text-sm text-muted-foreground"
               >
-                {canManage
-                  ? 'No servers found. Click "Add Server" to get started.'
-                  : "No servers found."}
+                {canManage ? t("noServersCanManage") : t("noServers")}
               </TableCell>
             </TableRow>
           ) : (
@@ -98,7 +99,7 @@ export function ServersTable({
                       variant="ghost"
                       size="icon"
                       onClick={() => onManageApiKey(server)}
-                      aria-label="Manage API key"
+                      aria-label={t("manageApiKey")}
                     >
                       <KeyRound className="size-4" />
                     </Button>
@@ -108,7 +109,7 @@ export function ServersTable({
                       variant="ghost"
                       size="icon"
                       onClick={() => onEdit(server)}
-                      aria-label="Edit server"
+                      aria-label={t("editServerAria")}
                     >
                       <Pencil className="size-4" />
                     </Button>
@@ -119,7 +120,7 @@ export function ServersTable({
                       size="icon"
                       className="text-red-600 hover:text-red-700"
                       onClick={() => onDelete(server)}
-                      aria-label="Delete server"
+                      aria-label={t("deleteServerAria")}
                     >
                       <Trash2 className="size-4" />
                     </Button>
