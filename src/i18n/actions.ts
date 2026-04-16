@@ -1,11 +1,10 @@
 "use server";
 
 import { cookies } from "next/headers";
-
-const SUPPORTED_LOCALES = ["en", "uk"];
+import { SUPPORTED_LOCALES } from "./locales";
 
 export async function setLocale(locale: string) {
-  if (!SUPPORTED_LOCALES.includes(locale)) return;
+  if (!(SUPPORTED_LOCALES as readonly string[]).includes(locale)) return;
   const cookieStore = await cookies();
   cookieStore.set("NEXT_LOCALE", locale, {
     path: "/",

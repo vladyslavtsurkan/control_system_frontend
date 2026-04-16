@@ -11,11 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { setLocale } from "@/i18n/actions";
-
-const LOCALES = [
-  { code: "en", label: "English", short: "EN" },
-  { code: "uk", label: "Українська", short: "УК" },
-] as const;
+import { LOCALE_META } from "@/i18n/locales";
 
 export function LanguageSwitcher() {
   const locale = useLocale();
@@ -30,7 +26,7 @@ export function LanguageSwitcher() {
     });
   }
 
-  const current = LOCALES.find((l) => l.code === locale) ?? LOCALES[0];
+  const current = LOCALE_META.find((l) => l.code === locale) ?? LOCALE_META[0];
 
   return (
     <DropdownMenu>
@@ -43,7 +39,7 @@ export function LanguageSwitcher() {
         {current.short}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {LOCALES.map((l) => (
+        {LOCALE_META.map((l) => (
           <DropdownMenuItem
             key={l.code}
             onClick={() => handleSelect(l.code)}
