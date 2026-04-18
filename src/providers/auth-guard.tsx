@@ -92,8 +92,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
       controller.abort();
       dispatch(wsDisconnect());
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [dispatch, router]);
 
   if (authStatus === "idle" || authStatus === "loading") {
     return (
