@@ -240,7 +240,7 @@ export default function SensorPageClient({
       />
 
       <SensorEditDialog
-        key={String(editOpen)}
+        key={`edit-${editOpen}`}
         open={editOpen}
         onOpenChange={setEditOpen}
         sensor={sensor}
@@ -250,7 +250,7 @@ export default function SensorPageClient({
 
       {sensor && (
         <SensorControlDialog
-          key={String(controlOpen)}
+          key={`control-${controlOpen}`}
           open={controlOpen}
           onOpenChange={setControlOpen}
           sensor={sensor}
