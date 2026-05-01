@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { SyntheticEvent } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useSendControlCommandMutation } from "@/store/api";
@@ -13,7 +12,6 @@ interface UseSensorControlParams {
 
 export function useSensorControl({ sensor }: UseSensorControlParams) {
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState<string | boolean>("");
   const t = useTranslations("sensors");
 
   const [sendControlCommand, { isLoading: sending }] =
@@ -26,12 +24,10 @@ export function useSensorControl({ sensor }: UseSensorControlParams) {
 
   function openControl() {
     if (!sensor) return;
-    setValue(sensor.data_type === "boolean" ? false : "");
     setOpen(true);
   }
 
-  async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function handleSave(value: string | boolean) {
     if (!sensor) return;
 
     // Parse value to the correct type before sending
@@ -88,12 +84,10 @@ export function useSensorControl({ sensor }: UseSensorControlParams) {
   return {
     open,
     setOpen,
-    value,
-    setValue,
     sending,
     canControl,
     openControl,
-    handleSubmit,
+    handleSave,
     ConfirmDialog,
   };
 }

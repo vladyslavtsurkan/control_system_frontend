@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type SyntheticEvent } from "react";
+import { memo, useState, type SyntheticEvent } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import {
@@ -54,6 +54,117 @@ function isUserRoleInOrg(value: unknown): value is UserRoleInOrg {
   return typeof value === "string" && ROLES.includes(value as UserRoleInOrg);
 }
 
+// ─── Member list (memoized so the "add member" input state doesn't re-render it) ─
+
+interface MemberListProps {
+  orgId: string;
+  orgRole: UserRoleInOrg;
+  open: boolean;
+  onRemove: (userId: string, email: string) => void;
+  onRoleChange: (userId: string, role: UserRoleInOrg, email: string) => void;
+}
+
+const MemberList = memo(function MemberList({
+  orgId,
+  orgRole,
+  open,
+  onRemove,
+  onRoleChange,
+}: MemberListProps) {
+  const t = useTranslations("organizations");
+  const { data, isLoading } = useGetOrganizationMembersQuery(orgId, {
+    skip: !open,
+  });
+  const members = data?.items ?? [];
+  const isOwner = orgRole === "owner";
+  const isAdminOrOwner = orgRole === "owner" || orgRole === "admin";
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-10 w-full" />
+        ))}
+      </div>
+    );
+  }
+  if (members.length === 0) {
+    return (
+      <p className="py-6 text-center text-sm text-muted-foreground">
+        {t("noMembers")}
+      </p>
+    );
+  }
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>{t("nameEmail")}</TableHead>
+          <TableHead>{t("role")}</TableHead>
+          {isAdminOrOwner && <TableHead className="w-10" />}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {members.map((m) => (
+          <TableRow key={m.id}>
+            <TableCell>
+              <div className="font-medium text-sm">
+                {[m.first_name, m.last_name].filter(Boolean).join(" ") || m.email}
+              </div>
+              {(m.first_name || m.last_name) && (
+                <div className="text-xs text-muted-foreground">{m.email}</div>
+              )}
+            </TableCell>
+            <TableCell>
+              {isOwner && m.role !== "owner" ? (
+                <Select
+                  value={m.role}
+                  onValueChange={(v) => {
+                    if (isUserRoleInOrg(v)) {
+                      void onRoleChange(m.id, v, m.email);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-7 w-28 text-xs">
+                    <SelectValue>{t(`roles.${m.role}`)}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROLES.map((r) => (
+                      <SelectItem key={r} value={r}>
+                        {t(`roles.${r}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Badge variant={ROLE_VARIANT[m.role]}>
+                  {t(`roles.${m.role}`)}
+                </Badge>
+              )}
+            </TableCell>
+            {isAdminOrOwner && (
+              <TableCell className="text-right">
+                {m.role !== "owner" && (isOwner || m.role === "member") && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-red-600 hover:text-red-700"
+                    onClick={() => onRemove(m.id, m.email)}
+                  >
+                    <UserMinus className="size-4" />
+                  </Button>
+                )}
+              </TableCell>
+            )}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+});
+
+// ─── Dialog ───────────────────────────────────────────────────────────────────
+
 interface MembersDialogProps {
   org: OrganizationWithRole;
   open: boolean;
@@ -63,17 +174,12 @@ interface MembersDialogProps {
 export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
   const t = useTranslations("organizations");
   const tCommon = useTranslations("common");
-  const { data, isLoading } = useGetOrganizationMembersQuery(org.id, {
-    skip: !open,
-  });
   const [addMember, { isLoading: adding }] = useAddOrganizationMemberMutation();
   const [removeMember] = useRemoveOrganizationMemberMutation();
   const [changeRole] = useChangeOrganizationMemberRoleMutation();
   const [addUserId, setAddUserId] = useState("");
   const { confirm, ConfirmDialog } = useConfirm();
 
-  const members = data?.items ?? [];
-  const isOwner = org.role === "owner";
   const isAdminOrOwner = org.role === "owner" || org.role === "admin";
 
   async function handleAdd(e: SyntheticEvent<HTMLFormElement>) {
@@ -157,87 +263,13 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
                 </Button>
               </form>
             )}
-            {isLoading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-10 w-full" />
-                ))}
-              </div>
-            ) : members.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">
-                {t("noMembers")}
-              </p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("nameEmail")}</TableHead>
-                    <TableHead>{t("role")}</TableHead>
-                    {isAdminOrOwner && <TableHead className="w-10" />}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {members.map((m) => (
-                    <TableRow key={m.id}>
-                      <TableCell>
-                        <div className="font-medium text-sm">
-                          {[m.first_name, m.last_name]
-                            .filter(Boolean)
-                            .join(" ") || m.email}
-                        </div>
-                        {(m.first_name || m.last_name) && (
-                          <div className="text-xs text-muted-foreground">
-                            {m.email}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {isOwner && m.role !== "owner" ? (
-                          <Select
-                            value={m.role}
-                            onValueChange={(v) => {
-                              if (isUserRoleInOrg(v)) {
-                                void handleRoleChange(m.id, v, m.email);
-                              }
-                            }}
-                          >
-                            <SelectTrigger className="h-7 w-28 text-xs">
-                              <SelectValue>{t(`roles.${m.role}`)}</SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ROLES.map((r) => (
-                                <SelectItem key={r} value={r}>
-                                  {t(`roles.${r}`)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <Badge variant={ROLE_VARIANT[m.role]}>
-                            {t(`roles.${m.role}`)}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      {isAdminOrOwner && (
-                        <TableCell className="text-right">
-                          {m.role !== "owner" &&
-                            (isOwner || m.role === "member") && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-red-600 hover:text-red-700"
-                                onClick={() => handleRemove(m.id, m.email)}
-                              >
-                                <UserMinus className="size-4" />
-                              </Button>
-                            )}
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+            <MemberList
+              orgId={org.id}
+              orgRole={org.role}
+              open={open}
+              onRemove={handleRemove}
+              onRoleChange={handleRoleChange}
+            />
           </div>
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>

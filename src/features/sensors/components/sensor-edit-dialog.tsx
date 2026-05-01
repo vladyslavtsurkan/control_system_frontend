@@ -1,7 +1,7 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { type SyntheticEvent } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,40 +22,66 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { EditSensorFormState } from "@/features/sensors/components/sensor-detail-types";
+import type { Sensor } from "@/features/sensors/types";
 
 interface SensorEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  form: EditSensorFormState;
+  sensor: Sensor | undefined;
   updating: boolean;
-  onSubmit: (e: SyntheticEvent<HTMLFormElement>) => void;
-  onFormChange: (next: EditSensorFormState) => void;
+  onSave: (data: EditSensorFormState) => void;
 }
+
+const emptyForm: EditSensorFormState = {
+  name: "",
+  description: "",
+  node_id: "",
+  data_type: "numeric",
+  units: "",
+  is_writable: false,
+};
 
 export function SensorEditDialog({
   open,
   onOpenChange,
-  form,
+  sensor,
   updating,
-  onSubmit,
-  onFormChange,
+  onSave,
 }: SensorEditDialogProps) {
   const t = useTranslations("sensors");
   const tCommon = useTranslations("common");
+  const [form, setForm] = useState<EditSensorFormState>(() =>
+    sensor
+      ? {
+          name: sensor.name,
+          description: sensor.description ?? "",
+          node_id: sensor.node_id,
+          data_type: sensor.data_type,
+          units: sensor.units ?? "",
+          is_writable: sensor.is_writable,
+        }
+      : emptyForm,
+  );
+
+  function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault();
+    onSave(form);
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{t("editSensor")}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="edit-sensor-name">{t("name")}</Label>
             <Input
               id="edit-sensor-name"
               required
               value={form.name}
-              onChange={(e) => onFormChange({ ...form, name: e.target.value })}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               placeholder="Temperature Sensor A"
             />
           </div>
@@ -66,7 +92,7 @@ export function SensorEditDialog({
               required
               value={form.node_id}
               onChange={(e) =>
-                onFormChange({ ...form, node_id: e.target.value })
+                setForm((f) => ({ ...f, node_id: e.target.value }))
               }
               placeholder="ns=2;i=1001"
               className="font-mono"
@@ -77,10 +103,10 @@ export function SensorEditDialog({
             <Select
               value={form.data_type}
               onValueChange={(value) =>
-                onFormChange({
-                  ...form,
+                setForm((f) => ({
+                  ...f,
                   data_type: value as EditSensorFormState["data_type"],
-                })
+                }))
               }
             >
               <SelectTrigger>
@@ -100,7 +126,7 @@ export function SensorEditDialog({
                 id="edit-sensor-desc"
                 value={form.description}
                 onChange={(e) =>
-                  onFormChange({ ...form, description: e.target.value })
+                  setForm((f) => ({ ...f, description: e.target.value }))
                 }
                 placeholder={tCommon("optional")}
               />
@@ -111,7 +137,7 @@ export function SensorEditDialog({
                 id="edit-sensor-units"
                 value={form.units}
                 onChange={(e) =>
-                  onFormChange({ ...form, units: e.target.value })
+                  setForm((f) => ({ ...f, units: e.target.value }))
                 }
                 placeholder="degC, bar, rpm"
               />
@@ -130,7 +156,7 @@ export function SensorEditDialog({
               id="edit-sensor-is-writable"
               checked={form.is_writable}
               onCheckedChange={(checked) =>
-                onFormChange({ ...form, is_writable: checked })
+                setForm((f) => ({ ...f, is_writable: checked }))
               }
             />
           </div>

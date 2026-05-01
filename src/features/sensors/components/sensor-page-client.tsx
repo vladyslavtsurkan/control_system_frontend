@@ -120,8 +120,6 @@ export default function SensorPageClient({
     updating,
     editOpen,
     setEditOpen,
-    form,
-    setForm,
     openEdit,
     handleEditSubmit,
   } = useSensorEditController({
@@ -144,12 +142,10 @@ export default function SensorPageClient({
   const {
     open: controlOpen,
     setOpen: setControlOpen,
-    value: controlValue,
-    setValue: setControlValue,
     sending,
     canControl,
     openControl,
-    handleSubmit: handleControlSubmit,
+    handleSave: handleControlSave,
     ConfirmDialog: ControlConfirmDialog,
   } = useSensorControl({ sensor });
 
@@ -249,23 +245,22 @@ export default function SensorPageClient({
       />
 
       <SensorEditDialog
+        key={String(editOpen)}
         open={editOpen}
         onOpenChange={setEditOpen}
-        form={form}
+        sensor={sensor}
         updating={updating}
-        onSubmit={handleEditSubmit}
-        onFormChange={setForm}
+        onSave={handleEditSubmit}
       />
 
       {sensor && (
         <SensorControlDialog
+          key={String(controlOpen)}
           open={controlOpen}
           onOpenChange={setControlOpen}
           sensor={sensor}
-          value={controlValue}
           sending={sending}
-          onValueChange={setControlValue}
-          onSubmit={handleControlSubmit}
+          onSave={handleControlSave}
         />
       )}
 

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type SyntheticEvent } from "react";
 import { X } from "lucide-react";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import {
@@ -46,6 +46,7 @@ import {
   ruleToForm,
 } from "@/features/alerts/lib/alert-rule-helpers";
 import { MAX_ALERT_RULE_ACTIONS } from "@/config/constants";
+import type { Control } from "react-hook-form";
 
 const SEVERITIES: AlertSeverity[] = ["info", "warning", "critical", "fatal"];
 
@@ -63,7 +64,96 @@ const emptyForm: FormState = {
   actions: [],
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Action row (isolated re-renders via Controller) ─────────────────────────
+
+interface ActionRowProps {
+  control: Control<Pick<FormState, "actions">>;
+  index: number;
+  sensorOptions: { id: string; label: string }[];
+  sensorLabelById: Map<string, string>;
+  onRemove: () => void;
+}
+
+function ActionRow({
+  control,
+  index,
+  sensorOptions,
+  sensorLabelById,
+  onRemove,
+}: ActionRowProps) {
+  const t = useTranslations("alerts");
+  return (
+    <Card className="space-y-3 p-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium">
+          {t("actionLabel", { index: index + 1 })}
+        </p>
+        <Button type="button" variant="ghost" size="icon" onClick={onRemove}>
+          <X className="size-4" />
+        </Button>
+      </div>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label>{t("targetSensor")}</Label>
+          <Controller
+            control={control}
+            name={`actions.${index}.target_sensor_id`}
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("selectSensor")}>
+                    {sensorLabelById.get(field.value) || undefined}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {sensorOptions.map((sensor) => (
+                    <SelectItem key={sensor.id} value={sensor.id}>
+                      {sensor.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={`trigger-value-${index}`}>
+            {t("triggerValue")}
+          </Label>
+          <Controller
+            control={control}
+            name={`actions.${index}.trigger_value`}
+            render={({ field }) => (
+              <Input
+                id={`trigger-value-${index}`}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              />
+            )}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={`resolve-value-${index}`}>
+            {t("resolveValue")}
+          </Label>
+          <Controller
+            control={control}
+            name={`actions.${index}.resolve_value`}
+            render={({ field }) => (
+              <Input
+                id={`resolve-value-${index}`}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              />
+            )}
+          />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 interface AlertRuleFormDialogProps {
   open: boolean;
@@ -82,10 +172,11 @@ export function AlertRuleFormDialog({
   const tCommon = useTranslations("common");
   const [createRule, { isLoading: creating }] = useCreateAlertRuleMutation();
   const [updateRule, { isLoading: updating }] = useUpdateAlertRuleMutation();
-  const { data: sensorsData } = useGetSensorsQuery({
-    limit: 100,
-    is_writable: true,
-  });
+  // Only fetch writable sensors while the dialog is open
+  const { data: sensorsData } = useGetSensorsQuery(
+    { limit: 100, is_writable: true },
+    { skip: !open },
+  );
   const [form, setForm] = useState<FormState>(() =>
     editTarget ? ruleToForm(editTarget) : emptyForm,
   );
@@ -99,10 +190,6 @@ export function AlertRuleFormDialog({
     name: "actions",
   });
   const isAtActionLimit = fields.length >= MAX_ALERT_RULE_ACTIONS;
-  const watchedActions = useWatch({
-    control: actionsForm.control,
-    name: "actions",
-  });
 
   const writableSensors = useMemo(
     () => sensorsData?.items ?? [],
@@ -118,6 +205,9 @@ export function AlertRuleFormDialog({
     }
     return map;
   }, [sensors]);
+
+  // Augment writable sensors with sensors already assigned in the edit target
+  // so pre-existing selections remain visible in the dropdown.
   const actionSensorOptions = useMemo(() => {
     const map = new Map<string, { id: string; label: string }>();
     for (const sensor of writableSensors) {
@@ -126,7 +216,7 @@ export function AlertRuleFormDialog({
         label: sensor.units ? `${sensor.name} (${sensor.units})` : sensor.name,
       });
     }
-    for (const action of watchedActions ?? []) {
+    for (const action of editTarget?.actions ?? []) {
       const sensorId = action?.target_sensor_id;
       if (!sensorId || map.has(sensorId)) continue;
       map.set(sensorId, {
@@ -137,7 +227,7 @@ export function AlertRuleFormDialog({
       });
     }
     return Array.from(map.values());
-  }, [writableSensors, watchedActions, sensorLabelById]);
+  }, [writableSensors, editTarget?.actions, sensorLabelById]);
 
   const selectedSensor = useMemo(
     () => sensors.find((sensor) => sensor.id === form.sensor_id),
@@ -190,12 +280,15 @@ export function AlertRuleFormDialog({
       return;
     }
 
-    if ((watchedActions?.length ?? 0) > MAX_ALERT_RULE_ACTIONS) {
+    // Read current action values directly from the form store at submit time
+    const currentActions = actionsForm.getValues("actions") ?? [];
+
+    if (currentActions.length > MAX_ALERT_RULE_ACTIONS) {
       toast.error(t("tooManyActions", { max: MAX_ALERT_RULE_ACTIONS }));
       return;
     }
 
-    const transformedActions = (watchedActions ?? []).map((action) => ({
+    const transformedActions = currentActions.map((action) => ({
       target_sensor_id: action.target_sensor_id,
       trigger_payload: action.trigger_value
         ? { value: action.trigger_value }
@@ -240,6 +333,13 @@ export function AlertRuleFormDialog({
       toast.error(tCommon("operationFailed"));
     }
   }
+
+  const triggerDelayMode = (() => {
+    const secs = parseNonNegativeInteger(form.duration_seconds) ?? 0;
+    return secs === 0
+      ? t("durationInstant")
+      : t("durationDelay", { seconds: String(secs) });
+  })();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -356,15 +456,7 @@ export function AlertRuleFormDialog({
               {t("triggerDelayDuration")}
             </p>
             <p className="text-xs text-muted-foreground">
-              {t("triggerDelayMode", {
-                mode: (() => {
-                  const secs =
-                    parseNonNegativeInteger(form.duration_seconds) ?? 0;
-                  return secs === 0
-                    ? t("durationInstant")
-                    : t("durationDelay", { seconds: String(secs) });
-                })(),
-              })}
+              {t("triggerDelayMode", { mode: triggerDelayMode })}
             </p>
           </div>
 
@@ -496,83 +588,14 @@ export function AlertRuleFormDialog({
             )}
 
             {fields.map((field, index) => (
-              <Card key={field.id} className="space-y-3 p-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">
-                    {t("actionLabel", { index: index + 1 })}
-                  </p>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => remove(index)}
-                  >
-                    <X className="size-4" />
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>{t("targetSensor")}</Label>
-                    <Select
-                      value={watchedActions?.[index]?.target_sensor_id ?? ""}
-                      onValueChange={(value) =>
-                        actionsForm.setValue(
-                          `actions.${index}.target_sensor_id`,
-                          value ?? "",
-                        )
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("selectSensor")}>
-                          {sensorLabelById.get(
-                            watchedActions?.[index]?.target_sensor_id ?? "",
-                          ) || undefined}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {actionSensorOptions.map((sensor) => (
-                          <SelectItem key={sensor.id} value={sensor.id}>
-                            {sensor.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor={`trigger-value-${index}`}>
-                      {t("triggerValue")}
-                    </Label>
-                    <Input
-                      id={`trigger-value-${index}`}
-                      value={watchedActions?.[index]?.trigger_value ?? ""}
-                      onChange={(e) =>
-                        actionsForm.setValue(
-                          `actions.${index}.trigger_value`,
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor={`resolve-value-${index}`}>
-                      {t("resolveValue")}
-                    </Label>
-                    <Input
-                      id={`resolve-value-${index}`}
-                      value={watchedActions?.[index]?.resolve_value ?? ""}
-                      onChange={(e) =>
-                        actionsForm.setValue(
-                          `actions.${index}.resolve_value`,
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-              </Card>
+              <ActionRow
+                key={field.id}
+                control={actionsForm.control}
+                index={index}
+                sensorOptions={actionSensorOptions}
+                sensorLabelById={sensorLabelById}
+                onRemove={() => remove(index)}
+              />
             ))}
           </div>
 

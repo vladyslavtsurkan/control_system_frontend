@@ -1,7 +1,7 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { type SyntheticEvent } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,28 +22,33 @@ interface SensorControlDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   sensor: Sensor;
-  value: string | boolean;
   sending: boolean;
-  onValueChange: (v: string | boolean) => void;
-  onSubmit: (e: SyntheticEvent<HTMLFormElement>) => void;
+  onSave: (value: string | boolean) => void;
 }
 
 export function SensorControlDialog({
   open,
   onOpenChange,
   sensor,
-  value,
   sending,
-  onValueChange,
-  onSubmit,
+  onSave,
 }: SensorControlDialogProps) {
   const t = useTranslations("sensors");
   const tCommon = useTranslations("common");
+  const [value, setValue] = useState<string | boolean>(() =>
+    sensor.data_type === "boolean" ? false : "",
+  );
+
   const DATA_TYPE_LABELS: Record<string, string> = {
     numeric: t("numeric"),
     boolean: t("boolean"),
     string: t("string"),
   };
+
+  function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault();
+    onSave(value);
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -68,7 +73,7 @@ export function SensorControlDialog({
           </p>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             {sensor.data_type === "boolean" ? (
               /* Boolean — toggle */
@@ -84,7 +89,7 @@ export function SensorControlDialog({
                 <Switch
                   id="control-value-bool"
                   checked={value as boolean}
-                  onCheckedChange={(checked) => onValueChange(checked)}
+                  onCheckedChange={(checked) => setValue(checked)}
                 />
               </div>
             ) : sensor.data_type === "numeric" ? (
@@ -101,7 +106,7 @@ export function SensorControlDialog({
                   required
                   placeholder="e.g. 42.5"
                   value={value as string}
-                  onChange={(e) => onValueChange(e.target.value)}
+                  onChange={(e) => setValue(e.target.value)}
                   className="font-mono"
                 />
               </div>
@@ -115,7 +120,7 @@ export function SensorControlDialog({
                   required
                   placeholder='e.g. "AUTO"'
                   value={value as string}
-                  onChange={(e) => onValueChange(e.target.value)}
+                  onChange={(e) => setValue(e.target.value)}
                 />
               </div>
             )}

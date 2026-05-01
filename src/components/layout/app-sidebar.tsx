@@ -1,20 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState, type SyntheticEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
-  LayoutDashboard,
-  Server,
-  BellRing,
   Activity,
+  BellRing,
   Building2,
   ChevronDown,
-  UserCircle,
-  LogOut,
-  Copy,
   ClipboardList,
+  LayoutDashboard,
+  LogOut,
+  Server,
+  UserCircle,
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,144 +34,149 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setActiveOrg, setUser } from "@/store/auth-slice";
 import { useGetOrganizationsQuery, useUpdateMeMutation } from "@/store/api";
 import {
-  selectUser,
-  selectActiveOrgId,
-  selectWsStatus,
   selectActiveAlertCount,
+  selectActiveOrgId,
+  selectUser,
+  selectWsStatus,
 } from "@/store/selectors";
 import { useLogout } from "@/features/auth/hooks/use-logout";
+import { ProfileDialog } from "./profile-dialog";
 import { toast } from "sonner";
 import type { OrganizationWithRole } from "@/features/organizations/types";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+/** Tailwind classes for the WebSocket status indicator dot. */
+const WS_STATUS_COLOR: Record<string, string> = {
+  connected: "bg-green-500",
+  connecting: "bg-yellow-400 animate-pulse",
+  disconnected: "bg-zinc-400",
+  error: "bg-red-500",
+  idle: "bg-zinc-400",
+};
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function AppSidebar() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
+  const t = useTranslations("nav");
+
+  // ── Redux state ────────────────────────────────────────────────────────────
   const user = useAppSelector(selectUser);
   const activeOrgId = useAppSelector(selectActiveOrgId);
   const wsStatus = useAppSelector(selectWsStatus);
   const activeAlertCount = useAppSelector(selectActiveAlertCount);
-  const t = useTranslations("nav");
-  const tProfile = useTranslations("profile");
-  const tCommon = useTranslations("common");
 
-  const navItems = [
-    { href: "/", label: t("dashboard"), icon: LayoutDashboard },
-    { href: "/servers", label: t("servers"), icon: Server },
-    { href: "/sensors", label: t("sensors"), icon: Activity },
-    { href: "/alerts", label: t("alerts"), icon: BellRing },
-    { href: "/organizations", label: t("organizations"), icon: Building2 },
-  ];
-
+  // ── Queries / mutations ───────────────────────────────────────────────────
   const { data: orgsData } = useGetOrganizationsQuery();
+  const [updateMe, { isLoading: saving }] = useUpdateMeMutation();
+  const handleLogout = useLogout();
+
   const orgs = orgsData?.items ?? [];
   const activeOrg = orgs.find((o) => o.id === activeOrgId) ?? orgs[0];
 
-  const [updateMe, { isLoading: saving }] = useUpdateMeMutation();
-  const handleLogout = useLogout();
+  // ── Profile dialog ────────────────────────────────────────────────────────
   const [profileOpen, setProfileOpen] = useState(false);
-  const [form, setForm] = useState({ first_name: "", last_name: "" });
+  // Incrementing this key remounts <ProfileDialog>, resetting its form state.
+  const [profileKey, setProfileKey] = useState(0);
+
+  const openProfile = useCallback(() => {
+    setProfileKey((k) => k + 1);
+    setProfileOpen(true);
+  }, []);
+
+  const handleProfileSave = useCallback(
+    async (data: { first_name: string; last_name: string }) => {
+      try {
+        const updated = await updateMe({
+          first_name: data.first_name || null,
+          last_name: data.last_name || null,
+        }).unwrap();
+        dispatch(setUser(updated));
+        toast.success(t("profileUpdated"));
+        setProfileOpen(false);
+      } catch {
+        toast.error(t("profileUpdateFailed"));
+      }
+    },
+    [updateMe, dispatch, t],
+  );
+
+  // ── Organisation switching ────────────────────────────────────────────────
   const orgSwitchToastIdRef = useRef<string | number | null>(null);
   const pendingOrgNameRef = useRef<string | null>(null);
-
-  function openProfile() {
-    setForm({
-      first_name: user?.first_name ?? "",
-      last_name: user?.last_name ?? "",
-    });
-    setProfileOpen(true);
-  }
-
-  async function handleProfileSubmit(e: SyntheticEvent<HTMLFormElement>) {
-    e.preventDefault();
-    try {
-      const updated = await updateMe({
-        first_name: form.first_name || null,
-        last_name: form.last_name || null,
-      }).unwrap();
-      dispatch(setUser(updated));
-      toast.success(t("profileUpdated"));
-      setProfileOpen(false);
-    } catch {
-      toast.error(t("profileUpdateFailed"));
-    }
-  }
-
-  function handleSwitchOrg(org: OrganizationWithRole) {
-    if (org.id === activeOrgId) {
-      return;
-    }
-
-    pendingOrgNameRef.current = org.name;
-    orgSwitchToastIdRef.current = toast.loading(
-      t("switchingToOrg", { name: org.name }),
-    );
-    dispatch(setActiveOrg(org));
-  }
-
   const isOrgSwitchPending = wsStatus === "connecting";
 
+  const handleSwitchOrg = useCallback(
+    (org: OrganizationWithRole) => {
+      if (org.id === activeOrgId) return;
+      pendingOrgNameRef.current = org.name;
+      orgSwitchToastIdRef.current = toast.loading(
+        t("switchingToOrg", { name: org.name }),
+      );
+      dispatch(setActiveOrg(org));
+    },
+    [activeOrgId, dispatch, t],
+  );
+
+  // Dismiss the "switching…" toast once the WS reconnects (or errors).
   useEffect(() => {
     if (orgSwitchToastIdRef.current == null) return;
 
     if (wsStatus === "connected") {
-      const orgName =
+      const name =
         pendingOrgNameRef.current ?? activeOrg?.name ?? "selected organization";
-      toast.success(t("switchedTo", { name: orgName }), {
+      toast.success(t("switchedTo", { name }), {
         id: orgSwitchToastIdRef.current,
       });
       orgSwitchToastIdRef.current = null;
       pendingOrgNameRef.current = null;
-      return;
-    }
-
-    if (wsStatus === "error") {
-      toast.error(t("switchFailed"), {
-        id: orgSwitchToastIdRef.current,
-      });
+    } else if (wsStatus === "error") {
+      toast.error(t("switchFailed"), { id: orgSwitchToastIdRef.current });
       orgSwitchToastIdRef.current = null;
       pendingOrgNameRef.current = null;
     }
   }, [activeOrg?.name, wsStatus, t]);
 
-  const displayName = user
-    ? [user.first_name, user.last_name].filter(Boolean).join(" ") || user.email
-    : "";
+  // ── Derived display values ────────────────────────────────────────────────
+  const displayName = useMemo(
+    () =>
+      user
+        ? [user.first_name, user.last_name].filter(Boolean).join(" ") ||
+          user.email
+        : "",
+    [user],
+  );
 
-  const initials = user
-    ? (
-        [user.first_name, user.last_name]
-          .filter(Boolean)
-          .map((n) => n![0])
-          .join("") || user.email[0]
-      ).toUpperCase()
-    : "?";
+  const initials = useMemo(() => {
+    if (!user) return "?";
+    const letters = [user.first_name, user.last_name]
+      .filter(Boolean)
+      .map((n) => n![0])
+      .join("");
+    return (letters || user.email[0]).toUpperCase();
+  }, [user]);
 
-  const statusColor: Record<string, string> = {
-    connected: "bg-green-500",
-    connecting: "bg-yellow-400 animate-pulse",
-    disconnected: "bg-zinc-400",
-    error: "bg-red-500",
-    idle: "bg-zinc-400",
-  };
+  const navItems = useMemo(
+    () => [
+      { href: "/", label: t("dashboard"), icon: LayoutDashboard },
+      { href: "/servers", label: t("servers"), icon: Server },
+      { href: "/sensors", label: t("sensors"), icon: Activity },
+      { href: "/alerts", label: t("alerts"), icon: BellRing },
+      { href: "/organizations", label: t("organizations"), icon: Building2 },
+    ],
+    [t],
+  );
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <Sidebar collapsible="icon">
-      {/* Header — org switcher */}
+      {/* ── Header: organisation switcher ── */}
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -191,6 +195,7 @@ export function AppSidebar() {
                 </div>
                 <ChevronDown className="ml-auto size-4" />
               </DropdownMenuTrigger>
+
               <DropdownMenuContent className="w-56" align="start">
                 {orgs.map((org) => (
                   <DropdownMenuItem
@@ -206,11 +211,13 @@ export function AppSidebar() {
                     </span>
                   </DropdownMenuItem>
                 ))}
+
                 {orgs.length === 0 && (
                   <DropdownMenuItem disabled>
                     {t("noOrganizations")}
                   </DropdownMenuItem>
                 )}
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-xs text-muted-foreground">
                   {displayName}
@@ -221,7 +228,7 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      {/* Nav */}
+      {/* ── Content: navigation ── */}
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>{t("platform")}</SidebarGroupLabel>
@@ -235,21 +242,22 @@ export function AppSidebar() {
                 >
                   <div className="relative">
                     <Icon className="size-4" />
-                    {href === "/" && activeAlertCount > 0 ? (
+                    {href === "/" && activeAlertCount > 0 && (
                       <span className="absolute -top-1 -right-1 inline-block size-2 rounded-full bg-red-500" />
-                    ) : null}
+                    )}
                   </div>
                   <span>{label}</span>
                 </SidebarMenuButton>
-                {href === "/" && activeAlertCount > 0 ? (
+
+                {href === "/" && activeAlertCount > 0 && (
                   <SidebarMenuBadge className="bg-red-500/15 text-red-700 dark:text-red-300">
                     {activeAlertCount > 99 ? "99+" : activeAlertCount}
                   </SidebarMenuBadge>
-                ) : null}
+                )}
               </SidebarMenuItem>
             ))}
 
-            {/* Audit Log — owners and admins only */}
+            {/* Audit log — owners and admins only */}
             {(activeOrg?.role === "owner" || activeOrg?.role === "admin") && (
               <SidebarMenuItem>
                 <SidebarMenuButton
@@ -266,14 +274,14 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Footer — user menu + WS status */}
+      {/* ── Footer: user menu + WS status ── */}
       <SidebarFooter>
         <DropdownMenu>
           <DropdownMenuTrigger className="flex w-full items-center gap-2 rounded-md p-1 text-left hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none">
             <div className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-semibold">
               {initials}
             </div>
-            <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
+            <div className="grid flex-1 min-w-0 text-left text-sm leading-tight">
               <span className="truncate font-medium">{displayName}</span>
               <span className="truncate text-xs text-muted-foreground">
                 {user?.email}
@@ -281,6 +289,7 @@ export function AppSidebar() {
             </div>
             <ChevronDown className="ml-auto size-4 shrink-0" />
           </DropdownMenuTrigger>
+
           <DropdownMenuContent className="w-56" align="start" side="top">
             <DropdownMenuItem onClick={openProfile}>
               <UserCircle className="mr-2 size-4" />
@@ -297,97 +306,30 @@ export function AppSidebar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
+        {/* WebSocket connection status */}
         <div className="flex items-center gap-2 px-2 py-1 text-xs text-muted-foreground">
           <Activity className="size-3 shrink-0" />
           <span className="flex items-center gap-1.5 truncate">
             <span
-              className={`inline-block size-2 shrink-0 rounded-full ${statusColor[wsStatus] ?? "bg-zinc-400"}`}
+              className={`inline-block size-2 shrink-0 rounded-full ${
+                WS_STATUS_COLOR[wsStatus] ?? "bg-zinc-400"
+              }`}
             />
             {t("wsStatus", { status: wsStatus })}
-            {isOrgSwitchPending ? ` ${t("switchingOrg")}` : ""}
+            {isOrgSwitchPending && ` ${t("switchingOrg")}`}
           </span>
         </div>
       </SidebarFooter>
 
-      {/* Profile Edit Dialog */}
-      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{tProfile("title")}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleProfileSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="profile-email">{tProfile("email")}</Label>
-              <Input
-                id="profile-email"
-                value={user?.email ?? ""}
-                disabled
-                className="opacity-60"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="profile-uuid">{tProfile("userId")}</Label>
-              <p className="text-xs text-muted-foreground">
-                {tProfile("userIdHelp")}
-              </p>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="profile-uuid"
-                  value={user?.id ?? ""}
-                  disabled
-                  className="font-mono text-xs opacity-80"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon-sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(user?.id ?? "");
-                    toast.success(tProfile("userIdCopied"));
-                  }}
-                  aria-label={tProfile("copyUserId")}
-                >
-                  <Copy className="size-3.5" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="profile-first">{tProfile("firstName")}</Label>
-                <Input
-                  id="profile-first"
-                  value={form.first_name}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, first_name: e.target.value }))
-                  }
-                  placeholder={tProfile("firstNamePlaceholder")}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="profile-last">{tProfile("lastName")}</Label>
-                <Input
-                  id="profile-last"
-                  value={form.last_name}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, last_name: e.target.value }))
-                  }
-                  placeholder={tProfile("lastNamePlaceholder")}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <DialogClose render={<Button type="button" variant="outline" />}>
-                {tCommon("cancel")}
-              </DialogClose>
-              <Button type="submit" disabled={saving}>
-                {tCommon("saveChanges")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* Profile edit dialog — remounted on open to reset form */}
+      <ProfileDialog
+        key={profileKey}
+        open={profileOpen}
+        onOpenChange={setProfileOpen}
+        user={user}
+        saving={saving}
+        onSave={handleProfileSave}
+      />
     </Sidebar>
   );
 }
