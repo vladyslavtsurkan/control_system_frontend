@@ -116,16 +116,11 @@ export default function SensorPageClient({
   const { data: sensor } = useGetSensorQuery(id);
   const liveAlerts = useAppSelector(selectLiveAlerts);
 
-  const {
-    updating,
-    editOpen,
-    setEditOpen,
-    openEdit,
-    handleEditSubmit,
-  } = useSensorEditController({
-    sensorId: id,
-    sensor,
-  });
+  const { updating, editOpen, setEditOpen, openEdit, handleEditSubmit } =
+    useSensorEditController({
+      sensorId: id,
+      sensor,
+    });
 
   const {
     acknowledging,

@@ -109,7 +109,8 @@ const MemberList = memo(function MemberList({
           <TableRow key={m.id}>
             <TableCell>
               <div className="font-medium text-sm">
-                {[m.first_name, m.last_name].filter(Boolean).join(" ") || m.email}
+                {[m.first_name, m.last_name].filter(Boolean).join(" ") ||
+                  m.email}
               </div>
               {(m.first_name || m.last_name) && (
                 <div className="text-xs text-muted-foreground">{m.email}</div>

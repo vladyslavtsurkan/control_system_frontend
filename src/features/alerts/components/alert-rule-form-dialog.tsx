@@ -117,9 +117,7 @@ function ActionRow({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor={`trigger-value-${index}`}>
-            {t("triggerValue")}
-          </Label>
+          <Label htmlFor={`trigger-value-${index}`}>{t("triggerValue")}</Label>
           <Controller
             control={control}
             name={`actions.${index}.trigger_value`}
@@ -133,9 +131,7 @@ function ActionRow({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor={`resolve-value-${index}`}>
-            {t("resolveValue")}
-          </Label>
+          <Label htmlFor={`resolve-value-${index}`}>{t("resolveValue")}</Label>
           <Controller
             control={control}
             name={`actions.${index}.resolve_value`}
