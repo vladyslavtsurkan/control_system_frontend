@@ -45,7 +45,7 @@ export default function ServersPageClient({
     pagination.queryArgs,
     { refetchOnMountOrArgChange: true },
   );
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<OpcServer | null>(null);

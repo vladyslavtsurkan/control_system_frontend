@@ -43,6 +43,7 @@ import { UserMinus, UserPlus } from "lucide-react";
 import type {
   OrganizationWithRole,
   UserRoleInOrg,
+  OrganizationMember,
 } from "@/features/organizations/types";
 
 const ROLE_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
@@ -59,7 +60,7 @@ function isUserRoleInOrg(value: unknown): value is UserRoleInOrg {
 // ─── Member list (memoized so the "add member" input state doesn't re-render it) ─
 
 interface MemberListProps {
-  members: any[];
+  members: OrganizationMember[];
   isLoading: boolean;
   orgRole: UserRoleInOrg;
   onRemove: (userId: string, email: string) => void;

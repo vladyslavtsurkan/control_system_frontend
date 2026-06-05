@@ -41,8 +41,8 @@ export async function createServer(
     const data = await res.json();
     revalidatePath("/servers");
     return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to create server" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to create server" };
   }
 }
 
@@ -66,8 +66,8 @@ export async function updateServer(
     const data = await res.json();
     revalidatePath("/servers");
     return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to update server" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to update server" };
   }
 }
 
@@ -86,8 +86,8 @@ export async function deleteServer(id: string): Promise<ActionResponse<void>> {
 
     revalidatePath("/servers");
     return { success: true, data: undefined };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to delete server" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to delete server" };
   }
 }
 
@@ -112,8 +112,8 @@ export async function createApiKey(
     const data = await res.json();
     revalidatePath("/servers");
     return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to generate API key" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to generate API key" };
   }
 }
 
@@ -138,7 +138,7 @@ export async function revokeApiKey(
 
     revalidatePath("/servers");
     return { success: true, data: undefined };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to revoke API key" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to revoke API key" };
   }
 }

@@ -50,7 +50,7 @@ export default function OrganizationsPageClient({
     pagination.queryArgs,
     { refetchOnMountOrArgChange: true },
   );
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<OrganizationWithRole | null>(

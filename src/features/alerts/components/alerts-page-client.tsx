@@ -48,7 +48,7 @@ export default function AlertsPageClient({
     { refetchOnMountOrArgChange: true },
   );
   const { data: sensorsData } = useGetSensorsQuery();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<AlertRule | null>(null);

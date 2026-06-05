@@ -34,7 +34,7 @@ export async function updateMe(
     const data = await res.json();
     revalidatePath("/");
     return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to update profile" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to update profile" };
   }
 }

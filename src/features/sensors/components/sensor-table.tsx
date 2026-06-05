@@ -37,7 +37,7 @@ export function SensorTable({
   canManage,
 }: SensorTableProps) {
   const t = useTranslations("sensors");
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const { confirm, ConfirmDialog } = useConfirm();
 
   async function handleDelete(id: string, name: string) {

@@ -10,7 +10,7 @@ import type {
   Alert,
 } from "@/features/alerts/types";
 
-export type ActionResponse<T = any> =
+export type ActionResponse<T = unknown> =
   | { success: true; data: T }
   | { success: false; error: string; status?: number };
 
@@ -45,8 +45,8 @@ export async function createAlertRule(
     const data = await res.json();
     revalidatePath("/alerts");
     return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to create alert rule" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to create alert rule" };
   }
 }
 
@@ -70,8 +70,8 @@ export async function updateAlertRule(
     const data = await res.json();
     revalidatePath("/alerts");
     return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to update alert rule" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to update alert rule" };
   }
 }
 
@@ -90,8 +90,8 @@ export async function deleteAlertRule(id: string): Promise<ActionResponse<void>>
 
     revalidatePath("/alerts");
     return { success: true, data: undefined };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to delete alert rule" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to delete alert rule" };
   }
 }
 
@@ -115,8 +115,8 @@ export async function acknowledgeAlert(alertId: string): Promise<ActionResponse<
     revalidatePath("/");
     revalidatePath("/alerts");
     return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to acknowledge alert" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to acknowledge alert" };
   }
 }
 
@@ -140,7 +140,7 @@ export async function resolveAlert(alertId: string): Promise<ActionResponse<Aler
     revalidatePath("/");
     revalidatePath("/alerts");
     return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to resolve alert" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to resolve alert" };
   }
 }

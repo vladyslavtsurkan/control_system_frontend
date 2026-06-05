@@ -41,8 +41,8 @@ export async function createOrganization(
     const data = await res.json();
     revalidatePath("/organizations");
     return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to create organization" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to create organization" };
   }
 }
 
@@ -66,8 +66,8 @@ export async function updateOrganization(
     const data = await res.json();
     revalidatePath("/organizations");
     return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to update organization" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to update organization" };
   }
 }
 
@@ -86,8 +86,8 @@ export async function deleteOrganization(id: string): Promise<ActionResponse<voi
 
     revalidatePath("/organizations");
     return { success: true, data: undefined };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to delete organization" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to delete organization" };
   }
 }
 
@@ -106,8 +106,8 @@ export async function leaveOrganization(id: string): Promise<ActionResponse<void
 
     revalidatePath("/organizations");
     return { success: true, data: undefined };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to leave organization" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to leave organization" };
   }
 }
 
@@ -133,8 +133,8 @@ export async function addOrganizationMember(
     revalidatePath("/organizations");
     revalidatePath("/audit-logs");
     return { success: true, data: undefined };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to add member" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to add member" };
   }
 }
 
@@ -160,8 +160,8 @@ export async function removeOrganizationMember(
     revalidatePath("/organizations");
     revalidatePath("/audit-logs");
     return { success: true, data: undefined };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to remove member" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to remove member" };
   }
 }
 
@@ -189,7 +189,7 @@ export async function changeOrganizationMemberRole(
     revalidatePath("/organizations");
     revalidatePath("/audit-logs");
     return { success: true, data: undefined };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to change member role" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to change member role" };
   }
 }

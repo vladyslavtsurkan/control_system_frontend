@@ -42,8 +42,8 @@ export async function createSensor(
     revalidatePath("/sensors");
     revalidatePath("/");
     return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to create sensor" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to create sensor" };
   }
 }
 
@@ -68,8 +68,8 @@ export async function updateSensor(
     revalidatePath("/sensors");
     revalidatePath("/");
     return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to update sensor" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to update sensor" };
   }
 }
 
@@ -89,8 +89,8 @@ export async function deleteSensor(id: string): Promise<ActionResponse<void>> {
     revalidatePath("/sensors");
     revalidatePath("/");
     return { success: true, data: undefined };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to delete sensor" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to delete sensor" };
   }
 }
 
@@ -115,7 +115,7 @@ export async function sendControlCommand(
     revalidatePath("/");
     revalidatePath("/sensors");
     return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message || "Failed to send control command" };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Failed to send control command" };
   }
 }
