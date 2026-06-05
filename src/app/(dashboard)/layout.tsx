@@ -59,7 +59,7 @@ export default async function DashboardLayout({
           currentOrg={currentOrg}
         />
         <SidebarInset>
-          <TopBar user={user} currentOrg={currentOrg} />
+          <TopBar user={user} />
           <main className="flex flex-1 flex-col gap-4 p-4 pt-4">
             {children}
           </main>

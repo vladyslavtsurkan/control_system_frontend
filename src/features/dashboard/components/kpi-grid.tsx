@@ -7,6 +7,7 @@ import { KpiCard } from "./kpi-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { LiveKpi, Sensor, SensorReading } from "@/features/sensors";
 import { useDashboardTelemetry } from "@/features/dashboard/hooks/use-dashboard-telemetry";
+import type { PaginatedResponse } from "@/shared/types/pagination";
 import {
   buildFallbackKpi,
   getLatestReading,
@@ -44,7 +45,11 @@ const SensorKpiCard = memo(function SensorKpiCard({
   );
 });
 
-export function KpiGrid() {
+interface KpiGridProps {
+  initialData?: PaginatedResponse<Sensor> | null;
+}
+
+export function KpiGrid({ initialData }: KpiGridProps) {
   const t = useTranslations("dashboard");
   const { latestBySensor, readingsBySensor } = useDashboardTelemetry();
 
@@ -56,7 +61,9 @@ export function KpiGrid() {
     limit: 100,
   });
 
-  if (isLoading) {
+  const activeSensorsData = sensorsData ?? initialData;
+
+  if (isLoading && !activeSensorsData) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
@@ -66,7 +73,7 @@ export function KpiGrid() {
     );
   }
 
-  const sensors = sensorsData?.items ?? [];
+  const sensors = activeSensorsData?.items ?? [];
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

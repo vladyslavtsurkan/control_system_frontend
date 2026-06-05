@@ -26,15 +26,18 @@ import {
   LIST_PAGE_SIZE_OPTIONS,
 } from "@/config/constants";
 import type { OrganizationWithRole } from "@/features/organizations/types";
+import type { PaginatedResponse } from "@/shared/types/pagination";
 
 interface OrganizationsPageClientProps {
   initialPage: number;
   initialPerPage: number;
+  initialData?: PaginatedResponse<OrganizationWithRole> | null;
 }
 
 export default function OrganizationsPageClient({
   initialPage,
   initialPerPage,
+  initialData,
 }: OrganizationsPageClientProps) {
   const t = useTranslations("organizations");
   const tCommon = useTranslations("common");
@@ -59,13 +62,19 @@ export default function OrganizationsPageClient({
     useState<OrganizationWithRole | null>(null);
   const { confirm, ConfirmDialog } = useConfirm();
 
-  const orgs = data?.items ?? [];
+  const isInitialQuery =
+    pagination.page === initialPage &&
+    pagination.perPage === initialPerPage;
+
+  const activeOrgsData = isInitialQuery ? (data ?? initialData) : data;
+
+  const orgs = activeOrgsData?.items ?? [];
   const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } =
     getOffsetLimitPaginationMeta({
-      count: data?.count,
-      perPage: data?.per_page,
-      totalPages: data?.total_pages,
-      page: data?.page,
+      count: activeOrgsData?.count,
+      perPage: activeOrgsData?.per_page,
+      totalPages: activeOrgsData?.total_pages,
+      page: activeOrgsData?.page,
       offset: pagination.offset,
       requestedLimit: pagination.limit,
       fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
@@ -133,7 +142,7 @@ export default function OrganizationsPageClient({
       <OrganizationsTable
         organizations={orgs}
         activeOrgId={activeOrgId}
-        isLoading={isLoading}
+        isLoading={isLoading && !activeOrgsData}
         onManageMembers={setMembersTarget}
         onEdit={openEdit}
         onDelete={handleDelete}

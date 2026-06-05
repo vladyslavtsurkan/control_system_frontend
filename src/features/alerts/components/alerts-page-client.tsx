@@ -24,15 +24,18 @@ import {
   LIST_PAGE_SIZE_OPTIONS,
 } from "@/config/constants";
 import type { AlertRule } from "@/features/alerts/types";
+import type { PaginatedResponse } from "@/shared/types/pagination";
 
 interface AlertsPageClientProps {
   initialPage: number;
   initialPerPage: number;
+  initialData?: PaginatedResponse<AlertRule> | null;
 }
 
 export default function AlertsPageClient({
   initialPage,
   initialPerPage,
+  initialData,
 }: AlertsPageClientProps) {
   const t = useTranslations("alerts");
   const tCommon = useTranslations("common");
@@ -53,14 +56,20 @@ export default function AlertsPageClient({
 
   const { canManage } = useOrgPermissions();
 
+  const isInitialQuery =
+    pagination.page === initialPage &&
+    pagination.perPage === initialPerPage;
+
+  const activeAlertRulesData = isInitialQuery ? (data ?? initialData) : data;
+
   const sensors = sensorsData?.items ?? [];
-  const rules = data?.items ?? [];
+  const rules = activeAlertRulesData?.items ?? [];
   const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } =
     getOffsetLimitPaginationMeta({
-      count: data?.count,
-      perPage: data?.per_page,
-      totalPages: data?.total_pages,
-      page: data?.page,
+      count: activeAlertRulesData?.count,
+      perPage: activeAlertRulesData?.per_page,
+      totalPages: activeAlertRulesData?.total_pages,
+      page: activeAlertRulesData?.page,
       offset: pagination.offset,
       requestedLimit: pagination.limit,
       fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
@@ -113,7 +122,7 @@ export default function AlertsPageClient({
       <AlertsTable
         rules={rules}
         sensors={sensors}
-        isLoading={isLoading}
+        isLoading={isLoading && !activeAlertRulesData}
         onEdit={openEdit}
         onDelete={(rule) => handleDelete(rule.id, rule.name)}
         canManage={canManage}

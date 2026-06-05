@@ -33,11 +33,14 @@ import type { AuditLogFiltersValue } from "@/features/audit-logs/components/audi
 import type {
   AuditLogAction,
   AuditLogResourceType,
+  AuditLogEntry,
 } from "@/features/audit-logs/types";
+import type { PaginatedResponse } from "@/shared/types/pagination";
 
 interface AuditLogsPageClientProps {
   initialPage: number;
   initialPerPage: number;
+  initialData?: PaginatedResponse<AuditLogEntry> | null;
 }
 
 const DEFAULT_FILTERS: AuditLogFiltersValue = {
@@ -49,6 +52,7 @@ const DEFAULT_FILTERS: AuditLogFiltersValue = {
 export default function AuditLogsPageClient({
   initialPage,
   initialPerPage,
+  initialData,
 }: AuditLogsPageClientProps) {
   const t = useTranslations("auditLogs");
   const router = useRouter();
@@ -86,6 +90,15 @@ export default function AuditLogsPageClient({
     },
   );
 
+  const isInitialQuery =
+    pagination.page === initialPage &&
+    pagination.perPage === initialPerPage &&
+    !filters.resource_type &&
+    !filters.action &&
+    !filters.actor_id;
+
+  const activeAuditLogsData = isInitialQuery ? (data ?? initialData) : data;
+
   const { data: membersData } = useGetOrganizationMembersQuery(
     activeOrgId ?? "",
     { skip: !activeOrgId || !isAuthorized },
@@ -114,14 +127,14 @@ export default function AuditLogsPageClient({
   }
 
   const members = membersData?.items ?? [];
-  const entries = data?.items ?? [];
+  const entries = activeAuditLogsData?.items ?? [];
 
   const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } =
     getOffsetLimitPaginationMeta({
-      count: data?.count,
-      perPage: data?.per_page,
-      totalPages: data?.total_pages,
-      page: data?.page,
+      count: activeAuditLogsData?.count,
+      perPage: activeAuditLogsData?.per_page,
+      totalPages: activeAuditLogsData?.total_pages,
+      page: activeAuditLogsData?.page,
       offset: pagination.offset,
       requestedLimit: pagination.limit,
       fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
@@ -165,7 +178,7 @@ export default function AuditLogsPageClient({
         />
       </div>
 
-      <AuditLogTable entries={entries} isLoading={isLoading} />
+      <AuditLogTable entries={entries} isLoading={isLoading && !activeAuditLogsData} />
 
       <ListPaginationFooter
         currentPage={currentPage}

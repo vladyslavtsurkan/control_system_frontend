@@ -21,15 +21,18 @@ import {
   LIST_PAGE_SIZE_OPTIONS,
 } from "@/config/constants";
 import type { OpcServer } from "@/features/servers/types";
+import type { PaginatedResponse } from "@/shared/types/pagination";
 
 interface ServersPageClientProps {
   initialPage: number;
   initialPerPage: number;
+  initialData?: PaginatedResponse<OpcServer> | null;
 }
 
 export default function ServersPageClient({
   initialPage,
   initialPerPage,
+  initialData,
 }: ServersPageClientProps) {
   const t = useTranslations("servers");
   const tCommon = useTranslations("common");
@@ -49,13 +52,19 @@ export default function ServersPageClient({
   const { confirm, ConfirmDialog } = useConfirm();
   const { canManage } = useOrgPermissions();
 
-  const servers = data?.items ?? [];
+  const isInitialQuery =
+    pagination.page === initialPage &&
+    pagination.perPage === initialPerPage;
+
+  const activeServersData = isInitialQuery ? (data ?? initialData) : data;
+
+  const servers = activeServersData?.items ?? [];
   const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } =
     getOffsetLimitPaginationMeta({
-      count: data?.count,
-      perPage: data?.per_page,
-      totalPages: data?.total_pages,
-      page: data?.page,
+      count: activeServersData?.count,
+      perPage: activeServersData?.per_page,
+      totalPages: activeServersData?.total_pages,
+      page: activeServersData?.page,
       offset: pagination.offset,
       requestedLimit: pagination.limit,
       fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
@@ -107,7 +116,7 @@ export default function ServersPageClient({
 
       <ServersTable
         servers={servers}
-        isLoading={isLoading}
+        isLoading={isLoading && !activeServersData}
         onEdit={openEdit}
         onManageApiKey={setApiKeyServer}
         onDelete={(server) => handleDelete(server.id, server.name)}
