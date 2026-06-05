@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import {
-  useDeleteAlertRuleMutation,
   useGetAlertRulesQuery,
   useGetSensorsQuery,
 } from "@/store/api";
+import { deleteAlertRule } from "@/features/alerts/actions/alert-actions";
 import { ListPaginationFooter } from "@/components/ui/list-pagination";
 import { AlertRuleFormDialog } from "@/features/alerts/components/alert-rule-form-dialog";
 import { AlertsActionBar } from "@/features/alerts/components/alerts-action-bar";
@@ -48,7 +48,7 @@ export default function AlertsPageClient({
     { refetchOnMountOrArgChange: true },
   );
   const { data: sensorsData } = useGetSensorsQuery();
-  const [deleteRule] = useDeleteAlertRuleMutation();
+  const [isPending, startTransition] = useTransition();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<AlertRule | null>(null);
@@ -95,12 +95,18 @@ export default function AlertsPageClient({
       return;
     }
 
-    try {
-      await deleteRule(id).unwrap();
-      toast.success(t("ruleDeleted"));
-    } catch {
-      toast.error(tCommon("deleteFailed"));
-    }
+    startTransition(async () => {
+      try {
+        const res = await deleteAlertRule(id);
+        if (res.success) {
+          toast.success(t("ruleDeleted"));
+        } else {
+          toast.error(res.error || tCommon("deleteFailed"));
+        }
+      } catch {
+        toast.error(tCommon("deleteFailed"));
+      }
+    });
   }
 
   return (

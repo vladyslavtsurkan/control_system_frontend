@@ -6,6 +6,15 @@ export const wsApi = api.injectEndpoints({
     getWsTicket: builder.query<WsTicketResponse, void>({
       keepUnusedDataFor: 0,
       queryFn: async (_arg, { getState }) => {
+        if (typeof window === "undefined") {
+          return {
+            error: {
+              status: 500,
+              data: { detail: "WS ticket request not allowed on server" },
+            },
+          };
+        }
+
         const activeOrgId =
           (getState() as { auth?: { activeOrgId?: string | null } }).auth
             ?.activeOrgId ?? null;
@@ -39,7 +48,7 @@ export const wsApi = api.injectEndpoints({
       },
     }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const { useGetWsTicketQuery } = wsApi;

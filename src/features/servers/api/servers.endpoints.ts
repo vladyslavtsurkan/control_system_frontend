@@ -1,9 +1,6 @@
 import { api } from "@/store/api/base-api";
 import type {
   OpcServer,
-  CreateOpcServerRequest,
-  UpdateOpcServerRequest,
-  ApiKeyCreateResponse,
   ApiKeyInfoResponse,
 } from "@/features/servers/types";
 import type {
@@ -36,25 +33,6 @@ const serversApi = api.injectEndpoints({
           : [{ type: "Servers", id: "LIST" }],
     }),
 
-    createServer: builder.mutation<OpcServer, CreateOpcServerRequest>({
-      query: (body) => ({ url: "/v1/opc-servers/", method: "POST", body }),
-      invalidatesTags: [{ type: "Servers", id: "LIST" }],
-    }),
-
-    updateServer: builder.mutation<OpcServer, UpdateOpcServerRequest>({
-      query: ({ id, ...body }) => ({
-        url: `/v1/opc-servers/${id}`,
-        method: "PATCH",
-        body,
-      }),
-      invalidatesTags: (_r, _e, { id }) => [{ type: "Servers", id }],
-    }),
-
-    deleteServer: builder.mutation<void, string>({
-      query: (id) => ({ url: `/v1/opc-servers/${id}`, method: "DELETE" }),
-      invalidatesTags: [{ type: "Servers", id: "LIST" }],
-    }),
-
     getApiKeys: builder.query<ApiKeyInfoResponse[], void>({
       query: () => "/v1/opc-servers/api-keys",
       providesTags: (result) =>
@@ -68,38 +46,11 @@ const serversApi = api.injectEndpoints({
             ]
           : [{ type: "Servers", id: "APIKEY-LIST" }],
     }),
-
-    createApiKey: builder.mutation<ApiKeyCreateResponse, string>({
-      query: (serverId) => ({
-        url: `/v1/opc-servers/${serverId}/api-keys`,
-        method: "POST",
-      }),
-      invalidatesTags: (_r, _e, serverId) => [
-        { type: "Servers", id: `APIKEY-${serverId}` },
-        { type: "Servers", id: "APIKEY-LIST" },
-      ],
-    }),
-
-    revokeApiKey: builder.mutation<void, { serverId: string; keyId: string }>({
-      query: ({ serverId, keyId }) => ({
-        url: `/v1/opc-servers/${serverId}/api-keys/${keyId}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: (_r, _e, { serverId }) => [
-        { type: "Servers", id: `APIKEY-${serverId}` },
-        { type: "Servers", id: "APIKEY-LIST" },
-      ],
-    }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {
   useGetServersQuery,
-  useCreateServerMutation,
-  useUpdateServerMutation,
-  useDeleteServerMutation,
   useGetApiKeysQuery,
-  useCreateApiKeyMutation,
-  useRevokeApiKeyMutation,
 } = serversApi;

@@ -1,5 +1,5 @@
 import { api } from "@/store/api/base-api";
-import type { User, UserUpdateRequest } from "@/features/auth/types";
+import type { User } from "@/features/auth/types";
 
 const authApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -7,12 +7,8 @@ const authApi = api.injectEndpoints({
       query: () => "/v1/users/me",
       providesTags: ["Me"],
     }),
-    updateMe: builder.mutation<User, UserUpdateRequest>({
-      query: (body) => ({ url: "/v1/users/", method: "PATCH", body }),
-      invalidatesTags: ["Me"],
-    }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
-export const { useGetMeQuery, useUpdateMeMutation } = authApi;
+export const { useGetMeQuery } = authApi;

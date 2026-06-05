@@ -1,14 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Trash2, Copy, KeyRound, Eye, EyeOff } from "lucide-react";
 import { useTranslations } from "next-intl";
-import {
-  useGetApiKeysQuery,
-  useCreateApiKeyMutation,
-  useRevokeApiKeyMutation,
-} from "@/store/api";
+import { useGetApiKeysQuery } from "@/store/api";
+import { createApiKey, revokeApiKey } from "@/features/servers/actions/server-actions";
 import { useConfirm } from "@/hooks/use-confirm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,9 +35,9 @@ export function ApiKeyDialog({
 }: ApiKeyDialogProps) {
   const t = useTranslations("servers");
   const tCommon = useTranslations("common");
-  const { data: allKeys, isLoading: keysLoading } = useGetApiKeysQuery();
-  const [createApiKey, { isLoading: creating }] = useCreateApiKeyMutation();
-  const [revokeApiKey, { isLoading: revoking }] = useRevokeApiKeyMutation();
+  const { data: allKeys, isLoading: keysLoading, refetch } = useGetApiKeysQuery();
+  const [creating, startCreateTransition] = useTransition();
+  const [revoking, startRevokeTransition] = useTransition();
   const { confirm, ConfirmDialog } = useConfirm();
 
   const [revealedSecret, setRevealedSecret] =
@@ -51,18 +48,18 @@ export function ApiKeyDialog({
     allKeys?.filter((k) => k.opc_server_id === server.id) ?? [];
   const atCap = serverKeys.length >= MAX_API_KEYS_PER_OPC_SERVER;
 
-  async function handleCreate() {
-    try {
-      const result = await createApiKey(server.id).unwrap();
-      setRevealedSecret(result);
-      setSecretVisible(false);
-      toast.success(t("keyCreated"));
-    } catch (err: unknown) {
-      const msg =
-        (err as { data?: { detail?: string } })?.data?.detail ??
-        tCommon("operationFailed");
-      toast.error(msg);
-    }
+  function handleCreate() {
+    startCreateTransition(async () => {
+      const result = await createApiKey(server.id);
+      if (result.success) {
+        setRevealedSecret(result.data);
+        setSecretVisible(false);
+        toast.success(t("keyCreated"));
+        refetch();
+      } else {
+        toast.error(result.error || tCommon("operationFailed"));
+      }
+    });
   }
 
   async function handleRevoke(keyId: string) {
@@ -75,12 +72,15 @@ export function ApiKeyDialog({
       }))
     )
       return;
-    try {
-      await revokeApiKey({ serverId: server.id, keyId }).unwrap();
-      toast.success(t("keyRevoked"));
-    } catch {
-      toast.error(t("revokeFailed"));
-    }
+    startRevokeTransition(async () => {
+      const result = await revokeApiKey(server.id, keyId);
+      if (result.success) {
+        toast.success(t("keyRevoked"));
+        refetch();
+      } else {
+        toast.error(result.error || t("revokeFailed"));
+      }
+    });
   }
 
   function copyToClipboard(value: string, successMessage: string) {

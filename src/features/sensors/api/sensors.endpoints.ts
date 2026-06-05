@@ -3,11 +3,8 @@ import { DEFAULT_BUCKET_INTERVAL } from "@/features/sensors/types";
 import type {
   Sensor,
   GetSensorsParams,
-  SensorCreateRequest,
-  SensorUpdateRequest,
   ReadingsBucketedResponse,
   GetReadingsParams,
-  SensorControlResponse,
 } from "@/features/sensors/types";
 import type { PaginatedResponse } from "@/shared/types/pagination";
 
@@ -66,31 +63,6 @@ const sensorsApi = api.injectEndpoints({
       providesTags: (_r, _e, sensorId) => [{ type: "Sensors", id: sensorId }],
     }),
 
-    createSensor: builder.mutation<Sensor, SensorCreateRequest>({
-      query: (body) => ({ url: "/v1/sensors/", method: "POST", body }),
-      invalidatesTags: (_r, _e, { opc_server_id }) => [
-        { type: "Sensors", id: "LIST" },
-        { type: "Sensors", id: `LIST-${opc_server_id}` },
-      ],
-    }),
-
-    updateSensor: builder.mutation<Sensor, SensorUpdateRequest>({
-      query: ({ id, ...body }) => ({
-        url: `/v1/sensors/${id}`,
-        method: "PATCH",
-        body,
-      }),
-      invalidatesTags: (_r, _e, { id }) => [
-        { type: "Sensors", id },
-        { type: "Sensors", id: "LIST" },
-      ],
-    }),
-
-    deleteSensor: builder.mutation<void, string>({
-      query: (id) => ({ url: `/v1/sensors/${id}`, method: "DELETE" }),
-      invalidatesTags: [{ type: "Sensors", id: "LIST" }],
-    }),
-
     getReadings: builder.query<ReadingsBucketedResponse, GetReadingsParams>({
       query: ({
         sensorId,
@@ -108,19 +80,8 @@ const sensorsApi = api.injectEndpoints({
         { type: "Readings", id: sensorId },
       ],
     }),
-
-    sendControlCommand: builder.mutation<
-      SensorControlResponse,
-      { sensorId: string; value: number | boolean | string }
-    >({
-      query: ({ sensorId, value }) => ({
-        url: `/v1/sensors/${sensorId}/control`,
-        method: "POST",
-        body: { value },
-      }),
-    }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export { sensorsApi };
@@ -128,9 +89,5 @@ export { sensorsApi };
 export const {
   useGetSensorsQuery,
   useGetSensorQuery,
-  useCreateSensorMutation,
-  useUpdateSensorMutation,
-  useDeleteSensorMutation,
   useGetReadingsQuery,
-  useSendControlCommandMutation,
 } = sensorsApi;

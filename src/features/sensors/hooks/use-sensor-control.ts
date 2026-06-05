@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { useSendControlCommandMutation } from "@/store/api";
+import { sendControlCommand } from "@/features/sensors/actions/sensor-actions";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useOrgPermissions } from "@/features/organizations";
 import type { Sensor } from "@/features/sensors/types";
@@ -14,8 +14,7 @@ export function useSensorControl({ sensor }: UseSensorControlParams) {
   const [open, setOpen] = useState(false);
   const t = useTranslations("sensors");
 
-  const [sendControlCommand, { isLoading: sending }] =
-    useSendControlCommandMutation();
+  const [sending, startTransition] = useTransition();
   const { confirm, ConfirmDialog } = useConfirm();
 
   // Role-gating: only owner/admin may send control commands
@@ -60,25 +59,24 @@ export function useSensorControl({ sensor }: UseSensorControlParams) {
     });
     if (!ok) return;
 
-    try {
-      const result = await sendControlCommand({
-        sensorId: sensor.id,
-        value: parsedValue,
-      }).unwrap();
-      toast.success(t("detail.controlDispatched", { id: result.command_id }));
-      setOpen(false);
-    } catch (err: unknown) {
-      const status = (err as { status?: number })?.status;
-      if (status === 400) {
-        toast.error(t("detail.controlNotWritable"));
-      } else if (status === 404) {
-        toast.error(t("detail.controlSensorNotFound"));
-      } else if (status === 401 || status === 403) {
-        toast.error(t("detail.controlPermission"));
+    startTransition(async () => {
+      const result = await sendControlCommand(sensor.id, parsedValue);
+      if (result.success) {
+        toast.success(t("detail.controlDispatched", { id: result.data.command_id }));
+        setOpen(false);
       } else {
-        toast.error(t("detail.controlFailed"));
+        const status = result.status;
+        if (status === 400) {
+          toast.error(t("detail.controlNotWritable"));
+        } else if (status === 404) {
+          toast.error(t("detail.controlSensorNotFound"));
+        } else if (status === 401 || status === 403) {
+          toast.error(t("detail.controlPermission"));
+        } else {
+          toast.error(t("detail.controlFailed"));
+        }
       }
-    }
+    });
   }
 
   return {

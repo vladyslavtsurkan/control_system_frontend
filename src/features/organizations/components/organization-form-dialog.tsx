@@ -1,12 +1,9 @@
 "use client";
 
-import { useState, type SyntheticEvent } from "react";
+import { useState, useTransition, type SyntheticEvent } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import {
-  useCreateOrganizationMutation,
-  useUpdateOrganizationMutation,
-} from "@/store/api";
+import { createOrganization, updateOrganization } from "@/features/organizations/actions/org-actions";
 import { setActiveOrg } from "@/store/auth-slice";
 import { useAppDispatch } from "@/store/hooks";
 import { Button } from "@/components/ui/button";
@@ -48,8 +45,7 @@ export function OrganizationFormDialog({
   const t = useTranslations("organizations");
   const tCommon = useTranslations("common");
   const dispatch = useAppDispatch();
-  const [createOrg, { isLoading: creating }] = useCreateOrganizationMutation();
-  const [updateOrg, { isLoading: updating }] = useUpdateOrganizationMutation();
+  const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState<OrgFormState>(() =>
     editTarget
       ? { name: editTarget.name, description: editTarget.description ?? "" }
@@ -58,32 +54,42 @@ export function OrganizationFormDialog({
 
   async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
-    try {
-      if (editTarget) {
-        const updated = await updateOrg({
-          id: editTarget.id,
-          name: form.name || null,
-          description: form.description || null,
-        }).unwrap();
-        if (editTarget.id === activeOrgId) {
-          dispatch(setActiveOrg(updated));
+    startTransition(async () => {
+      try {
+        if (editTarget) {
+          const res = await updateOrganization(editTarget.id, {
+            name: form.name || null,
+            description: form.description || null,
+          });
+          if (res.success) {
+            if (editTarget.id === activeOrgId) {
+              dispatch(setActiveOrg(res.data));
+            }
+            toast.success(t("orgUpdated"));
+            onOpenChange(false);
+          } else {
+            toast.error(res.error || tCommon("operationFailed"));
+          }
+        } else {
+          const payload: CreateOrganizationRequest = {
+            name: form.name,
+            description: form.description || null,
+          };
+          const res = await createOrganization(payload);
+          if (res.success) {
+            if (!activeOrgId) {
+              dispatch(setActiveOrg(res.data));
+            }
+            toast.success(t("orgCreated"));
+            onOpenChange(false);
+          } else {
+            toast.error(res.error || tCommon("operationFailed"));
+          }
         }
-        toast.success(t("orgUpdated"));
-      } else {
-        const payload: CreateOrganizationRequest = {
-          name: form.name,
-          description: form.description || null,
-        };
-        const created = await createOrg(payload).unwrap();
-        if (!activeOrgId) {
-          dispatch(setActiveOrg(created));
-        }
-        toast.success(t("orgCreated"));
+      } catch {
+        toast.error(tCommon("operationFailed"));
       }
-      onOpenChange(false);
-    } catch {
-      toast.error(tCommon("operationFailed"));
-    }
+    });
   }
 
   return (
@@ -120,7 +126,7 @@ export function OrganizationFormDialog({
             <DialogClose render={<Button type="button" variant="outline" />}>
               {tCommon("cancel")}
             </DialogClose>
-            <Button type="submit" disabled={creating || updating}>
+             <Button type="submit" disabled={isPending}>
               {editTarget ? tCommon("saveChanges") : tCommon("create")}
             </Button>
           </DialogFooter>

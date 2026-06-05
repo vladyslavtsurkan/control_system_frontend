@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setActiveOrg, setUser } from "@/store/auth-slice";
-import { useUpdateMeMutation } from "@/store/api";
+import { updateMe } from "@/features/auth/actions/auth-actions";
 import {
   selectActiveAlertCount,
   selectActiveOrgId,
@@ -81,7 +81,7 @@ export function AppSidebar({ user: initialUser, organizations, currentOrg }: App
   const activeAlertCount = useAppSelector(selectActiveAlertCount);
 
   // ── Queries / mutations ───────────────────────────────────────────────────
-  const [updateMe, { isLoading: saving }] = useUpdateMeMutation();
+  const [saving, startTransition] = useTransition();
   const handleLogout = useLogout();
 
   const orgs = organizations;
@@ -99,19 +99,25 @@ export function AppSidebar({ user: initialUser, organizations, currentOrg }: App
 
   const handleProfileSave = useCallback(
     async (data: { first_name: string; last_name: string }) => {
-      try {
-        const updated = await updateMe({
-          first_name: data.first_name || null,
-          last_name: data.last_name || null,
-        }).unwrap();
-        dispatch(setUser(updated));
-        toast.success(t("profileUpdated"));
-        setProfileOpen(false);
-      } catch {
-        toast.error(t("profileUpdateFailed"));
-      }
+      startTransition(async () => {
+        try {
+          const res = await updateMe({
+            first_name: data.first_name || null,
+            last_name: data.last_name || null,
+          });
+          if (res.success) {
+            dispatch(setUser(res.data));
+            toast.success(t("profileUpdated"));
+            setProfileOpen(false);
+          } else {
+            toast.error(res.error || t("profileUpdateFailed"));
+          }
+        } catch {
+          toast.error(t("profileUpdateFailed"));
+        }
+      });
     },
-    [updateMe, dispatch, t],
+    [dispatch, t],
   );
 
   // ── Organisation switching ────────────────────────────────────────────────

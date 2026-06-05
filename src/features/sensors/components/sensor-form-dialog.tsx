@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, type SyntheticEvent } from "react";
+import { useState, useTransition, type SyntheticEvent } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { useCreateSensorMutation, useUpdateSensorMutation } from "@/store/api";
+import { createSensor, updateSensor } from "@/features/sensors/actions/sensor-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,8 +69,7 @@ export function SensorFormDialog({
 }: SensorFormDialogProps) {
   const t = useTranslations("sensors");
   const tCommon = useTranslations("common");
-  const [createSensor, { isLoading: creating }] = useCreateSensorMutation();
-  const [updateSensor, { isLoading: updating }] = useUpdateSensorMutation();
+  const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState<SensorFormState>(() =>
     editTarget
       ? {
@@ -90,35 +89,45 @@ export function SensorFormDialog({
 
   async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
-    try {
-      if (editTarget) {
-        await updateSensor({
-          id: editTarget.id,
-          name: form.name || undefined,
-          description: form.description || null,
-          node_id: form.node_id || undefined,
-          data_type: form.data_type,
-          units: form.units || null,
-          is_writable: form.is_writable,
-        }).unwrap();
-        toast.success(t("sensorUpdated"));
-      } else {
-        const payload: SensorCreateRequest = {
-          opc_server_id: form.opc_server_id,
-          name: form.name,
-          description: form.description || null,
-          node_id: form.node_id,
-          data_type: form.data_type,
-          units: form.units || null,
-          is_writable: form.is_writable,
-        };
-        await createSensor(payload).unwrap();
-        toast.success(t("sensorCreated"));
+    startTransition(async () => {
+      try {
+        if (editTarget) {
+          const res = await updateSensor(editTarget.id, {
+            name: form.name || undefined,
+            description: form.description || null,
+            node_id: form.node_id || undefined,
+            data_type: form.data_type,
+            units: form.units || null,
+            is_writable: form.is_writable,
+          });
+          if (res.success) {
+            toast.success(t("sensorUpdated"));
+            onOpenChange(false);
+          } else {
+            toast.error(res.error || tCommon("operationFailed"));
+          }
+        } else {
+          const payload: SensorCreateRequest = {
+            opc_server_id: form.opc_server_id,
+            name: form.name,
+            description: form.description || null,
+            node_id: form.node_id,
+            data_type: form.data_type,
+            units: form.units || null,
+            is_writable: form.is_writable,
+          };
+          const res = await createSensor(payload);
+          if (res.success) {
+            toast.success(t("sensorCreated"));
+            onOpenChange(false);
+          } else {
+            toast.error(res.error || tCommon("operationFailed"));
+          }
+        }
+      } catch {
+        toast.error(tCommon("operationFailed"));
       }
-      onOpenChange(false);
-    } catch {
-      toast.error(tCommon("operationFailed"));
-    }
+    });
   }
 
   return (
@@ -248,7 +257,7 @@ export function SensorFormDialog({
             <Button
               type="submit"
               disabled={
-                creating || updating || (!editTarget && !form.opc_server_id)
+                isPending || (!editTarget && !form.opc_server_id)
               }
             >
               {editTarget ? tCommon("saveChanges") : t("createSensor")}

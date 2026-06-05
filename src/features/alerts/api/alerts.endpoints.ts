@@ -4,8 +4,6 @@ import type {
   GetAlertsParams,
   GetAlertRulesParams,
   AlertRule,
-  CreateAlertRuleRequest,
-  UpdateAlertRuleRequest,
 } from "@/features/alerts/types";
 import type { PaginatedResponse } from "@/shared/types/pagination";
 
@@ -49,22 +47,6 @@ const alertsApi = api.injectEndpoints({
           : [{ type: "Alerts", id: "LIST" }],
     }),
 
-    acknowledgeAlert: builder.mutation<Alert, string>({
-      query: (alertId) => ({
-        url: `/v1/alerts/${alertId}/acknowledge`,
-        method: "POST",
-      }),
-      invalidatesTags: (_r, _e, id) => [{ type: "Alerts", id }],
-    }),
-
-    resolveAlert: builder.mutation<Alert, string>({
-      query: (alertId) => ({
-        url: `/v1/alerts/${alertId}/resolve`,
-        method: "POST",
-      }),
-      invalidatesTags: (_r, _e, id) => [{ type: "Alerts", id }],
-    }),
-
     getAlertRules: builder.query<
       PaginatedResponse<AlertRule>,
       GetAlertRulesParams | void
@@ -94,46 +76,11 @@ const alertsApi = api.injectEndpoints({
             ]
           : [{ type: "AlertRules", id: "LIST" }],
     }),
-
-    createAlertRule: builder.mutation<AlertRule, CreateAlertRuleRequest>({
-      query: (body) => ({
-        url: "/v1/alert-rules/",
-        method: "POST",
-        body: {
-          ...body,
-          duration_seconds: body.duration_seconds ?? 0,
-        },
-      }),
-      transformResponse: (response: AlertRule): AlertRule =>
-        normalizeAlertRule(response),
-      invalidatesTags: [{ type: "AlertRules", id: "LIST" }],
-    }),
-
-    updateAlertRule: builder.mutation<AlertRule, UpdateAlertRuleRequest>({
-      query: ({ id, ...body }) => ({
-        url: `/v1/alert-rules/${id}`,
-        method: "PATCH",
-        body,
-      }),
-      transformResponse: (response: AlertRule): AlertRule =>
-        normalizeAlertRule(response),
-      invalidatesTags: (_r, _e, { id }) => [{ type: "AlertRules", id }],
-    }),
-
-    deleteAlertRule: builder.mutation<void, string>({
-      query: (id) => ({ url: `/v1/alert-rules/${id}`, method: "DELETE" }),
-      invalidatesTags: [{ type: "AlertRules", id: "LIST" }],
-    }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {
   useGetAlertsQuery,
-  useAcknowledgeAlertMutation,
-  useResolveAlertMutation,
   useGetAlertRulesQuery,
-  useCreateAlertRuleMutation,
-  useUpdateAlertRuleMutation,
-  useDeleteAlertRuleMutation,
 } = alertsApi;

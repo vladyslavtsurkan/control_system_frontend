@@ -1,15 +1,14 @@
 "use client";
 
-import { useMemo, useState, type SyntheticEvent } from "react";
+import { useMemo, useState, useTransition, type SyntheticEvent } from "react";
 import { X } from "lucide-react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import {
-  useCreateAlertRuleMutation,
   useGetSensorsQuery,
-  useUpdateAlertRuleMutation,
 } from "@/store/api";
+import { createAlertRule, updateAlertRule } from "@/features/alerts/actions/alert-actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -166,8 +165,7 @@ export function AlertRuleFormDialog({
 }: AlertRuleFormDialogProps) {
   const t = useTranslations("alerts");
   const tCommon = useTranslations("common");
-  const [createRule, { isLoading: creating }] = useCreateAlertRuleMutation();
-  const [updateRule, { isLoading: updating }] = useUpdateAlertRuleMutation();
+  const [isPending, startTransition] = useTransition();
   // Only fetch writable sensors while the dialog is open
   const { data: sensorsData } = useGetSensorsQuery(
     { limit: 100, is_writable: true },
@@ -294,40 +292,51 @@ export function AlertRuleFormDialog({
         : null,
     }));
 
-    try {
-      if (editTarget) {
-        const payload: UpdateAlertRuleRequest = {
-          id: editTarget.id,
-          name: nextForm.name,
-          severity: nextForm.severity,
-          condition: nextForm.condition,
-          threshold,
-          is_active: nextForm.is_active,
-          actions: transformedActions,
-        };
-        const currentDurationSeconds = editTarget.duration_seconds ?? 0;
-        if (durationSeconds !== currentDurationSeconds) {
-          payload.duration_seconds = durationSeconds;
+    startTransition(async () => {
+      try {
+        if (editTarget) {
+          const payload: UpdateAlertRuleRequest = {
+            id: editTarget.id,
+            name: nextForm.name,
+            severity: nextForm.severity,
+            condition: nextForm.condition,
+            threshold,
+            is_active: nextForm.is_active,
+            actions: transformedActions,
+          };
+          const currentDurationSeconds = editTarget.duration_seconds ?? 0;
+          if (durationSeconds !== currentDurationSeconds) {
+            payload.duration_seconds = durationSeconds;
+          }
+          const res = await updateAlertRule(editTarget.id, payload);
+          if (res.success) {
+            toast.success(t("ruleUpdated"));
+            onOpenChange(false);
+          } else {
+            toast.error(res.error || tCommon("operationFailed"));
+          }
+        } else {
+          const payload: CreateAlertRuleRequest = {
+            sensor_id: nextForm.sensor_id,
+            name: nextForm.name,
+            severity: nextForm.severity,
+            condition: nextForm.condition,
+            threshold,
+            duration_seconds: durationSeconds,
+            actions: transformedActions,
+          };
+          const res = await createAlertRule(payload);
+          if (res.success) {
+            toast.success(t("ruleCreated"));
+            onOpenChange(false);
+          } else {
+            toast.error(res.error || tCommon("operationFailed"));
+          }
         }
-        await updateRule(payload).unwrap();
-        toast.success(t("ruleUpdated"));
-      } else {
-        const payload: CreateAlertRuleRequest = {
-          sensor_id: nextForm.sensor_id,
-          name: nextForm.name,
-          severity: nextForm.severity,
-          condition: nextForm.condition,
-          threshold,
-          duration_seconds: durationSeconds,
-          actions: transformedActions,
-        };
-        await createRule(payload).unwrap();
-        toast.success(t("ruleCreated"));
+      } catch {
+        toast.error(tCommon("operationFailed"));
       }
-      onOpenChange(false);
-    } catch {
-      toast.error(tCommon("operationFailed"));
-    }
+    });
   }
 
   const triggerDelayMode = (() => {
@@ -614,7 +623,7 @@ export function AlertRuleFormDialog({
             <DialogClose render={<Button type="button" variant="outline" />}>
               {tCommon("cancel")}
             </DialogClose>
-            <Button type="submit" disabled={creating || updating}>
+             <Button type="submit" disabled={isPending}>
               {editTarget ? tCommon("saveChanges") : t("createRuleTitle")}
             </Button>
           </DialogFooter>

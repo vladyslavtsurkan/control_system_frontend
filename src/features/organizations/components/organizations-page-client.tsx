@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import {
-  useDeleteOrganizationMutation,
   useGetOrganizationsQuery,
-  useLeaveOrganizationMutation,
 } from "@/store/api";
+import { deleteOrganization, leaveOrganization } from "@/features/organizations/actions/org-actions";
 import { useAppSelector } from "@/store/hooks";
 import { selectActiveOrgId } from "@/store/selectors";
 import { ListPaginationFooter } from "@/components/ui/list-pagination";
@@ -51,8 +50,7 @@ export default function OrganizationsPageClient({
     pagination.queryArgs,
     { refetchOnMountOrArgChange: true },
   );
-  const [deleteOrg] = useDeleteOrganizationMutation();
-  const [leaveOrg] = useLeaveOrganizationMutation();
+  const [isPending, startTransition] = useTransition();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<OrganizationWithRole | null>(
@@ -100,12 +98,18 @@ export default function OrganizationsPageClient({
       return;
     }
 
-    try {
-      await deleteOrg(org.id).unwrap();
-      toast.success(t("orgDeleted"));
-    } catch {
-      toast.error(tCommon("deleteFailed"));
-    }
+    startTransition(async () => {
+      try {
+        const res = await deleteOrganization(org.id);
+        if (res.success) {
+          toast.success(t("orgDeleted"));
+        } else {
+          toast.error(res.error || tCommon("deleteFailed"));
+        }
+      } catch {
+        toast.error(tCommon("deleteFailed"));
+      }
+    });
   }
 
   async function handleLeave(org: OrganizationWithRole) {
@@ -119,12 +123,18 @@ export default function OrganizationsPageClient({
       return;
     }
 
-    try {
-      await leaveOrg(org.id).unwrap();
-      toast.success(t("leftOrg", { name: org.name }));
-    } catch {
-      toast.error(t("failedToLeave"));
-    }
+    startTransition(async () => {
+      try {
+        const res = await leaveOrganization(org.id);
+        if (res.success) {
+          toast.success(t("leftOrg", { name: org.name }));
+        } else {
+          toast.error(res.error || t("failedToLeave"));
+        }
+      } catch {
+        toast.error(t("failedToLeave"));
+      }
+    });
   }
 
   return (

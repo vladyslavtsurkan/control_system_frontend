@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { useGetServersQuery, useDeleteServerMutation } from "@/store/api";
+import { useGetServersQuery } from "@/store/api";
+import { deleteServer } from "@/features/servers/actions/server-actions";
 import { ListPaginationFooter } from "@/components/ui/list-pagination";
 import { ServerFormDialog } from "@/features/servers/components/server-form-dialog";
 import { ApiKeyDialog } from "@/features/servers/components/api-key-dialog";
@@ -44,7 +45,7 @@ export default function ServersPageClient({
     pagination.queryArgs,
     { refetchOnMountOrArgChange: true },
   );
-  const [deleteServer] = useDeleteServerMutation();
+  const [isPending, startTransition] = useTransition();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<OpcServer | null>(null);
@@ -90,12 +91,15 @@ export default function ServersPageClient({
       return;
     }
 
-    try {
-      await deleteServer(id).unwrap();
-      toast.success(t("serverDeleted"));
-    } catch {
-      toast.error(tCommon("deleteFailed"));
-    }
+    startTransition(async () => {
+      const res = await deleteServer(id);
+      if (res.success) {
+        toast.success(t("serverDeleted"));
+        refetch();
+      } else {
+        toast.error(res.error || tCommon("deleteFailed"));
+      }
+    });
   }
 
   return (

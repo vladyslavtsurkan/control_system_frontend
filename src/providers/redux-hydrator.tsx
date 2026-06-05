@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import { setUser, initActiveOrg } from "@/store/auth-slice";
 import { wsConnect } from "@/store/ws-slice";
@@ -39,10 +39,12 @@ export function ReduxHydrator({
       dispatch(initActiveOrg(initialOrgs[0].id));
     }
 
-    dispatch(wsConnect());
-
     hydrated.current = true;
   }
+
+  useEffect(() => {
+    dispatch(wsConnect());
+  }, [dispatch]);
 
   return <>{children}</>;
 }

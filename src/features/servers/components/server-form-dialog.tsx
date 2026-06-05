@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, type SyntheticEvent } from "react";
+import { useState, useTransition, type SyntheticEvent } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { useCreateServerMutation, useUpdateServerMutation } from "@/store/api";
+import { createServer, updateServer } from "@/features/servers/actions/server-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,8 +75,7 @@ export function ServerFormDialog({
     { value: "anonymous", label: t("authMethod.anonymous") },
     { value: "username", label: t("authMethod.username") },
   ];
-  const [createServer, { isLoading: creating }] = useCreateServerMutation();
-  const [updateServer, { isLoading: updating }] = useUpdateServerMutation();
+  const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState<ServerFormState>(() =>
     editTarget
       ? {
@@ -91,38 +90,48 @@ export function ServerFormDialog({
       : emptyForm,
   );
 
-  async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
+  function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
-    try {
-      if (editTarget) {
-        await updateServer({
-          id: editTarget.id,
-          name: form.name || undefined,
-          description: form.description || null,
-          url: form.url || undefined,
-          security_policy: form.security_policy,
-          authentication_method: form.authentication_method,
-          username: form.username || null,
-          password: form.password || null,
-        }).unwrap();
-        toast.success(t("serverUpdated"));
-      } else {
-        const payload: CreateOpcServerRequest = {
-          name: form.name,
-          description: form.description || null,
-          url: form.url,
-          security_policy: form.security_policy,
-          authentication_method: form.authentication_method,
-          username: form.username || null,
-          password: form.password || null,
-        };
-        await createServer(payload).unwrap();
-        toast.success(t("serverCreated"));
+    startTransition(async () => {
+      try {
+        if (editTarget) {
+          const res = await updateServer(editTarget.id, {
+            name: form.name || undefined,
+            description: form.description || null,
+            url: form.url || undefined,
+            security_policy: form.security_policy,
+            authentication_method: form.authentication_method,
+            username: form.username || null,
+            password: form.password || null,
+          });
+          if (res.success) {
+            toast.success(t("serverUpdated"));
+            onOpenChange(false);
+          } else {
+            toast.error(res.error || tCommon("operationFailed"));
+          }
+        } else {
+          const payload: CreateOpcServerRequest = {
+            name: form.name,
+            description: form.description || null,
+            url: form.url,
+            security_policy: form.security_policy,
+            authentication_method: form.authentication_method,
+            username: form.username || null,
+            password: form.password || null,
+          };
+          const res = await createServer(payload);
+          if (res.success) {
+            toast.success(t("serverCreated"));
+            onOpenChange(false);
+          } else {
+            toast.error(res.error || tCommon("operationFailed"));
+          }
+        }
+      } catch {
+        toast.error(tCommon("operationFailed"));
       }
-      onOpenChange(false);
-    } catch {
-      toast.error(tCommon("operationFailed"));
-    }
+    });
   }
 
   const showCredentials = form.authentication_method === "username";
@@ -260,7 +269,7 @@ export function ServerFormDialog({
             <DialogClose render={<Button type="button" variant="outline" />}>
               {tCommon("cancel")}
             </DialogClose>
-            <Button type="submit" disabled={creating || updating}>
+            <Button type="submit" disabled={isPending}>
               {editTarget ? tCommon("saveChanges") : t("createServer")}
             </Button>
           </DialogFooter>

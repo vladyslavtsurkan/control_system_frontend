@@ -1,10 +1,8 @@
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  useAcknowledgeAlertMutation,
-  useDeleteSensorMutation,
-} from "@/store/api";
+import { deleteSensor } from "@/features/sensors/actions/sensor-actions";
+import { acknowledgeAlert } from "@/features/alerts";
 import { useConfirm } from "@/hooks/use-confirm";
 
 interface UseSensorDetailActionsParams {
@@ -19,9 +17,8 @@ export function useSensorDetailActions({
   refetchAlerts,
 }: UseSensorDetailActionsParams) {
   const router = useRouter();
-  const [deleteSensor] = useDeleteSensorMutation();
-  const [acknowledgeAlert, { isLoading: acknowledging }] =
-    useAcknowledgeAlertMutation();
+  const [isDeletePending, startDeleteTransition] = useTransition();
+  const [isAckPending, startAckTransition] = useTransition();
   const { confirm, ConfirmDialog } = useConfirm();
   const [acknowledgingId, setAcknowledgingId] = useState<string | null>(null);
 
@@ -34,33 +31,47 @@ export function useSensorDetailActions({
     )
       return;
 
-    try {
-      await deleteSensor(sensorId).unwrap();
-      toast.success("Sensor deleted.");
-      router.push("/sensors");
-    } catch {
-      toast.error("Delete failed.");
-    }
+    startDeleteTransition(async () => {
+      try {
+        const res = await deleteSensor(sensorId);
+        if (res.success) {
+          toast.success("Sensor deleted.");
+          router.push("/sensors");
+        } else {
+          toast.error(res.error || "Delete failed.");
+        }
+      } catch {
+        toast.error("Delete failed.");
+      }
+    });
   }
 
   async function handleAcknowledge(alertId: string) {
-    try {
-      setAcknowledgingId(alertId);
-      await acknowledgeAlert(alertId).unwrap();
-      toast.success("Alert acknowledged.");
-      refetchAlerts();
-    } catch {
-      toast.error("Failed to acknowledge alert.");
-    } finally {
-      setAcknowledgingId(null);
-    }
+    setAcknowledgingId(alertId);
+    startAckTransition(async () => {
+      try {
+        const res = await acknowledgeAlert(alertId);
+        if (res.success) {
+          toast.success("Alert acknowledged.");
+          refetchAlerts();
+        } else {
+          toast.error(res.error || "Failed to acknowledge alert.");
+        }
+      } catch {
+        toast.error("Failed to acknowledge alert.");
+      } finally {
+        setAcknowledgingId(null);
+      }
+    });
   }
 
   return {
-    acknowledging,
+    acknowledging: isAckPending,
     acknowledgingId,
+    deleting: isDeletePending,
     handleDelete,
     handleAcknowledge,
     ConfirmDialog,
   };
 }
+

@@ -4,7 +4,8 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Pencil, Trash2, ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useDeleteSensorMutation } from "@/store/api";
+import { useTransition } from "react";
+import { deleteSensor } from "@/features/sensors/actions/sensor-actions";
 import { useConfirm } from "@/hooks/use-confirm";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +37,7 @@ export function SensorTable({
   canManage,
 }: SensorTableProps) {
   const t = useTranslations("sensors");
-  const [deleteSensor] = useDeleteSensorMutation();
+  const [isPending, startTransition] = useTransition();
   const { confirm, ConfirmDialog } = useConfirm();
 
   async function handleDelete(id: string, name: string) {
@@ -47,12 +48,18 @@ export function SensorTable({
       }))
     )
       return;
-    try {
-      await deleteSensor(id).unwrap();
-      toast.success(t("sensorDeleted"));
-    } catch {
-      toast.error(t("sensorDeleted"));
-    }
+    startTransition(async () => {
+      try {
+        const res = await deleteSensor(id);
+        if (res.success) {
+          toast.success(t("sensorDeleted"));
+        } else {
+          toast.error(res.error || t("sensorDeleteFailed")); // Wait, in original catch it was toast.error(t("sensorDeleted")) which is probably a bug. Let's make it sensorDeleteFailed or operationFailed.
+        }
+      } catch {
+        toast.error(t("sensorDeleteFailed"));
+      }
+    });
   }
 
   return (

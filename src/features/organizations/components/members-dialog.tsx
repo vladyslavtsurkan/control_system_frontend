@@ -1,14 +1,16 @@
 "use client";
 
-import { memo, useState, type SyntheticEvent } from "react";
+import { memo, useState, useTransition, type SyntheticEvent } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import {
-  useAddOrganizationMemberMutation,
-  useRemoveOrganizationMemberMutation,
-  useChangeOrganizationMemberRoleMutation,
   useGetOrganizationMembersQuery,
 } from "@/store/api";
+import {
+  addOrganizationMember,
+  removeOrganizationMember,
+  changeOrganizationMemberRole,
+} from "@/features/organizations/actions/org-actions";
 import { useConfirm } from "@/hooks/use-confirm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,25 +59,21 @@ function isUserRoleInOrg(value: unknown): value is UserRoleInOrg {
 // ─── Member list (memoized so the "add member" input state doesn't re-render it) ─
 
 interface MemberListProps {
-  orgId: string;
+  members: any[];
+  isLoading: boolean;
   orgRole: UserRoleInOrg;
-  open: boolean;
   onRemove: (userId: string, email: string) => void;
   onRoleChange: (userId: string, role: UserRoleInOrg, email: string) => void;
 }
 
 const MemberList = memo(function MemberList({
-  orgId,
+  members,
+  isLoading,
   orgRole,
-  open,
   onRemove,
   onRoleChange,
 }: MemberListProps) {
   const t = useTranslations("organizations");
-  const { data, isLoading } = useGetOrganizationMembersQuery(orgId, {
-    skip: !open,
-  });
-  const members = data?.items ?? [];
   const isOwner = orgRole === "owner";
   const isAdminOrOwner = orgRole === "owner" || orgRole === "admin";
 
@@ -175,9 +173,12 @@ interface MembersDialogProps {
 export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
   const t = useTranslations("organizations");
   const tCommon = useTranslations("common");
-  const [addMember, { isLoading: adding }] = useAddOrganizationMemberMutation();
-  const [removeMember] = useRemoveOrganizationMemberMutation();
-  const [changeRole] = useChangeOrganizationMemberRoleMutation();
+  const { data, isLoading, refetch } = useGetOrganizationMembersQuery(org.id, {
+    skip: !open,
+  });
+  const members = data?.items ?? [];
+
+  const [isPending, startTransition] = useTransition();
   const [addUserId, setAddUserId] = useState("");
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -187,13 +188,20 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
     e.preventDefault();
     const trimmed = addUserId.trim();
     if (!trimmed) return;
-    try {
-      await addMember({ orgId: org.id, userId: trimmed }).unwrap();
-      setAddUserId("");
-      toast.success(t("memberAdded"));
-    } catch {
-      toast.error(t("memberAddFailed"));
-    }
+    startTransition(async () => {
+      try {
+        const res = await addOrganizationMember(org.id, trimmed);
+        if (res.success) {
+          setAddUserId("");
+          toast.success(t("memberAdded"));
+          refetch();
+        } else {
+          toast.error(res.error || t("memberAddFailed"));
+        }
+      } catch {
+        toast.error(t("memberAddFailed"));
+      }
+    });
   }
 
   async function handleRemove(userId: string, email: string) {
@@ -205,12 +213,19 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
       }))
     )
       return;
-    try {
-      await removeMember({ orgId: org.id, userId }).unwrap();
-      toast.success(t("memberRemoved", { email }));
-    } catch {
-      toast.error(t("memberRemoveFailed"));
-    }
+    startTransition(async () => {
+      try {
+        const res = await removeOrganizationMember(org.id, userId);
+        if (res.success) {
+          toast.success(t("memberRemoved", { email }));
+          refetch();
+        } else {
+          toast.error(res.error || t("memberRemoveFailed"));
+        }
+      } catch {
+        toast.error(t("memberRemoveFailed"));
+      }
+    });
   }
 
   async function handleRoleChange(
@@ -230,12 +245,19 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
       });
       if (!confirmed) return;
     }
-    try {
-      await changeRole({ orgId: org.id, userId, role }).unwrap();
-      toast.success(t("roleUpdated"));
-    } catch {
-      toast.error(t("roleUpdateFailed"));
-    }
+    startTransition(async () => {
+      try {
+        const res = await changeOrganizationMemberRole(org.id, userId, role);
+        if (res.success) {
+          toast.success(t("roleUpdated"));
+          refetch();
+        } else {
+          toast.error(res.error || t("roleUpdateFailed"));
+        }
+      } catch {
+        toast.error(t("roleUpdateFailed"));
+      }
+    });
   }
 
   return (
@@ -257,7 +279,7 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={adding || !addUserId.trim()}
+                  disabled={isPending || !addUserId.trim()}
                 >
                   <UserPlus className="mr-1.5 size-3.5" />
                   {t("add")}
@@ -265,9 +287,9 @@ export function MembersDialog({ org, open, onOpenChange }: MembersDialogProps) {
               </form>
             )}
             <MemberList
-              orgId={org.id}
+              members={members}
+              isLoading={isLoading}
               orgRole={org.role}
-              open={open}
               onRemove={handleRemove}
               onRoleChange={handleRoleChange}
             />

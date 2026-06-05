@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { useUpdateSensorMutation } from "@/store/api";
+import { updateSensor } from "@/features/sensors/actions/sensor-actions";
 import type { EditSensorFormState } from "@/features/sensors/components";
 import type { Sensor } from "@/features/sensors/types";
 
@@ -13,7 +13,7 @@ export function useSensorEditController({
   sensorId,
   sensor,
 }: UseSensorEditControllerParams) {
-  const [updateSensor, { isLoading: updating }] = useUpdateSensorMutation();
+  const [updating, startTransition] = useTransition();
   const [editOpen, setEditOpen] = useState(false);
 
   function openEdit() {
@@ -21,22 +21,23 @@ export function useSensorEditController({
     setEditOpen(true);
   }
 
-  async function handleEditSubmit(data: EditSensorFormState) {
-    try {
-      await updateSensor({
-        id: sensorId,
+  function handleEditSubmit(data: EditSensorFormState) {
+    startTransition(async () => {
+      const result = await updateSensor(sensorId, {
         name: data.name || undefined,
         description: data.description || null,
         node_id: data.node_id || undefined,
         data_type: data.data_type,
         units: data.units || null,
         is_writable: data.is_writable,
-      }).unwrap();
-      toast.success("Sensor updated.");
-      setEditOpen(false);
-    } catch {
-      toast.error("Update failed. Please try again.");
-    }
+      });
+      if (result.success) {
+        toast.success("Sensor updated.");
+        setEditOpen(false);
+      } else {
+        toast.error(result.error || "Update failed. Please try again.");
+      }
+    });
   }
 
   return {
