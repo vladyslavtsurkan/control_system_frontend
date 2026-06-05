@@ -1,28 +1,17 @@
-"use client";
-
-import { Moon, Sun, LogOut, User } from "lucide-react";
-import { useTheme } from "next-themes";
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { getTranslations } from "next-intl/server";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { useAppSelector } from "@/store/hooks";
-import { selectUser } from "@/store/selectors";
-import { useLogout } from "@/features/auth/hooks/use-logout";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { ProfileDropdown } from "@/components/layout/profile-dropdown";
+import type { User } from "@/features/auth/types";
 
-export function TopBar() {
-  const { theme, setTheme } = useTheme();
-  const user = useAppSelector(selectUser);
-  const handleLogout = useLogout();
-  const t = useTranslations("topBar");
+interface TopBarProps {
+  user: User;
+}
+
+export async function TopBar({ user }: TopBarProps) {
+  const t = await getTranslations("topBar");
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
@@ -36,44 +25,10 @@ export function TopBar() {
       <LanguageSwitcher />
 
       {/* Theme toggle */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        aria-label={t("toggleTheme")}
-      >
-        <Sun className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-        <Moon className="absolute size-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-      </Button>
+      <ThemeToggle />
 
       {/* User menu */}
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          className="inline-flex size-9 items-center justify-center rounded-md hover:bg-accent focus-visible:outline-none"
-          aria-label={t("userMenu")}
-        >
-          <User className="size-4" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <div className="px-2 py-1.5">
-            <p className="text-sm font-medium">
-              {user
-                ? [user.first_name, user.last_name].filter(Boolean).join(" ") ||
-                  user.email
-                : "User"}
-            </p>
-            <p className="text-xs text-muted-foreground">{user?.email}</p>
-          </div>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={handleLogout}
-            className="text-red-600 dark:text-red-400"
-          >
-            <LogOut className="mr-2 size-4" />
-            {t("signOut")}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <ProfileDropdown user={user} />
     </header>
   );
 }

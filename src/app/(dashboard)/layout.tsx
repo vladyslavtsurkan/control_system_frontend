@@ -47,12 +47,19 @@ export default async function DashboardLayout({
     ? ((await orgsRes.json()) as PaginatedResponse<OrganizationWithRole>)
     : { items: [] as OrganizationWithRole[] };
 
+  const tenantId = cookieStore.get("iiot_tenant_id")?.value;
+  const currentOrg = orgsData.items.find((o) => o.id === tenantId) ?? orgsData.items[0];
+
   return (
     <ReduxHydrator user={user} initialOrgs={orgsData.items}>
       <SidebarProvider>
-        <AppSidebar />
+        <AppSidebar
+          user={user}
+          organizations={orgsData.items}
+          currentOrg={currentOrg}
+        />
         <SidebarInset>
-          <TopBar />
+          <TopBar user={user} currentOrg={currentOrg} />
           <main className="flex flex-1 flex-col gap-4 p-4 pt-4">
             {children}
           </main>

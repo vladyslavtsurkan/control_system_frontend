@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import SensorsPageClient from "@/features/sensors/components/sensors-page-client";
 import {
@@ -7,7 +8,9 @@ import {
   parsePositiveIntParam,
   type SearchParamValue,
 } from "@/lib/utils";
-import { LIST_PAGE_SIZE_OPTIONS } from "@/config/constants";
+import { LIST_PAGE_SIZE_OPTIONS, AUTH_COOKIE_NAME, BACKEND_API_URL } from "@/config/constants";
+import type { Sensor } from "@/features/sensors/types";
+import type { PaginatedResponse } from "@/shared/types/pagination";
 
 export const metadata: Metadata = {
   title: "Sensors | IIoT Platform",
@@ -33,6 +36,35 @@ export default async function SensorsPage({ searchParams }: SensorsPageProps) {
   const initialServerFilter =
     getFirstSearchParamValue(resolvedSearchParams.server_id) ?? "";
 
+  const cookieStore = await cookies();
+  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+
+  let initialData: PaginatedResponse<Sensor> | null = null;
+
+  if (token) {
+    try {
+      const offset = (initialPage - 1) * initialPerPage;
+      const params = new URLSearchParams({
+        offset: String(offset),
+        limit: String(initialPerPage),
+      });
+      if (initialServerFilter) {
+        params.set("opc_server_id", initialServerFilter);
+      }
+      
+      const res = await fetch(`${BACKEND_API_URL}/api/v1/sensors/?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+      
+      if (res.ok) {
+        initialData = await res.json();
+      }
+    } catch (e) {
+      console.error("Failed to prefetch sensors", e);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -43,7 +75,9 @@ export default async function SensorsPage({ searchParams }: SensorsPageProps) {
         initialPage={initialPage}
         initialPerPage={initialPerPage}
         initialServerFilter={initialServerFilter}
+        initialData={initialData}
       />
     </div>
   );
 }
+

@@ -19,17 +19,20 @@ import {
   LIST_PAGE_SIZE_OPTIONS,
 } from "@/config/constants";
 import type { Sensor } from "@/features/sensors/types";
+import type { PaginatedResponse } from "@/shared/types/pagination";
 
 interface SensorsPageClientProps {
   initialPage: number;
   initialPerPage: number;
   initialServerFilter: string;
+  initialData?: PaginatedResponse<Sensor> | null;
 }
 
 export default function SensorsPageClient({
   initialPage,
   initialPerPage,
   initialServerFilter,
+  initialData,
 }: SensorsPageClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -56,14 +59,21 @@ export default function SensorsPageClient({
 
   const { canManage } = useOrgPermissions();
 
-  const sensors = data?.items ?? [];
+  const isInitialQuery =
+    pagination.page === initialPage &&
+    pagination.perPage === initialPerPage &&
+    serverFilter === initialServerFilter;
+
+  const activeSensorsData = isInitialQuery ? (data ?? initialData) : data;
+
+  const sensors = activeSensorsData?.items ?? [];
   const servers = serversData?.items ?? [];
   const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } =
     getOffsetLimitPaginationMeta({
-      count: data?.count,
-      perPage: data?.per_page,
-      totalPages: data?.total_pages,
-      page: data?.page,
+      count: activeSensorsData?.count,
+      perPage: activeSensorsData?.per_page,
+      totalPages: activeSensorsData?.total_pages,
+      page: activeSensorsData?.page,
       offset: pagination.offset,
       requestedLimit: pagination.limit,
       fallbackLimit: LIST_PAGE_SIZE_FALLBACK,
@@ -106,7 +116,7 @@ export default function SensorsPageClient({
         canManage={canManage}
       />
 
-      {isLoading ? (
+      {isLoading && !activeSensorsData ? (
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />

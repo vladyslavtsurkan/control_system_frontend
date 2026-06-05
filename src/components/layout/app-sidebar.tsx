@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setActiveOrg, setUser } from "@/store/auth-slice";
-import { useGetOrganizationsQuery, useUpdateMeMutation } from "@/store/api";
+import { useUpdateMeMutation } from "@/store/api";
 import {
   selectActiveAlertCount,
   selectActiveOrgId,
@@ -47,6 +47,7 @@ import { useLogout } from "@/features/auth/hooks/use-logout";
 import { ProfileDialog } from "./profile-dialog";
 import { toast } from "sonner";
 import type { OrganizationWithRole } from "@/features/organizations/types";
+import type { User } from "@/features/auth/types";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -61,24 +62,30 @@ const WS_STATUS_COLOR: Record<string, string> = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  user: User;
+  organizations: OrganizationWithRole[];
+  currentOrg?: OrganizationWithRole;
+}
+
+export function AppSidebar({ user: initialUser, organizations, currentOrg }: AppSidebarProps) {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const t = useTranslations("nav");
 
   // ── Redux state ────────────────────────────────────────────────────────────
-  const user = useAppSelector(selectUser);
+  const storeUser = useAppSelector(selectUser);
+  const user = storeUser ?? initialUser;
   const activeOrgId = useAppSelector(selectActiveOrgId);
   const wsStatus = useAppSelector(selectWsStatus);
   const activeAlertCount = useAppSelector(selectActiveAlertCount);
 
   // ── Queries / mutations ───────────────────────────────────────────────────
-  const { data: orgsData } = useGetOrganizationsQuery();
   const [updateMe, { isLoading: saving }] = useUpdateMeMutation();
   const handleLogout = useLogout();
 
-  const orgs = orgsData?.items ?? [];
-  const activeOrg = orgs.find((o) => o.id === activeOrgId) ?? orgs[0];
+  const orgs = organizations;
+  const activeOrg = orgs.find((o) => o.id === activeOrgId) ?? currentOrg ?? orgs[0];
 
   // ── Profile dialog ────────────────────────────────────────────────────────
   const [profileOpen, setProfileOpen] = useState(false);
