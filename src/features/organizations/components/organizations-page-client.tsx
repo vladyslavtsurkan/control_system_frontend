@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useOptimistic } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import {
@@ -67,6 +67,17 @@ export default function OrganizationsPageClient({
   const activeOrgsData = isInitialQuery ? (data ?? initialData) : data;
 
   const orgs = activeOrgsData?.items ?? [];
+
+  const [optimisticOrgs, addOptimisticOrg] = useOptimistic(
+    orgs,
+    (state, { action, id }: { action: "delete" | "leave"; id: string }) => {
+      if (action === "delete" || action === "leave") {
+        return state.filter((item) => item.id !== id);
+      }
+      return state;
+    }
+  );
+
   const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } =
     getOffsetLimitPaginationMeta({
       count: activeOrgsData?.count,
@@ -99,6 +110,7 @@ export default function OrganizationsPageClient({
     }
 
     startTransition(async () => {
+      addOptimisticOrg({ action: "delete", id: org.id });
       try {
         const res = await deleteOrganization(org.id);
         if (res.success) {
@@ -124,6 +136,7 @@ export default function OrganizationsPageClient({
     }
 
     startTransition(async () => {
+      addOptimisticOrg({ action: "leave", id: org.id });
       try {
         const res = await leaveOrganization(org.id);
         if (res.success) {
@@ -142,7 +155,7 @@ export default function OrganizationsPageClient({
       <OrganizationsActionBar onRefresh={refetch} onCreate={openCreate} />
 
       <OrganizationsListControls
-        shownCount={orgs.length}
+        shownCount={optimisticOrgs.length}
         totalCount={totalCount}
         pageSize={pagination.perPage}
         pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
@@ -150,7 +163,7 @@ export default function OrganizationsPageClient({
       />
 
       <OrganizationsTable
-        organizations={orgs}
+        organizations={optimisticOrgs}
         activeOrgId={activeOrgId}
         isLoading={isLoading && !activeOrgsData}
         onManageMembers={setMembersTarget}
@@ -158,6 +171,7 @@ export default function OrganizationsPageClient({
         onDelete={handleDelete}
         onLeave={handleLeave}
       />
+
 
       <ListPaginationFooter
         currentPage={currentPage}

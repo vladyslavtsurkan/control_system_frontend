@@ -10,6 +10,7 @@ import type {
   SensorControlResponse,
 } from "@/features/sensors/types";
 import type { ActionResponse } from "@/features/alerts";
+import { createSensorSchema, updateSensorSchema } from "../schemas";
 
 async function getHeaders() {
   const cookieStore = await cookies();
@@ -25,12 +26,21 @@ async function getHeaders() {
 export async function createSensor(
   body: SensorCreateRequest,
 ): Promise<ActionResponse<Sensor>> {
+  const parsed = createSensorSchema.safeParse(body);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Validation failed",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
   try {
     const headers = await getHeaders();
     const res = await fetch(`${BACKEND_API_URL}/api/v1/sensors/`, {
       method: "POST",
       headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify(parsed.data),
     });
 
     if (!res.ok) {
@@ -51,12 +61,21 @@ export async function updateSensor(
   id: string,
   body: Omit<SensorUpdateRequest, "id">,
 ): Promise<ActionResponse<Sensor>> {
+  const parsed = updateSensorSchema.safeParse(body);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Validation failed",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
   try {
     const headers = await getHeaders();
     const res = await fetch(`${BACKEND_API_URL}/api/v1/sensors/${id}`, {
       method: "PATCH",
       headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify(parsed.data),
     });
 
     if (!res.ok) {
@@ -72,6 +91,7 @@ export async function updateSensor(
     return { success: false, error: e instanceof Error ? e.message : "Failed to update sensor" };
   }
 }
+
 
 export async function deleteSensor(id: string): Promise<ActionResponse<void>> {
   try {

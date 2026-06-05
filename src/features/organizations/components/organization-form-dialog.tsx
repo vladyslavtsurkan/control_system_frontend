@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useTransition, type SyntheticEvent } from "react";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import type { Path } from "react-hook-form";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { createOrganization, updateOrganization } from "@/features/organizations/actions/org-actions";
@@ -34,8 +36,6 @@ interface OrgFormState {
   description: string;
 }
 
-const emptyForm: OrgFormState = { name: "", description: "" };
-
 export function OrganizationFormDialog({
   open,
   onOpenChange,
@@ -46,20 +46,25 @@ export function OrganizationFormDialog({
   const tCommon = useTranslations("common");
   const dispatch = useAppDispatch();
   const [isPending, startTransition] = useTransition();
-  const [form, setForm] = useState<OrgFormState>(() =>
-    editTarget
-      ? { name: editTarget.name, description: editTarget.description ?? "" }
-      : emptyForm,
-  );
 
-  async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<OrgFormState>({
+    defaultValues: editTarget
+      ? { name: editTarget.name, description: editTarget.description ?? "" }
+      : { name: "", description: "" },
+  });
+
+  const onSubmit = async (data: OrgFormState) => {
     startTransition(async () => {
       try {
         if (editTarget) {
           const res = await updateOrganization(editTarget.id, {
-            name: form.name || null,
-            description: form.description || null,
+            name: data.name || null,
+            description: data.description || null,
           });
           if (res.success) {
             if (editTarget.id === activeOrgId) {
@@ -68,12 +73,20 @@ export function OrganizationFormDialog({
             toast.success(t("orgUpdated"));
             onOpenChange(false);
           } else {
-            toast.error(res.error || tCommon("operationFailed"));
+            if (res.fieldErrors) {
+              Object.entries(res.fieldErrors).forEach(([field, messages]) => {
+                if (messages && messages.length > 0) {
+                  setError(field as Path<OrgFormState>, { type: "server", message: messages[0] });
+                }
+              });
+            } else {
+              toast.error(res.error || tCommon("operationFailed"));
+            }
           }
         } else {
           const payload: CreateOrganizationRequest = {
-            name: form.name,
-            description: form.description || null,
+            name: data.name,
+            description: data.description || null,
           };
           const res = await createOrganization(payload);
           if (res.success) {
@@ -83,14 +96,22 @@ export function OrganizationFormDialog({
             toast.success(t("orgCreated"));
             onOpenChange(false);
           } else {
-            toast.error(res.error || tCommon("operationFailed"));
+            if (res.fieldErrors) {
+              Object.entries(res.fieldErrors).forEach(([field, messages]) => {
+                if (messages && messages.length > 0) {
+                  setError(field as Path<OrgFormState>, { type: "server", message: messages[0] });
+                }
+              });
+            } else {
+              toast.error(res.error || tCommon("operationFailed"));
+            }
           }
         }
       } catch {
         toast.error(tCommon("operationFailed"));
       }
     });
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -100,33 +121,34 @@ export function OrganizationFormDialog({
             {editTarget ? t("editOrganization") : t("newOrganization")}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="org-name">{t("name")}</Label>
             <Input
               id="org-name"
-              required
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              {...register("name")}
               placeholder={t("namePlaceholder")}
             />
+            {errors.name && (
+              <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="org-desc">{t("description")}</Label>
             <Input
               id="org-desc"
-              value={form.description}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, description: e.target.value }))
-              }
+              {...register("description")}
               placeholder={t("descriptionPlaceholder")}
             />
+            {errors.description && (
+              <p className="text-xs text-red-500 mt-1">{errors.description.message}</p>
+            )}
           </div>
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>
               {tCommon("cancel")}
             </DialogClose>
-             <Button type="submit" disabled={isPending}>
+            <Button type="submit" disabled={isPending}>
               {editTarget ? tCommon("saveChanges") : tCommon("create")}
             </Button>
           </DialogFooter>

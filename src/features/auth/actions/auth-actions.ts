@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { AUTH_COOKIE_NAME, BACKEND_API_URL } from "@/config/constants";
 import type { User, UserUpdateRequest } from "@/features/auth/types";
 import type { ActionResponse } from "@/features/alerts";
+import { updateMeSchema } from "../schemas";
 
 async function getHeaders() {
   const cookieStore = await cookies();
@@ -18,12 +19,21 @@ async function getHeaders() {
 export async function updateMe(
   body: UserUpdateRequest,
 ): Promise<ActionResponse<User>> {
+  const parsed = updateMeSchema.safeParse(body);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Validation failed",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
   try {
     const headers = await getHeaders();
     const res = await fetch(`${BACKEND_API_URL}/api/v1/users/`, {
       method: "PATCH",
       headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify(parsed.data),
     });
 
     if (!res.ok) {
@@ -38,3 +48,4 @@ export async function updateMe(
     return { success: false, error: e instanceof Error ? e.message : "Failed to update profile" };
   }
 }
+

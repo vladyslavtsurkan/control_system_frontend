@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useOptimistic } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import {
@@ -64,6 +64,17 @@ export default function AlertsPageClient({
 
   const sensors = sensorsData?.items ?? [];
   const rules = activeAlertRulesData?.items ?? [];
+
+  const [optimisticRules, addOptimisticRule] = useOptimistic(
+    rules,
+    (state, { action, id }: { action: "delete"; id: string }) => {
+      if (action === "delete") {
+        return state.filter((item) => item.id !== id);
+      }
+      return state;
+    }
+  );
+
   const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } =
     getOffsetLimitPaginationMeta({
       count: activeAlertRulesData?.count,
@@ -96,6 +107,7 @@ export default function AlertsPageClient({
     }
 
     startTransition(async () => {
+      addOptimisticRule({ action: "delete", id });
       try {
         const res = await deleteAlertRule(id);
         if (res.success) {
@@ -118,7 +130,7 @@ export default function AlertsPageClient({
       />
 
       <AlertsListControls
-        shownCount={rules.length}
+        shownCount={optimisticRules.length}
         totalCount={totalCount}
         pageSize={pagination.perPage}
         pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
@@ -126,13 +138,14 @@ export default function AlertsPageClient({
       />
 
       <AlertsTable
-        rules={rules}
+        rules={optimisticRules}
         sensors={sensors}
         isLoading={isLoading && !activeAlertRulesData}
         onEdit={openEdit}
         onDelete={(rule) => handleDelete(rule.id, rule.name)}
         canManage={canManage}
       />
+
 
       <ListPaginationFooter
         currentPage={currentPage}

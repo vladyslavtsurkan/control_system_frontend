@@ -10,6 +10,7 @@ import type {
   UserRoleInOrg,
 } from "@/features/organizations/types";
 import type { ActionResponse } from "@/features/alerts";
+import { createOrganizationSchema, updateOrganizationSchema } from "../schemas";
 
 async function getHeaders() {
   const cookieStore = await cookies();
@@ -25,12 +26,21 @@ async function getHeaders() {
 export async function createOrganization(
   body: CreateOrganizationRequest,
 ): Promise<ActionResponse<OrganizationWithRole>> {
+  const parsed = createOrganizationSchema.safeParse(body);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Validation failed",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
   try {
     const headers = await getHeaders();
     const res = await fetch(`${BACKEND_API_URL}/api/v1/organizations/`, {
       method: "POST",
       headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify(parsed.data),
     });
 
     if (!res.ok) {
@@ -50,12 +60,21 @@ export async function updateOrganization(
   id: string,
   body: UpdateOrganizationRequest,
 ): Promise<ActionResponse<OrganizationWithRole>> {
+  const parsed = updateOrganizationSchema.safeParse(body);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Validation failed",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
   try {
     const headers = await getHeaders();
     const res = await fetch(`${BACKEND_API_URL}/api/v1/organizations/${id}`, {
       method: "PATCH",
       headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify(parsed.data),
     });
 
     if (!res.ok) {
@@ -70,6 +89,7 @@ export async function updateOrganization(
     return { success: false, error: e instanceof Error ? e.message : "Failed to update organization" };
   }
 }
+
 
 export async function deleteOrganization(id: string): Promise<ActionResponse<void>> {
   try {

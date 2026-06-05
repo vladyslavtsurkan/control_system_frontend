@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useOptimistic } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useGetServersQuery } from "@/store/api";
@@ -60,6 +60,17 @@ export default function ServersPageClient({
   const activeServersData = isInitialQuery ? (data ?? initialData) : data;
 
   const servers = activeServersData?.items ?? [];
+
+  const [optimisticServers, addOptimisticServer] = useOptimistic(
+    servers,
+    (state, { action, id }: { action: "delete"; id: string }) => {
+      if (action === "delete") {
+        return state.filter((item) => item.id !== id);
+      }
+      return state;
+    }
+  );
+
   const { totalCount, totalPages, currentPage, canGoPrev, canGoNext } =
     getOffsetLimitPaginationMeta({
       count: activeServersData?.count,
@@ -92,6 +103,7 @@ export default function ServersPageClient({
     }
 
     startTransition(async () => {
+      addOptimisticServer({ action: "delete", id });
       const res = await deleteServer(id);
       if (res.success) {
         toast.success(t("serverDeleted"));
@@ -111,7 +123,7 @@ export default function ServersPageClient({
       />
 
       <ServersListControls
-        shownCount={servers.length}
+        shownCount={optimisticServers.length}
         totalCount={totalCount}
         pageSize={pagination.perPage}
         pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
@@ -119,13 +131,14 @@ export default function ServersPageClient({
       />
 
       <ServersTable
-        servers={servers}
+        servers={optimisticServers}
         isLoading={isLoading && !activeServersData}
         onEdit={openEdit}
         onManageApiKey={setApiKeyServer}
         onDelete={(server) => handleDelete(server.id, server.name)}
         canManage={canManage}
       />
+
 
       <ListPaginationFooter
         currentPage={currentPage}

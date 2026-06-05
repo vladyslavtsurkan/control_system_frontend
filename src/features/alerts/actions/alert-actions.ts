@@ -9,10 +9,16 @@ import type {
   AlertRule,
   Alert,
 } from "@/features/alerts/types";
+import { createAlertRuleSchema, updateAlertRuleSchema } from "../schemas";
 
 export type ActionResponse<T = unknown> =
   | { success: true; data: T }
-  | { success: false; error: string; status?: number };
+  | {
+      success: false;
+      error: string;
+      status?: number;
+      fieldErrors?: Record<string, string[] | undefined>;
+    };
 
 async function getHeaders() {
   const cookieStore = await cookies();
@@ -25,15 +31,24 @@ async function getHeaders() {
 
 export async function createAlertRule(
   body: CreateAlertRuleRequest,
-): Promise<ActionResponse<AlertRule>> {
+ ): Promise<ActionResponse<AlertRule>> {
+  const parsed = createAlertRuleSchema.safeParse(body);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Validation failed",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
   try {
     const headers = await getHeaders();
     const res = await fetch(`${BACKEND_API_URL}/api/v1/alert-rules/`, {
       method: "POST",
       headers,
       body: JSON.stringify({
-        ...body,
-        duration_seconds: body.duration_seconds ?? 0,
+        ...parsed.data,
+        duration_seconds: parsed.data.duration_seconds ?? 0,
       }),
     });
 
@@ -54,12 +69,21 @@ export async function updateAlertRule(
   id: string,
   body: UpdateAlertRuleRequest,
 ): Promise<ActionResponse<AlertRule>> {
+  const parsed = updateAlertRuleSchema.safeParse(body);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Validation failed",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
   try {
     const headers = await getHeaders();
     const res = await fetch(`${BACKEND_API_URL}/api/v1/alert-rules/${id}`, {
       method: "PATCH",
       headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify(parsed.data),
     });
 
     if (!res.ok) {
@@ -69,6 +93,7 @@ export async function updateAlertRule(
 
     const data = await res.json();
     revalidatePath("/alerts");
+
     return { success: true, data };
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : "Failed to update alert rule" };

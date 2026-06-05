@@ -10,6 +10,7 @@ import type {
   ApiKeyCreateResponse,
 } from "@/features/servers/types";
 import type { ActionResponse } from "@/features/alerts";
+import { createServerSchema, updateServerSchema } from "../schemas";
 
 async function getHeaders() {
   const cookieStore = await cookies();
@@ -25,12 +26,21 @@ async function getHeaders() {
 export async function createServer(
   body: CreateOpcServerRequest,
 ): Promise<ActionResponse<OpcServer>> {
+  const parsed = createServerSchema.safeParse(body);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Validation failed",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
   try {
     const headers = await getHeaders();
     const res = await fetch(`${BACKEND_API_URL}/api/v1/opc-servers/`, {
       method: "POST",
       headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify(parsed.data),
     });
 
     if (!res.ok) {
@@ -50,12 +60,21 @@ export async function updateServer(
   id: string,
   body: Omit<UpdateOpcServerRequest, "id">,
 ): Promise<ActionResponse<OpcServer>> {
+  const parsed = updateServerSchema.safeParse(body);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Validation failed",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
   try {
     const headers = await getHeaders();
     const res = await fetch(`${BACKEND_API_URL}/api/v1/opc-servers/${id}`, {
       method: "PATCH",
       headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify(parsed.data),
     });
 
     if (!res.ok) {
@@ -70,6 +89,7 @@ export async function updateServer(
     return { success: false, error: e instanceof Error ? e.message : "Failed to update server" };
   }
 }
+
 
 export async function deleteServer(id: string): Promise<ActionResponse<void>> {
   try {

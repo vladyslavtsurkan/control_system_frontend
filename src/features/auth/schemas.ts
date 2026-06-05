@@ -51,3 +51,18 @@ export const resetPasswordSchema = z.object({
 });
 
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+
+export const updateMeSchema = z.object({
+  first_name: z
+    .string()
+    .max(100, "First name must be at most 100 characters")
+    .nullable()
+    .optional(),
+  last_name: z
+    .string()
+    .max(100, "Last name must be at most 100 characters")
+    .nullable()
+    .optional(),
+});
+
+export type UpdateMeFormData = z.infer<typeof updateMeSchema>;

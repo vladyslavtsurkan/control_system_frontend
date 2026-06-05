@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useTransition, type SyntheticEvent } from "react";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import type { Path } from "react-hook-form";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { createSensor, updateSensor } from "@/features/sensors/actions/sensor-actions";
@@ -70,8 +72,16 @@ export function SensorFormDialog({
   const t = useTranslations("sensors");
   const tCommon = useTranslations("common");
   const [isPending, startTransition] = useTransition();
-  const [form, setForm] = useState<SensorFormState>(() =>
-    editTarget
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    setError,
+    formState: { errors },
+  } = useForm<SensorFormState>({
+    defaultValues: editTarget
       ? {
           name: editTarget.name,
           description: editTarget.description ?? "",
@@ -82,53 +92,73 @@ export function SensorFormDialog({
           opc_server_id: editTarget.opc_server_id,
         }
       : { ...emptyForm, opc_server_id: defaultServerId },
-  );
+  });
+
+  const opc_server_id = watch("opc_server_id");
+  const data_type = watch("data_type");
+  const is_writable = watch("is_writable");
 
   const selectedServerName =
-    servers.find((srv) => srv.id === form.opc_server_id)?.name ?? "";
+    servers.find((srv) => srv.id === opc_server_id)?.name ?? "";
 
-  async function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
-    e.preventDefault();
+  const onSubmit = async (data: SensorFormState) => {
     startTransition(async () => {
       try {
         if (editTarget) {
           const res = await updateSensor(editTarget.id, {
-            name: form.name || undefined,
-            description: form.description || null,
-            node_id: form.node_id || undefined,
-            data_type: form.data_type,
-            units: form.units || null,
-            is_writable: form.is_writable,
+            name: data.name || undefined,
+            description: data.description || null,
+            node_id: data.node_id || undefined,
+            data_type: data.data_type,
+            units: data.units || null,
+            is_writable: data.is_writable,
           });
           if (res.success) {
             toast.success(t("sensorUpdated"));
             onOpenChange(false);
           } else {
-            toast.error(res.error || tCommon("operationFailed"));
+            if (res.fieldErrors) {
+              Object.entries(res.fieldErrors).forEach(([field, messages]) => {
+                if (messages && messages.length > 0) {
+                  setError(field as Path<SensorFormState>, { type: "server", message: messages[0] });
+                }
+              });
+            } else {
+              toast.error(res.error || tCommon("operationFailed"));
+            }
           }
         } else {
           const payload: SensorCreateRequest = {
-            opc_server_id: form.opc_server_id,
-            name: form.name,
-            description: form.description || null,
-            node_id: form.node_id,
-            data_type: form.data_type,
-            units: form.units || null,
-            is_writable: form.is_writable,
+            opc_server_id: data.opc_server_id,
+            name: data.name,
+            description: data.description || null,
+            node_id: data.node_id,
+            data_type: data.data_type,
+            units: data.units || null,
+            is_writable: data.is_writable,
           };
           const res = await createSensor(payload);
           if (res.success) {
             toast.success(t("sensorCreated"));
             onOpenChange(false);
           } else {
-            toast.error(res.error || tCommon("operationFailed"));
+            if (res.fieldErrors) {
+              Object.entries(res.fieldErrors).forEach(([field, messages]) => {
+                if (messages && messages.length > 0) {
+                  setError(field as Path<SensorFormState>, { type: "server", message: messages[0] });
+                }
+              });
+            } else {
+              toast.error(res.error || tCommon("operationFailed"));
+            }
           }
         }
+
       } catch {
         toast.error(tCommon("operationFailed"));
       }
     });
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -138,16 +168,13 @@ export function SensorFormDialog({
             {editTarget ? t("editSensor") : t("addSensor")}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {!editTarget && (
             <div className="space-y-2">
               <Label>{t("opcUaServer")}</Label>
               <Select
-                value={form.opc_server_id}
-                onValueChange={(v) =>
-                  setForm((f) => ({ ...f, opc_server_id: v ?? "" }))
-                }
-                required
+                value={opc_server_id}
+                onValueChange={(v) => setValue("opc_server_id", v ?? "")}
               >
                 <SelectTrigger>
                   <SelectValue placeholder={t("selectServer")}>
@@ -162,6 +189,9 @@ export function SensorFormDialog({
                   ))}
                 </SelectContent>
               </Select>
+              {errors.opc_server_id && (
+                <p className="text-xs text-red-500 mt-1">{errors.opc_server_id.message}</p>
+              )}
             </div>
           )}
 
@@ -169,37 +199,35 @@ export function SensorFormDialog({
             <Label htmlFor="sensor-name">{t("name")}</Label>
             <Input
               id="sensor-name"
-              required
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              {...register("name")}
               placeholder="Temperature Sensor A"
             />
+            {errors.name && (
+              <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="sensor-node-id">{t("nodeId")}</Label>
             <Input
               id="sensor-node-id"
-              required
-              value={form.node_id}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, node_id: e.target.value }))
-              }
+              {...register("node_id")}
               placeholder="ns=2;i=1001"
               className="font-mono"
             />
+            {errors.node_id && (
+              <p className="text-xs text-red-500 mt-1">{errors.node_id.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label>{t("dataType")}</Label>
             <Select
-              value={form.data_type}
-              onValueChange={(v) =>
-                setForm((f) => ({ ...f, data_type: v as SensorDataType }))
-              }
+              value={data_type}
+              onValueChange={(v) => setValue("data_type", v as SensorDataType)}
             >
               <SelectTrigger>
-                <SelectValue>{t(form.data_type)}</SelectValue>
+                <SelectValue>{t(data_type)}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="numeric">{t("numeric")}</SelectItem>
@@ -207,6 +235,9 @@ export function SensorFormDialog({
                 <SelectItem value="string">{t("string")}</SelectItem>
               </SelectContent>
             </Select>
+            {errors.data_type && (
+              <p className="text-xs text-red-500 mt-1">{errors.data_type.message}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -214,23 +245,23 @@ export function SensorFormDialog({
               <Label htmlFor="sensor-desc">{t("description")}</Label>
               <Input
                 id="sensor-desc"
-                value={form.description}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, description: e.target.value }))
-                }
+                {...register("description")}
                 placeholder={tCommon("optional")}
               />
+              {errors.description && (
+                <p className="text-xs text-red-500 mt-1">{errors.description.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="sensor-units">{t("units")}</Label>
               <Input
                 id="sensor-units"
-                value={form.units}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, units: e.target.value }))
-                }
+                {...register("units")}
                 placeholder="°C, bar, rpm…"
               />
+              {errors.units && (
+                <p className="text-xs text-red-500 mt-1">{errors.units.message}</p>
+              )}
             </div>
           </div>
 
@@ -243,11 +274,12 @@ export function SensorFormDialog({
             </div>
             <Switch
               id="sensor-is-writable"
-              checked={form.is_writable}
-              onCheckedChange={(checked) =>
-                setForm((f) => ({ ...f, is_writable: checked }))
-              }
+              checked={is_writable}
+              onCheckedChange={(checked) => setValue("is_writable", checked)}
             />
+            {errors.is_writable && (
+              <p className="text-xs text-red-500 mt-1">{errors.is_writable.message}</p>
+            )}
           </div>
 
           <DialogFooter>
@@ -257,7 +289,7 @@ export function SensorFormDialog({
             <Button
               type="submit"
               disabled={
-                isPending || (!editTarget && !form.opc_server_id)
+                isPending || (!editTarget && !opc_server_id)
               }
             >
               {editTarget ? tCommon("saveChanges") : t("createSensor")}

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Pencil, Trash2, ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useTransition } from "react";
+import { useTransition, useOptimistic } from "react";
 import { deleteSensor } from "@/features/sensors/actions/sensor-actions";
 import { useConfirm } from "@/hooks/use-confirm";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -40,6 +40,16 @@ export function SensorTable({
   const [, startTransition] = useTransition();
   const { confirm, ConfirmDialog } = useConfirm();
 
+  const [optimisticSensors, addOptimisticSensor] = useOptimistic(
+    sensors,
+    (state, { action, id }: { action: "delete"; id: string }) => {
+      if (action === "delete") {
+        return state.filter((item) => item.id !== id);
+      }
+      return state;
+    }
+  );
+
   async function handleDelete(id: string, name: string) {
     if (
       !(await confirm({
@@ -49,18 +59,20 @@ export function SensorTable({
     )
       return;
     startTransition(async () => {
+      addOptimisticSensor({ action: "delete", id });
       try {
         const res = await deleteSensor(id);
         if (res.success) {
           toast.success(t("sensorDeleted"));
         } else {
-          toast.error(res.error || t("sensorDeleteFailed")); // Wait, in original catch it was toast.error(t("sensorDeleted")) which is probably a bug. Let's make it sensorDeleteFailed or operationFailed.
+          toast.error(res.error || t("sensorDeleteFailed"));
         }
       } catch {
         toast.error(t("sensorDeleteFailed"));
       }
     });
   }
+
 
   return (
     <>
@@ -77,7 +89,7 @@ export function SensorTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sensors.length === 0 ? (
+            {optimisticSensors.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={6}
@@ -91,10 +103,11 @@ export function SensorTable({
                 </TableCell>
               </TableRow>
             ) : (
-              sensors.map((s) => {
+              optimisticSensors.map((s) => {
                 const server = servers.find(
                   (srv) => srv.id === s.opc_server_id,
                 );
+
 
                 return (
                   <TableRow key={s.id}>
